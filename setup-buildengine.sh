@@ -32,9 +32,10 @@ ssh-keygen -t rsa -N "" -f mersdk
 cp mersdk.pub $SSHCONFIG_PATH/ssh/mersdk/authorized_keys
 cd $MYCWD
 VBoxManage sharedfolder add "$VM" --name config --hostpath $SSHCONFIG_PATH/vmshare
-mkdir -p $SSHCONFIG_PATH/targets
-VBoxManage sharedfolder add "$VM" --name targets --hostpath $SSHCONFIG_PATH/targets
-# assing $INSTALL_PATH as 'home' for the VM
+
+# and then 'targets' and 'home' for $INSTALL_PATH
+mkdir -p $INSTALL_PATH/targets
+VBoxManage sharedfolder add "$VM" --name targets --hostpath $INSTALL_PATH/targets
 VBoxManage sharedfolder add "$VM" --name home --hostpath $INSTALL_PATH
 }
 
