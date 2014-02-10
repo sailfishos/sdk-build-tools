@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#set -x
+
 function createvm {
 VBoxManage createvm --name "$VM" --ostype Linux26 --register
 VBoxManage modifyvm "$VM" --memory 1024 --vram 128 --accelerate3d off
@@ -14,11 +16,31 @@ VBoxManage modifyvm "$VM" --natdnshostresolver1 on
 }
 
 function createshares {
-VBoxManage sharedfolder add "$VM" --name ssh --hostpath $PWD/ssh
-VBoxManage sharedfolder add "$VM" --name config --hostpath $PWD/vmshare
-VBoxManage sharedfolder add "$VM" --name home --hostpath ~/
+mkdir -p $INSTALL_PATH/ssh/mersdk
+VBoxManage sharedfolder add "$VM" --name ssh --hostpath $INSTALL_PATH/ssh
+mkdir -p $INSTALL_PATH/vmshare/ssh/private_keys/engine
+MYCWD=$PWD
+cd $INSTALL_PATH/vmshare/ssh/private_keys/engine
+ssh-keygen -t rsa -N "" -f mersdk
+cp mersdk.pub $INSTALL_PATH/ssh/mersdk/authorized_keys
+cd $MYCWD
+VBoxManage sharedfolder add "$VM" --name config --hostpath $INSTALL_PATH/vmshare
+VBoxManage sharedfolder add "$VM" --name home --hostpath $INSTALL_PATH
+mkdir -p $INSTALL_PATH/targets
+VBoxManage sharedfolder add "$VM" --name targets --hostpath $INSTALL_PATH/targets
 }
 
+function startvm {
+VBoxManage startvm "$VM"
+}
+
+
+function installtargets {
+for targetname in $(ls *.tar.bz2)
+do
+	cp $targetname $INSTALL_PATH
+done
+}
 
 # check that VBox is 4.3 or newer - affects the sataport count.
 VBOX_VERSION=$(virtualbox --help | grep "VirtualBox Manager" | cut -d" " -f5 | cut -d"." -f1,2)
@@ -29,6 +51,10 @@ if [ $(echo "$VBOX_VERSION >= $VBOX_TOCHECK" | bc) -eq 1 ];then
 else
 	 SATACOMMAND="--sataportcount"
 fi
+
+INSTALL_PATH=$PWD/mersdk
+rm -rf $INSTALL_PATH
+mkdir $INSTALL_PATH
 
 # check if we even have files
 VDIFILE=$(find . -iname "*.vdi")
@@ -54,3 +80,5 @@ echo "Create new $VM"
 
 createvm
 createshares
+startvm
+installtargets
