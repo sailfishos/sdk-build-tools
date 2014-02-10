@@ -53,4 +53,4 @@ fi
 echo "Create new $VM"
 
 createvm
-
+createshares
