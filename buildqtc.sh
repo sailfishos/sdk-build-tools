@@ -20,7 +20,7 @@ export PATH=$QTDIR/bin:$PATH
 $QTDIR/bin/qmake ~/QtCreatorSrc/digia-qt-creator/qtcreator.pro -r -after "DEFINES+=REVISION=jolla IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$VARIANT" QTC_PREFIX=
 
 if [ "$3" == "full" ];then
-  make -j$(cat /proc/cpuinfo | grep processor | wc -l)
+  make -j$(getconf _NPROCESSORS_ONLN)
   make install
   make deployqt
   make bindist_installer

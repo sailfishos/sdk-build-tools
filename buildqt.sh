@@ -15,5 +15,5 @@ mkdir -p $1
 cd $1
 ~/QtSrc/qt/configure -release -no-scripttools -qt-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -confirm-license -nomake examples -nomake demos -prefix $PWD -DENABLE_VIDEO=0 -gtkstyle
 
-make -j$(cat /proc/cpuinfo | grep processor | wc -l)
+make -j$(getconf _NPROCESSORS_ONLN)
 make install
