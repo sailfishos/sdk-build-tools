@@ -1,5 +1,4 @@
 build-essential
-libx11-dev
 libgtk2.0-dev
 chrpath
 p7zip-full
