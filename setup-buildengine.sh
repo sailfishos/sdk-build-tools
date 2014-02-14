@@ -9,38 +9,39 @@
 # for tracing: set -x
 
 function createVM {
-VBoxManage createvm --name "$VM" --ostype Linux26 --register
-VBoxManage modifyvm "$VM" --memory 1024 --vram 128 --accelerate3d off
-VBoxManage storagectl "$VM" --name "SATA" --add sata --controller IntelAHCI $SATACOMMAND 1
-VBoxManage storageattach "$VM" --storagectl SATA --port 0 --type hdd --mtype normal --medium $VDI
-VBoxManage modifyvm "$VM" --nic1 nat --nictype1 virtio
-VBoxManage modifyvm "$VM" --nic2 intnet --intnet2 sailfishsdk --nictype2 virtio --macaddress2 08005A11F155
-VBoxManage modifyvm "$VM" --bioslogodisplaytime 1
-VBoxManage modifyvm "$VM" --natpf1 "guestssh,tcp,127.0.0.1,${SSH_PORT},,22" 
-VBoxManage modifyvm "$VM" --natpf1 "guestwww,tcp,127.0.0.1,${HTTP_PORT},,9292"
-VBoxManage modifyvm "$VM" --natdnshostresolver1 on
+    VBoxManage createvm --basefolder=$VM_BASEFOLDER --name "$VM" --ostype Linux26 --register
+    VBoxManage modifyvm "$VM" --memory 1024 --vram 128 --accelerate3d off
+    VBoxManage storagectl "$VM" --name "SATA" --add sata --controller IntelAHCI $SATACOMMAND 1
+    VBoxManage storageattach "$VM" --storagectl SATA --port 0 --type hdd --mtype normal --medium $VDI
+    VBoxManage modifyvm "$VM" --nic1 nat --nictype1 virtio
+    VBoxManage modifyvm "$VM" --nic2 intnet --intnet2 sailfishsdk --nictype2 virtio --macaddress2 08005A11F155
+    VBoxManage modifyvm "$VM" --bioslogodisplaytime 1
+    VBoxManage modifyvm "$VM" --natpf1 "guestssh,tcp,127.0.0.1,${SSH_PORT},,22" 
+    VBoxManage modifyvm "$VM" --natpf1 "guestwww,tcp,127.0.0.1,${HTTP_PORT},,9292"
+    VBoxManage modifyvm "$VM" --natdnshostresolver1 on
 }
 
 function createShares {
 # put 'ssh' and 'vmshare' into $SSHCONFIG_PATH
-mkdir -p $SSHCONFIG_PATH/ssh/mersdk
-VBoxManage sharedfolder add "$VM" --name ssh --hostpath $SSHCONFIG_PATH/ssh
-mkdir -p $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine
-MYCWD=$PWD
-cd $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine
-ssh-keygen -t rsa -N "" -f mersdk
-cp mersdk.pub $SSHCONFIG_PATH/ssh/mersdk/authorized_keys
-cd $MYCWD
-VBoxManage sharedfolder add "$VM" --name config --hostpath $SSHCONFIG_PATH/vmshare
+    mkdir -p $SSHCONFIG_PATH/ssh/mersdk
+    VBoxManage sharedfolder add "$VM" --name ssh --hostpath $SSHCONFIG_PATH/ssh
+
+    mkdir -p $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine
+    pushd $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine
+    ssh-keygen -t rsa -N "" -f mersdk
+    cp mersdk.pub $SSHCONFIG_PATH/ssh/mersdk/authorized_keys
+    popd
+
+    VBoxManage sharedfolder add "$VM" --name config --hostpath $SSHCONFIG_PATH/vmshare
 
 # and then 'targets' and 'home' for $INSTALL_PATH
-mkdir -p $INSTALL_PATH/targets
-VBoxManage sharedfolder add "$VM" --name targets --hostpath $INSTALL_PATH/targets
-VBoxManage sharedfolder add "$VM" --name home --hostpath $INSTALL_PATH
+    mkdir -p $INSTALL_PATH/targets
+    VBoxManage sharedfolder add "$VM" --name targets --hostpath $INSTALL_PATH/targets
+    VBoxManage sharedfolder add "$VM" --name home --hostpath $INSTALL_PATH
 }
 
 function startVM {
-VBoxManage startvm "$VM"
+    VBoxManage startvm "$VM"
 }
 
 
@@ -77,31 +78,35 @@ function installTarget {
 
 function checkVBox {
 # check that VBox is 4.3 or newer - affects the sataport count.
-VBOX_TOCHECK="4.3"
-echo "Using VirtualBox v$VBOX_VERSION"
-if [ $(echo "$VBOX_VERSION >= $VBOX_TOCHECK" | bc) -eq 1 ];then
-    SATACOMMAND="--portcount"
-else
-    SATACOMMAND="--sataportcount"
-fi
+    VBOX_TOCHECK="4.3"
+    echo "Using VirtualBox v$VBOX_VERSION"
+    if [ $(echo "$VBOX_VERSION >= $VBOX_TOCHECK" | bc) -eq 1 ];then
+	SATACOMMAND="--portcount"
+    else
+	SATACOMMAND="--sataportcount"
+    fi
 }
 
 function initPaths {
-INSTALL_PATH=$PWD/mersdk
-mkdir -p $INSTALL_PATH
-rm -rf $INSTALL_PATH/*
-SSHCONFIG_PATH=$PWD/sshconfig
-mkdir -p $SSHCONFIG_PATH
-rm -rf $SSHCONFIG_PATH/*
+    INSTALL_PATH=$PWD/mersdk
+    rm -rf $INSTALL_PATH
+    mkdir -p $INSTALL_PATH
+
+    SSHCONFIG_PATH=$PWD/sshconfig
+    rm -rf $SSHCONFIG_PATH
+    mkdir -p $SSHCONFIG_PATH
+
+    VM_BASEFOLDER=$PWD/basefolder
+    rm -rf $VM_BASEFOLDER
+    mkdir -p $VM_BASEFOLDER
 }
 
 function checkIfVMexists {
-if [ "$(VBoxManage list vms 2>&1 | grep \"$VM\")" != "" ];then
-	echo "$VM already exists"
+    if [ "$(VBoxManage list vms 2>&1 | grep \"$VM\")" != "" ];then
 	VBoxManage unregistervm "$VM" --delete
 	echo "Sleeping 5 seconds to let the VM unregister"
 	sleep 5
-fi
+    fi
 }
 
 function checkForVDI {
@@ -112,20 +117,20 @@ function checkForVDI {
 }
 
 function packVM {
-echo "Creating 7z package"
+    echo "Creating 7z package"
 # Shut down the VM so it won't interfere (make sure it's down). This
 # will probably fail because the shutdown has already done its job, so
 # ignore any error output.
-VBoxManage controlvm "$VM" poweroff 2>/dev/null
+    VBoxManage controlvm "$VM" poweroff 2>/dev/null
 # remove target archive files
-rm -f $INSTALL_PATH/*.tar.bz2
+    rm -f $INSTALL_PATH/*.tar.bz2
 # remove stuff that is not meant for the target
-rm -rf $INSTALL_PATH/.bash_history
+    rm -rf $INSTALL_PATH/.bash_history
 # copy the used VDI file:
-echo "Hard linking $PWD/$VDI => $INSTALL_PATH/mer.vdi"
-ln -P $PWD/$VDI $INSTALL_PATH/mer.vdi
+    echo "Hard linking $PWD/$VDI => $INSTALL_PATH/mer.vdi"
+    ln -P $PWD/$VDI $INSTALL_PATH/mer.vdi
 # and 7z the mersdk with ultra compression
-7z a -mx=$OPT_COMPRESSION mersdk.7z $INSTALL_PATH/
+    7z a -mx=$OPT_COMPRESSION mersdk.7z $INSTALL_PATH/
 }
 
 function checkForRunningVms
@@ -144,10 +149,10 @@ usage() {
 Create mersdk.7z
 
 Usage:
-   $0 [OPTION] [VM_NAME]
+   $0 -f <vdi> [OPTION] [VM_NAME]
 
 Options:
-   -f | --vdi-file <vdi>    use this vdi file
+   -f | --vdi-file <vdi>    use this vdi file [required]
    -c | --compression <0-9> compression level of 7z [9]
    -u | --unregister        unregister the created VM at the end of run
    -h | --help              this help
@@ -207,7 +212,11 @@ checkForRunningVms
 if [[ -n $OPT_VDI ]]; then
     VDIFILE=$OPT_VDI
 else
-    VDIFILE=$(find . -iname "*.vdi" | head -1)
+    # Always require a given vdi file
+    # VDIFILE=$(find . -iname "*.vdi" | head -1)
+
+    echo "VDI file option is required (-f filename.vdi)"
+    exit 1
 fi
 
 # check if we want to do 'MerSDK.build' or something else.
@@ -245,7 +254,7 @@ createShares
 startVM
 
 # then we install targets to the VDI:
-for targetname in "SailfishOS-i486-x86" "SailfishOS-armv7hl"
+for targetname in "SailfishOS-i486" "SailfishOS-armv7hl"
 do
     installTarget $targetname
 done
