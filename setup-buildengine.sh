@@ -77,7 +77,6 @@ function installTarget {
 
 function checkVBox {
 # check that VBox is 4.3 or newer - affects the sataport count.
-VBOX_VERSION=$(VBoxManage --version | cut -f -2 -d '.')
 VBOX_TOCHECK="4.3"
 echo "Using VirtualBox v$VBOX_VERSION"
 if [ $(echo "$VBOX_VERSION >= $VBOX_TOCHECK" | bc) -eq 1 ];then
@@ -127,6 +126,17 @@ echo "Hard linking $PWD/$VDI => $INSTALL_PATH/mer.vdi"
 ln -P $PWD/$VDI $INSTALL_PATH/mer.vdi
 # and 7z the mersdk with ultra compression
 7z a -mx=$OPT_COMPRESSION mersdk.7z $INSTALL_PATH/
+}
+
+function checkForRunningVms
+{
+    local running=$(VBoxManage list runningvms 2>/dev/null)
+
+    if [[ -n $running ]]; then
+	echo "These virtual machines are running, please stop them before continuing."
+	echo $running
+	exit 1
+    fi
 }
 
 usage() {
@@ -184,10 +194,20 @@ while [[ ${1:-} ]]; do
     esac
 done
 
+# check if we have VBoxManage
+VBOX_VERSION=$(VBoxManage --version 2>/dev/null | cut -f -2 -d '.')
+if [[ -z $VBOX_VERSION ]]; then
+    echo "VBoxManage not found".
+    exit 1
+fi
+
+# check for running vms
+checkForRunningVms
+
 if [[ -n $OPT_VDI ]]; then
     VDIFILE=$OPT_VDI
 else
-    VDIFILE=$(find . -iname "*.vdi")
+    VDIFILE=$(find . -iname "*.vdi" | head -1)
 fi
 
 # check if we want to do 'MerSDK.build' or something else.
@@ -243,5 +263,4 @@ if [[ $OPT_UNREGISTER -eq 1 ]]; then
     echo "Unregistering $VM"
     VBoxManage unregistervm "$VM" --delete
 fi
-
 
