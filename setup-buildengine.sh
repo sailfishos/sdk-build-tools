@@ -67,7 +67,7 @@ function installTarget {
     cp $TARGET_FILENAME $INSTALL_PATH/
 
     echo "Creating target..."
-    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sdk-manage --target --install --jfdi \"$1\"  \"$TOOLCHAIN\" \"file:///home/mersdk/$TARGET_FILENAME\""
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sdk-manage --target --install --jfdi \"$1\"  \"$TOOLCHAIN\" \"file:///home/mersdk/share/$TARGET_FILENAME\""
 
     echo "Saving target dumps"
     ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sb2 -t $1 qmake -query" > $INSTALL_PATH/dumps/qmake.query.$1
@@ -100,6 +100,8 @@ function checkIfVMexists {
 if [ "$(VBoxManage list vms 2>&1 | grep \"$VM\")" != "" ];then
 	echo "$VM already exists"
 	VBoxManage unregistervm "$VM" --delete
+	echo "Sleeping 5 seconds to let the VM unregister"
+	sleep 5
 fi
 }
 
@@ -121,8 +123,8 @@ rm -f $INSTALL_PATH/*.tar.bz2
 # remove stuff that is not meant for the target
 rm -rf $INSTALL_PATH/.bash_history
 # copy the used VDI file:
-echo Copying $PWD/$VDI $INSTALL_PATH/mer.vdi
-cp $PWD/$VDI $INSTALL_PATH/mer.vdi
+echo "Hard linking $PWD/$VDI => $INSTALL_PATH/mer.vdi"
+ln -P $PWD/$VDI $INSTALL_PATH/mer.vdi
 # and 7z the mersdk with ultra compression
 7z a -mx=$OPT_COMPRESSION mersdk.7z $INSTALL_PATH/
 }
