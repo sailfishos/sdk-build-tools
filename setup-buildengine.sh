@@ -4,7 +4,7 @@
 # This is preliminary build script to install targets to Mer SDK VM and pack it ready
 # for SDK Installer's build.
 # (c) 2013 Jolla Ltd. Contact: Jarko Vihriälä <jarko.vihriala@jolla.com>
-# Licence: Jolla Proprietary until further notice.
+# License: Jolla Proprietary until further notice.
 #
 # for tracing: set -x
 
@@ -44,42 +44,46 @@ VBoxManage startvm "$VM"
 }
 
 
-function copyTargets {
-for targetfilename in $(ls *.tar.bz2)
-do
-	cp $targetfilename $INSTALL_PATH
-done
-}
-
 function installTarget {
-echo "Installing $1 to $VM"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "\
-	mkdir -p dumps"
-if [ "$(echo $1 | grep i486)" != "" ];then
+    # the dumps directory is created outside the VM
+    mkdir -p $INSTALL_PATH/dumps
+
+    echo "Installing $1 to $VM"
+    if [ "$(echo $1 | grep i486)" != "" ]; then
 	echo "This is i486 target"
 	TARGET_FILENAME="Jolla-latest-Sailfish_SDK_Target-i486.tar.bz2"
 	TOOLCHAIN="Mer-SB2-i486"
-else
+    else
 	TARGET_FILENAME="Jolla-latest-Sailfish_SDK_Target-armv7hl.tar.bz2"
 	TOOLCHAIN="Mer-SB2-armv7hl"
-fi
-	echo "We're waiting here to Mer VDI to come up.."
-	cp $TARGET_FILENAME $INSTALL_PATH/
-	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "\
-		sdk-manage --target --install --jfdi \"$1\"  \"$TOOLCHAIN\" \"file:///home/mersdk/$TARGET_FILENAME\""
-	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "\
-		sb2 -t $1 qmake -query > dumps/qmake.query.$1 && sb2 -t $1 gcc -dumpmachine > dumps/gcc.dumpmachine.$1"
+    fi
+
+    if [[ ! -f $TARGET_FILENAME ]]; then
+	echo "$TARGET_FILENAME does not exist!"
+	return
+    fi
+
+    echo "We're waiting here for Mer VDI to come up.."
+    cp $TARGET_FILENAME $INSTALL_PATH/
+
+    echo "Creating target..."
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sdk-manage --target --install --jfdi \"$1\"  \"$TOOLCHAIN\" \"file:///home/mersdk/$TARGET_FILENAME\""
+
+    echo "Saving target dumps"
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sb2 -t $1 qmake -query" > $INSTALL_PATH/dumps/qmake.query.$1
+
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sb2 -t $1 gcc -dumpmachine" > $INSTALL_PATH/dumps/gcc.dumpmachine.$1
 }
 
 function checkVBox {
 # check that VBox is 4.3 or newer - affects the sataport count.
-VBOX_VERSION=$(virtualbox --help | grep "VirtualBox Manager" | cut -d" " -f5 | cut -d"." -f1,2)
+VBOX_VERSION=$(VBoxManage --version | cut -f -2 -d '.')
 VBOX_TOCHECK="4.3"
+echo "Using VirtualBox v$VBOX_VERSION"
 if [ $(echo "$VBOX_VERSION >= $VBOX_TOCHECK" | bc) -eq 1 ];then
-	echo "VBox is fresh enough."
-	SATACOMMAND="--portcount"
+    SATACOMMAND="--portcount"
 else
-	 SATACOMMAND="--sataportcount"
+    SATACOMMAND="--sataportcount"
 fi
 }
 
@@ -100,36 +104,95 @@ fi
 }
 
 function checkForVDI {
-if [ "$VDIFILE" == "" ];then
-	echo "No VDI files found."
-	exit
-fi
+    if [[ ! -f "$VDI" ]];then
+	echo "VDI file \"$VDI\" does not exist."
+	exit 1
+    fi
 }
 
 function packVM {
-# Shut down the VM so it won't interfere.
-VBoxManage controlvm "$VM" poweroff
+echo "Creating 7z package"
+# Shut down the VM so it won't interfere (make sure it's down). This
+# will probably fail because the shutdown has already done its job, so
+# ignore any error output.
+VBoxManage controlvm "$VM" poweroff 2>/dev/null
 # remove target archive files
 rm -f $INSTALL_PATH/*.tar.bz2
 # remove stuff that is not meant for the target
 rm -rf $INSTALL_PATH/.bash_history
 # copy the used VDI file:
+echo Copying $PWD/$VDI $INSTALL_PATH/mer.vdi
 cp $PWD/$VDI $INSTALL_PATH/mer.vdi
-# and 7z the mersdk!
-7z a mersdk.7z $INSTALL_PATH/
+# and 7z the mersdk with ultra compression
+7z a -mx=$OPT_COMPRESSION mersdk.7z $INSTALL_PATH/
+}
+
+usage() {
+    cat <<EOF
+Create mersdk.7z
+
+Usage:
+   $0 [OPTION] [VM_NAME]
+
+Options:
+   -f | --vdi-file <vdi>    use this vdi file
+   -c | --compression <0-9> compression level of 7z [9]
+   -u | --unregister        unregister the created VM at the end of run
+   -h | --help              this help
+
+EOF
+
+    # exit if any argument is given
+    [[ -n "$1" ]] && exit 1
 }
 
 # BASIC EXECUTION STARTS HERE:
-# check if we even have files
-VDIFILE=$(find . -iname "*.vdi")
-checkForVDI
 
-# check if we want to do 'MerSDK' or something else.
-if [ "$1" == "" ];then
-	echo "no params given, going with defaults"
-	VM=MerSDK
+# ultra compression by default
+OPT_COMPRESSION=9
+OPT_UNREGISTER=0
+OPT_VM=
+OPT_VDI=
+
+# handle commandline options
+while [[ ${1:-} ]]; do
+    case "$1" in
+	-c | --compression ) shift
+	    OPT_COMPRESSION=$1; shift
+	    if [[ $OPT_COMPRESSION != [0123456789] ]]; then
+		usage quit
+	    fi
+	    ;;
+	-f | --vdi-file ) shift
+	    OPT_VDI=$1; shift
+	    ;;
+	-h | --help ) shift
+	    usage quit
+	    ;;
+	-u | --unregister ) shift
+	    OPT_UNREGISTER=1
+	    ;;
+	-* )
+	    usage quit
+	    ;;
+	* )
+	    OPT_VM=$1
+	    shift
+	    ;;
+    esac
+done
+
+if [[ -n $OPT_VDI ]]; then
+    VDIFILE=$OPT_VDI
 else
-	VM=$1
+    VDIFILE=$(find . -iname "*.vdi")
+fi
+
+# check if we want to do 'MerSDK.build' or something else.
+if [[ -z $OPT_VM ]];then
+    VM=MerSDK.build
+else
+    VM=$OPT_VM
 fi
 
 # set some global variables 
@@ -137,12 +200,19 @@ SSH_PORT=2222
 HTTP_PORT=8080
 
 # get our VDI's formatted filename.
-VDI=$(basename $VDIFILE)
+if [[ -n $VDIFILE ]]; then
+    VDI=$(basename $VDIFILE)
+fi
+
+# check if we even have files
+checkForVDI
+
+echo "Creating $VM, compression=$OPT_COMPRESSION, vdi=$VDI"
 
 # clear our workarea:
 initPaths
-# first do some preliminary checks
 
+# first do some preliminary checks
 checkVBox
 checkIfVMexists
 
@@ -158,12 +228,18 @@ do
     installTarget $targetname
 done
 
-# finally wrap it all up into 7z file for installer:
+# shut the VM down cleanly so that it has time to flush its disk
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sdk-shutdown"
+echo "Giving VM 5 seconds to really shut down"
+sleep 5
+
+# wrap it all up into 7z file for installer:
 packVM
 
-
-
-
-
+if [[ $OPT_UNREGISTER -eq 1 ]]; then
+# finally delete the virtual machine we used
+    echo "Unregistering $VM"
+    VBoxManage unregistervm "$VM" --delete
+fi
 
 
