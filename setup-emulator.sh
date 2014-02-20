@@ -2,7 +2,7 @@
 
 #
 # This is preliminary build script used to setup emulator for SailfishOS SDK
-# (c) 2014444lla Ltd. Contact: Jarko Vihriälä <jarko.vihriala@jolla.com>
+# (c) 2014 Jolla Ltd. Contact: Jarko Vihriälä <jarko.vihriala@jolla.com>
 # License: Jolla Proprietary until further notice.
 #
 # for tracing: set -x
