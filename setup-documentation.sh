@@ -46,7 +46,6 @@ while [[ ${1:-} ]]; do
 	    usage quit
 	    ;;
 	* )
-	    OPT_VM=$1
 	    shift
 	    ;;
     esac
