@@ -7,7 +7,6 @@
 #
 # for tracing: set -x
 
-
 usage() {
     cat <<EOF
 Create documentation.7z
@@ -58,4 +57,10 @@ do
 	echo "Hard linking $PWD/$NAME => $INSTALL_PATH/$NAME"
 	ln -P $PWD/$NAME $INSTALL_PATH/$NAME
 done
-7z a -mx=$OPT_COMPRESSION documentation.7z $INSTALL_PATH/
+
+ZIP_STATUS=$(7z a -mx=$OPT_COMPRESSION documentation.7z $INSTALL_PATH/)
+
+
+
+
+
