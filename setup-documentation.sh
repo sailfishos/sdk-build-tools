@@ -55,7 +55,7 @@ mkdir -p $INSTALL_PATH
 for NAME in $(ls *.qch);
 do
 	echo "Hard linking $PWD/$NAME => $INSTALL_PATH/$NAME"
-	ln -P $PWD/$NAME $INSTALL_PATH/$NAME
+	ln -f $PWD/$NAME $INSTALL_PATH/$NAME
 done
 
 ZIP_STATUS=$(7z a -mx=$OPT_COMPRESSION documentation.7z $INSTALL_PATH/)
