@@ -13,10 +13,15 @@ if [ "$4" == "" ];then
   VARIANT=SailfishAlpha4
 fi
 
+if [[ $(uname -m) == "x86_64" ]]; then
+	export QMAKESPEC=linux-g++-64
+else
+	export QMAKESPEC=linux-g++-32
+fi
+
 QTC_SRC=$1
 export INSTALL_ROOT=$2
 export QTDIR=$3
-export QMAKESPEC=linux-g++-64
 export QT_PRIVATE_HEADERS=$QTDIR/include
 export PATH=$QTDIR/bin:$PATH
 
