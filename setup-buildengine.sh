@@ -5,8 +5,11 @@
 # for SDK Installer's build.
 # (c) 2013 Jolla Ltd. Contact: Jarko Vihriälä <jarko.vihriala@jolla.com>
 # License: Jolla Proprietary until further notice.
-#
-# for tracing: set -x
+
+function fatal() {
+    echo "FAIL:" "$@"
+    exit 1
+}
 
 function createVM {
     VBoxManage createvm --basefolder=$VM_BASEFOLDER --name "$VM" --ostype Linux26 --register
@@ -52,16 +55,15 @@ function installTarget {
     echo "Installing $1 to $VM"
     if [ "$(echo $1 | grep i486)" != "" ]; then
 	echo "This is i486 target"
-	TARGET_FILENAME="Jolla-latest-Sailfish_SDK_Target-i486.tar.bz2"
+	TARGET_FILENAME=$OPT_TARGET_I486
 	TOOLCHAIN="Mer-SB2-i486"
     else
-	TARGET_FILENAME="Jolla-latest-Sailfish_SDK_Target-armv7hl.tar.bz2"
+	TARGET_FILENAME=$OPT_TARGET_ARM
 	TOOLCHAIN="Mer-SB2-armv7hl"
     fi
 
     if [[ ! -f $TARGET_FILENAME ]]; then
-	echo "$TARGET_FILENAME does not exist!"
-	return
+	fatal "$TARGET_FILENAME does not exist!"
     fi
 
     echo "We're waiting here for Mer VDI to come up.."
@@ -109,10 +111,17 @@ function checkIfVMexists {
     fi
 }
 
-function checkForVDI {
+function checkForRequiredFiles {
     if [[ ! -f "$VDI" ]];then
-	echo "VDI file \"$VDI\" does not exist."
-	exit 1
+	fatal "VDI file \"$VDI\" does not exist."
+    fi
+
+    if [[ ! -f "$OPT_TARGET_ARM" ]]; then
+	fatal "Target file $OPT_TARGET_ARM does not exist."
+    fi
+
+    if [[ ! -f "$OPT_TARGET_I486" ]]; then
+	fatal "Target file $OPT_TARGET_I486 does not exist."
     fi
 }
 
@@ -152,10 +161,12 @@ Usage:
    $0 -f <vdi> [OPTION] [VM_NAME]
 
 Options:
-   -f | --vdi-file <vdi>    use this vdi file [required]
-   -c | --compression <0-9> compression level of 7z [9]
-   -u | --unregister        unregister the created VM at the end of run
-   -h | --help              this help
+   -f  | --vdi-file <vdi>     use this vdi file [required]
+   -c  | --compression <0-9>  compression level of 7z [9]
+   -ta | --target-arm <file>  arm target rootstrap [$OPT_TARGET_ARM]
+   -ti | --target-i486 <file> i486 target rootstrap [$OPT_TARGET_I486]
+   -u  | --unregister         unregister the created VM at the end of run
+   -h  | --help               this help
 
 EOF
 
@@ -168,6 +179,8 @@ EOF
 # ultra compression by default
 OPT_COMPRESSION=9
 OPT_UNREGISTER=0
+OPT_TARGET_ARM="Jolla-latest-Sailfish_SDK_Target-armv7hl.tar.bz2"
+OPT_TARGET_I486="Jolla-latest-Sailfish_SDK_Target-i486.tar.bz2"
 OPT_VM=
 OPT_VDI=
 
@@ -182,6 +195,12 @@ while [[ ${1:-} ]]; do
 	    ;;
 	-f | --vdi-file ) shift
 	    OPT_VDI=$1; shift
+	    ;;
+	-ta | --target-arm ) shift
+	    OPT_TARGET_ARM=$1; shift
+	    ;;
+	-ti | --target-i486 ) shift
+	    OPT_TARGET_I486=$1; shift
 	    ;;
 	-h | --help ) shift
 	    usage quit
@@ -202,8 +221,7 @@ done
 # check if we have VBoxManage
 VBOX_VERSION=$(VBoxManage --version 2>/dev/null | cut -f -2 -d '.')
 if [[ -z $VBOX_VERSION ]]; then
-    echo "VBoxManage not found".
-    exit 1
+    fatal "VBoxManage not found".
 fi
 
 # check for running vms
@@ -215,8 +233,7 @@ else
     # Always require a given vdi file
     # VDIFILE=$(find . -iname "*.vdi" | head -1)
 
-    echo "VDI file option is required (-f filename.vdi)"
-    exit 1
+    fatal "VDI file option is required (-f filename.vdi)"
 fi
 
 # check if we want to do 'MerSDK.build' or something else.
@@ -236,9 +253,14 @@ if [[ -n $VDIFILE ]]; then
 fi
 
 # check if we even have files
-checkForVDI
+checkForRequiredFiles
 
-echo "Creating $VM, compression=$OPT_COMPRESSION, vdi=$VDI"
+cat <<EOF
+Creating $VM, compression=$OPT_COMPRESSION
+ MerSDK VDI: $VDI
+ ARM target: $OPT_TARGET_ARM
+i486 target: $OPT_TARGET_I486
+EOF
 
 # clear our workarea:
 initPaths
