@@ -162,7 +162,7 @@ Usage:
 
 Options:
    -f  | --vdi-file <vdi>     use this vdi file [required]
-   -c  | --compression <0-9>  compression level of 7z [9]
+   -c  | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
    -ta | --target-arm <file>  arm target rootstrap [$OPT_TARGET_ARM]
    -ti | --target-i486 <file> i486 target rootstrap [$OPT_TARGET_I486]
    -u  | --unregister         unregister the created VM at the end of run

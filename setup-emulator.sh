@@ -24,7 +24,7 @@ Usage:
 
 Options:
    -f | --vdi-file <vdi>    use this vdi file [required]
-   -c | --compression <0-9> compression level of 7z [9]
+   -c | --compression <0-9> compression level of 7z [$OPT_COMPRESSION]
    -h | --help              this help
 
 EOF
@@ -34,6 +34,8 @@ EOF
 }
 
 
+# default values here
+OPT_COMPRESSION=9
 
 #
 # Execution starts here

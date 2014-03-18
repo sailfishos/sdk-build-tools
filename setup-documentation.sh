@@ -15,7 +15,7 @@ Usage:
    $0 [OPTION]
 
 Options:
-   -c | --compression <0-9> compression level of 7z [9]
+   -c | --compression <0-9> compression level of 7z [$OPT_COMPRESSION]
    -h | --help              this help
 
 EOF
@@ -25,6 +25,8 @@ EOF
 }
 
 
+# default values here
+OPT_COMPRESSION=9
 
 #
 # Execution starts here
@@ -55,12 +57,7 @@ mkdir -p $INSTALL_PATH
 for NAME in $(ls *.qch);
 do
 	echo "Hard linking $PWD/$NAME => $INSTALL_PATH/$NAME"
-	ln -f $PWD/$NAME $INSTALL_PATH/$NAME
+	ln -P $PWD/$NAME $INSTALL_PATH/$NAME
 done
 
-ZIP_STATUS=$(7z a -mx=$OPT_COMPRESSION documentation.7z $INSTALL_PATH/)
-
-
-
-
-
+7z a -mx=$OPT_COMPRESSION documentation.7z $INSTALL_PATH/
