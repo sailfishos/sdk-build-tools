@@ -44,7 +44,7 @@ function createShares {
 }
 
 function startVM {
-    VBoxManage startvm "$VM"
+    VBoxManage startvm --type headless "$VM"
 }
 
 
@@ -105,9 +105,8 @@ function initPaths {
 
 function checkIfVMexists {
     if [ "$(VBoxManage list vms 2>&1 | grep \"$VM\")" != "" ];then
-	VBoxManage unregistervm "$VM" --delete
-	echo "Sleeping 5 seconds to let the VM unregister"
-	sleep 5
+	echo "$VM already exists. Please remove it from VirtualBox before proceeding."
+	exit 1
     fi
 }
 
@@ -255,13 +254,6 @@ fi
 # check if we even have files
 checkForRequiredFiles
 
-cat <<EOF
-Creating $VM, compression=$OPT_COMPRESSION
- MerSDK VDI: $VDI
- ARM target: $OPT_TARGET_ARM
-i486 target: $OPT_TARGET_I486
-EOF
-
 # clear our workarea:
 initPaths
 
@@ -270,7 +262,13 @@ checkVBox
 checkIfVMexists
 
 # all go, let's do it:
-echo "Create new $VM"
+cat <<EOF
+Creating $VM, compression=$OPT_COMPRESSION
+ MerSDK VDI: $VDI
+ ARM target: $OPT_TARGET_ARM
+i486 target: $OPT_TARGET_I486
+EOF
+
 createVM
 createShares
 startVM
@@ -294,4 +292,3 @@ if [[ $OPT_UNREGISTER -eq 1 ]]; then
     echo "Unregistering $VM"
     VBoxManage unregistervm "$VM" --delete
 fi
-
