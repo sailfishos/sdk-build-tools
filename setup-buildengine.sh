@@ -281,8 +281,24 @@ done
 
 # shut the VM down cleanly so that it has time to flush its disk
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sdk-shutdown"
-echo "Giving VM 5 seconds to really shut down"
-sleep 5
+
+echo "Giving VM 10 seconds to really shut down ..."
+
+let wait=1
+while [[ $wait -lt 11 ]]; do
+    let wait++
+
+    if [[ $(VBoxManage list runningvms | grep -c $VM) -ne 0 ]]; then
+	echo "waiting ..."
+	sleep 1
+    else
+	break
+    fi
+
+    if [[ $wait -ge 11 ]]; then
+	echo "WARNING: $VM did not shut down cleanly!"
+    fi
+done
 
 # wrap it all up into 7z file for installer:
 packVM
