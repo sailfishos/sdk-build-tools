@@ -1,13 +1,18 @@
 #!/bin/bash
-
 #
-# This is preliminary build script to install targets to Mer SDK VM and pack it ready
-# for SDK Installer's build.
-# (c) 2013 Jolla Ltd. Contact: Jarko Vihriälä <jarko.vihriala@jolla.com>
-# License: Jolla Proprietary until further notice.
+# SDK build engine creation script
+#
+# Copyright (C) 2014 Jolla Oy
+#
 
-function fatal() {
-    echo "FAIL:" "$@"
+# some default values
+OPT_UPLOAD_HOST=10.0.0.20
+OPT_UPLOAD_USER=sdkinstaller
+OPT_UPLOAD_PATH=/var/www/sailfishos
+
+
+fatal() {
+    echo "FAIL: $@"
     exit 1
 }
 
@@ -154,17 +159,24 @@ function checkForRunningVms
 
 usage() {
     cat <<EOF
-Create mersdk.7z
+Create mersdk.7z an optionally upload it to a server.
 
 Usage:
    $0 -f <vdi> [OPTION] [VM_NAME]
 
 Options:
+   -u  | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
+                              the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
+                              the upload directory will be created if it is not there
+   -uh | --uhost <HOST>       override default upload host
+   -up | --upath <PATH>       override default upload path
+   -uu | --uuser <USER>       override default upload user
+   -y  | --non-interactive    answer yes to all questions presented by the script
    -f  | --vdi-file <vdi>     use this vdi file [required]
    -c  | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
    -ta | --target-arm <file>  arm target rootstrap [$OPT_TARGET_ARM]
    -ti | --target-i486 <file> i486 target rootstrap [$OPT_TARGET_I486]
-   -u  | --unregister         unregister the created VM at the end of run
+   -un | --unregister         unregister the created VM at the end of run
    -h  | --help               this help
 
 EOF
@@ -201,10 +213,29 @@ while [[ ${1:-} ]]; do
 	-ti | --target-i486 ) shift
 	    OPT_TARGET_I486=$1; shift
 	    ;;
+	-u | --upload ) shift
+	    OPT_UPLOAD=1
+	    OPT_UL_DIR=$1; shift
+	    if [[ -z $OPT_UL_DIR ]]; then
+		fatal "upload option requires a directory name"
+	    fi
+	    ;;
+	-uh | --uhost ) shift;
+	    OPT_UPLOAD_HOST=$1; shift
+	    ;;
+	-up | --upath ) shift;
+	    OPT_UPLOAD_PATH=$1; shift
+	    ;;
+	-uu | --uuser ) shift;
+	    OPT_UPLOAD_USER=$1; shift
+	    ;;
 	-h | --help ) shift
 	    usage quit
 	    ;;
-	-u | --unregister ) shift
+	-y | --non-interactive ) shift
+	    OPT_YES=1
+	    ;;
+	-un | --unregister ) shift
 	    OPT_UNREGISTER=1
 	    ;;
 	-* )
@@ -268,6 +299,29 @@ Creating $VM, compression=$OPT_COMPRESSION
  ARM target: $OPT_TARGET_ARM
 i486 target: $OPT_TARGET_I486
 EOF
+if [[ -n $OPT_UPLOAD ]]; then
+    echo " Upload build results as user [$OPT_UPLOAD_USER] to [$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR]"
+else
+    echo " Do NOT upload build results"
+fi
+
+# confirm
+if [[ -z $OPT_YES ]]; then
+    while true; do
+	read -p "Do you want to continue? (y/n) " answer
+	case $answer in
+	    [Yy]*)
+		break ;;
+	    [Nn]*)
+		echo "Ok, exiting"
+		exit 0
+		;;
+	    *)
+		echo "Please answer yes or no."
+		;;
+	esac
+    done
+fi
 
 createVM
 createShares
@@ -302,6 +356,14 @@ done
 
 # wrap it all up into 7z file for installer:
 packVM
+
+if [[ -n "$OPT_UPLOAD" ]]; then
+    echo "Uploading mersdk.7z"
+
+    # create upload dir
+    ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/
+    scp mersdk.7z $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/
+fi
 
 if [[ $OPT_UNREGISTER -eq 1 ]]; then
 # finally delete the virtual machine we used
