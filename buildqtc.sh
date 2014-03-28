@@ -22,7 +22,9 @@ else
 fi
 
 OPT_VARIANT="SailfishAlpha4"
-OPT_REVISION="Jolla-"
+
+# the default revision is the git hash of Qt Creator src directory
+OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD 2>/dev/null)
 
 fail() {
     echo "FAIL: $@"
@@ -122,9 +124,9 @@ if [[ ! -d $OPT_INSTALL_ROOT ]]; then
     mkdir -p $OPT_INSTALL_ROOT
 fi
 
-# add the git hash of Qt Creator sources to the revision string
-TMP_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD)
-[[ $? -eq 0 ]] && OPT_REVISION="$OPT_REVISION$TMP_REVISION"
+if [[ -z $OPT_REVISION ]]; then
+    OPT_REVISION="unknown"
+fi
 
 # summary
 cat <<EOF
@@ -172,7 +174,7 @@ build_unix() {
     export QT_PRIVATE_HEADERS=$QTDIR/include
     export PATH=$QTDIR/bin:$PATH
 
-    $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro -r -after "DEFINES+=REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
+    $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
 
     make -j$(getconf _NPROCESSORS_ONLN)
 
@@ -202,7 +204,7 @@ set QT_PRIVATE_HEADERS=%QTDIR%\install
 set PATH=%PATH%;C:\Program Files\7-Zip;%QTDIR%\bin;c:\invariant\bin;c:\Python27
 
 call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call %QTDIR%\bin\qmake $OPT_QTC_SRC\qtcreator.pro -r -after "DEFINES+=REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX= 
+call %QTDIR%\bin\qmake $OPT_QTC_SRC\qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX= 
 call jom
 call nmake install
 call nmake deployqt
