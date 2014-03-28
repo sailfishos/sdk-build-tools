@@ -2,6 +2,8 @@
 #
 # Builds Qt Creator and optionally uploads it to a server
 #
+# Copyright (C) 2014 Jolla Oy
+#
 
 UNAME_SYSTEM=$(uname -s)
 UNAME_ARCH=$(uname -m)
@@ -47,6 +49,7 @@ Options:
    -i   | --install <DIR>      Qt Creator install directory [$OPT_INSTALL_ROOT]
    -v   | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
    -r   | --revision <STRING>  Use <STRING> as the build revision [$OPT_REVISION]
+   -g   | --gdb                Build also gdb
    -d   | --docs               Build Qt Creator documentation
    -u   | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
                                the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
@@ -83,6 +86,9 @@ while [[ ${1:-} ]]; do
 	    ;;
 	-d | --docs ) shift
 	    OPT_DOCUMENTATION=1
+	    ;;
+	-g | --gdb ) shift
+	    OPT_GDB=1
 	    ;;
 	-u | --upload ) shift
 	    OPT_UPLOAD=1
@@ -144,10 +150,16 @@ else
     echo " 2) Do NOT build documentation"
 fi
 
-if [[ -n $OPT_UPLOAD ]]; then
-    echo " 3) Upload build result as user [$OPT_UPLOAD_USER] to [$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR]"
+if [[ -n $OPT_GDB ]]; then
+    echo " 3) Build GDB"
 else
-    echo " 3) Do NOT upload build result anywhere"
+    echo " 3) Do NOT build GDB"
+fi
+
+if [[ -n $OPT_UPLOAD ]]; then
+    echo " 4) Upload build result as user [$OPT_UPLOAD_USER] to [$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR]"
+else
+    echo " 4) Do NOT upload build result anywhere"
 fi
 
 # confirm
@@ -179,7 +191,7 @@ build_unix() {
     make -j$(getconf _NPROCESSORS_ONLN)
 
     rm -rf $OPT_INSTALL_ROOT/*
-    if [[ $UNAME_SYSTEM != "Darwin" ]]; then
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
 	make install
 	make deployqt
     fi
@@ -189,6 +201,22 @@ build_unix() {
     if [[ -n $OPT_DOCUMENTATION ]]; then
 	make docs
 	make install_docs
+    fi
+
+    if [[ -n $OPT_GDB ]]; then
+	mkdir -p build-gdb
+	pushd build-gdb
+
+	if [[ $UNAME_SYSTEM == "Linux" ]]; then
+	    GDB_MAKEFILE=Makefile.linux
+	else
+	    GDB_MAKEFILE=Makefile.osx
+	fi
+
+	make -f $OPT_QTC_SRC/dist/gdb/$GDB_MAKEFILE PATCHDIR=$OPT_QTC_SRC/dist/gdb/patches
+        # move the completed package to the parent dir
+	mv $SAILFISH_GDB_BASENAME*.7z ..
+	popd
     fi
 }
 
@@ -213,19 +241,42 @@ EOF
 
     # execute the bat
     cmd //c build-windows.bat
+
+    if [[ -n $OPT_GDB ]]; then
+	mkdir -p build-gdb
+	pushd build-gdb
+
+	GDB_MAKEFILE=Makefile.mingw
+
+	# dirty hax to build gdb in another mingw session, which has
+	# the compiler available
+	#
+	# NOTE: this also requires that qtc sources are in
+	# /c/src/sailfish-qtcreator
+
+	cat <<EOF > build-gdb.bat
+@echo off
+call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f /c/src/sailfish-qtcreator/dist/gdb/Makefile.mingw PATCHDIR=/c/src/sailfish-qtcreator/dist/gdb/patches"
+EOF
+	cmd //c build-gdb.bat
+        # move the completed package to the parent dir
+	mv $SAILFISH_GDB_BASENAME*.7z ..
+	popd
+    fi
 }
 
 # if any step below fails, exit
 set -e
+
+# build result files
+SAILFISH_QTC_BASENAME="sailfish-qt-creator-"
+SAILFISH_GDB_BASENAME="sailfish-gdb-"
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     build_unix
 else
     build_windows
 fi
-
-# rename the build result
-SAILFISH_QTC_BASENAME="sailfish-qt-creator-"
 
 if [[ $UNAME_SYSTEM == "Linux" ]]; then
     if [[ $UNAME_ARCH == "x86_64" ]]; then
@@ -248,4 +299,7 @@ if  [[ -n "$OPT_UPLOAD" ]]; then
     # create upload dir
     ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/$BUILD_ARCH
     scp $SAILFISH_QTC_BASENAME$BUILD_ARCH.7z $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$BUILD_ARCH/
+    if [[ -n $OPT_GDB ]]; then
+	scp $SAILFISH_GDB_BASENAME*.7z $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$BUILD_ARCH/
+    fi
 fi
