@@ -22,7 +22,7 @@ else
 fi
 
 OPT_VARIANT="SailfishAlpha4"
-OPT_REVISION="Jolla"
+OPT_REVISION="Jolla-"
 
 fail() {
     echo "FAIL: $@"
@@ -122,10 +122,14 @@ if [[ ! -d $OPT_INSTALL_ROOT ]]; then
     mkdir -p $OPT_INSTALL_ROOT
 fi
 
+# add the git hash of Qt Creator sources to the revision string
+TMP_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD)
+[[ $? -eq 0 ]] && OPT_REVISION="$OPT_REVISION$TMP_REVISION"
+
 # summary
 cat <<EOF
 Summary of chosen actions:
- 1) QT Creator variant [$OPT_VARIANT]
+ 1) QT Creator variant [$OPT_VARIANT] revision [$OPT_REVISION]
     - Use [$PWD] as the build directory
     - Install build results to [$OPT_INSTALL_ROOT]
     - Qt Creator source directory [$OPT_QTC_SRC]
