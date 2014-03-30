@@ -229,9 +229,9 @@ set INSTALL_ROOT=$OPT_INSTALL_ROOT
 set QTDIR=$OPT_QTDIR
 set QMAKESPEC=win32-msvc2010
 set QT_PRIVATE_HEADERS=%QTDIR%\install
-set PATH=%PATH%;C:\Program Files\7-Zip;%QTDIR%\bin;c:\invariant\bin;c:\Python27
+set PATH=%PATH%;%programfiles%\7-Zip;%QTDIR%\bin;c:\invariant\bin;c:\Python27
 
-call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
+call "%programfiles%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
 call %QTDIR%\bin\qmake $OPT_QTC_SRC\qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX= 
 call jom
 call nmake install

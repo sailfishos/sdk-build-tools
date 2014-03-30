@@ -163,7 +163,7 @@ set QTDIR=$OPT_QTDIR
 set QMAKESPEC=win32-msvc2010
 set PATH=%PATH%;c:\invariant\bin
 
-call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
+call "%programfiles%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
 call %QTDIR%\bin\qmake -r $OPT_IFW_SRC\installerfw.pro
 call jom
 EOF

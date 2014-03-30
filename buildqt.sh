@@ -40,7 +40,7 @@ build_static_qt_windows() {
 
 PATH=%PATH%;c:\invariant\bin
 
-call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
+call "%programfiles%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
 call "C:\invariant\qt\configure.exe" -release -platform win32-msvc2010 -qt-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -confirm-license -nomake examples -nomake demos -no-qt3support -no-webkit -no-xmlpatterns -no-dbus -no-declarative -no-phonon -no-opengl -static -prefix
  
 call jom
@@ -65,7 +65,7 @@ build_dynamic_qt_windows() {
 
 PATH=%PATH%;c:\invariant\bin
 
-call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
+call "%programfiles%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
 call "C:\invariant\qt\configure.exe" -release -platform win32-msvc2010 -no-scripttools -qt-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -confirm-license -nomake examples -nomake demos -developer-build -prefix
  
 call jom
