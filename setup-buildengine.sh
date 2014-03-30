@@ -141,7 +141,7 @@ function packVM {
     rm -rf $INSTALL_PATH/.bash_history
 # copy the used VDI file:
     echo "Hard linking $PWD/$VDI => $INSTALL_PATH/mer.vdi"
-    ln -P $PWD/$VDI $INSTALL_PATH/mer.vdi
+    ln $PWD/$VDI $INSTALL_PATH/mer.vdi
 # and 7z the mersdk with ultra compression
     7z a -mx=$OPT_COMPRESSION mersdk.7z $INSTALL_PATH/
 }

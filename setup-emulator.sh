@@ -138,7 +138,7 @@ fi
 INSTALL_PATH=$PWD/emulator
 mkdir -p $INSTALL_PATH
 echo "Hard linking $PWD/$VDI => $INSTALL_PATH/sailfishos.vdi"
-ln -P $PWD/$VDI $INSTALL_PATH/sailfishos.vdi
+ln $PWD/$VDI $INSTALL_PATH/sailfishos.vdi
 7z a -mx=$OPT_COMPRESSION emulator.7z $INSTALL_PATH/
 
 if [[ -n "$OPT_UPLOAD" ]]; then

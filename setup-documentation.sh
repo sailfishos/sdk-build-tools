@@ -128,7 +128,7 @@ rm -f $QTDOC_NAME $SAILDOC_NAME
 # create Qt documentation package
 for NAME in $(ls $OPT_DOCDIR/q*.qch); do
     newname=$(basename $NAME)
-    ln -P $NAME $INSTALL_PATH/${newname%.qch}$OPT_DOCVERSION.qch
+    ln $NAME $INSTALL_PATH/${newname%.qch}$OPT_DOCVERSION.qch
 done
 
 7z a -mx=$OPT_COMPRESSION $QTDOC_NAME $INSTALL_PATH/
@@ -137,7 +137,7 @@ rm -f $INSTALL_PATH/*
 # create Sailfish documentation package
 for NAME in $(ls $OPT_DOCDIR/sail*.qch); do
     newname=$(basename $NAME)
-    ln -P $NAME $INSTALL_PATH/${newname%.qch}$OPT_DOCVERSION.qch
+    ln $NAME $INSTALL_PATH/${newname%.qch}$OPT_DOCVERSION.qch
 done
 
 7z a -mx=$OPT_COMPRESSION $SAILDOC_NAME $INSTALL_PATH/
