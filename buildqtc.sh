@@ -278,6 +278,21 @@ EOF
 
 build_windows_qtc() {
     if [[ -z $OPT_GDB_ONLY ]]; then
+
+	# fetch the binary artifacts if they can be found
+	#
+	# https://git.gitorious.org/qt-creator/binary-artifacts.git
+	#
+	local binary_artifacts="qtc-win32-binary-artifacts.7z"
+	echo "Downloading binary artifacts ..."
+	# Allow error code from curl
+	set +e
+	curl -s -f -o $binary_artifacts http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/$binary_artifacts
+	if [[ $? -ne 0 ]]; then
+	    echo "NOTE! Downloading binary artifacts failed [ignoring]"
+	fi
+	# no more errors allowed
+	set -e
         # create the build script for windows
 	cat <<EOF > build-windows.bat
 @echo off
@@ -298,6 +313,12 @@ call nmake install
 call nmake deployqt
 call nmake bindist_installer
 EOF
+
+	rm -rf $OPT_INSTALL_ROOT/*
+
+	if [[ -f $binary_artifacts ]]; then
+	    7z x -o$OPT_INSTALL_ROOT $binary_artifacts
+	fi
 
         # execute the bat
 	cmd //c build-windows.bat
