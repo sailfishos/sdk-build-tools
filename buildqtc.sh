@@ -244,6 +244,10 @@ build_unix_qtc() {
 	# name the file to be uploaded
 	ln -s qt-creator-*-installer-archive.7z $SAILFISH_QTC_BASENAME$(build_arch).7z
 
+	# remove the template project from the archive. it will be
+	# installed again by the installer.
+	7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
+
 	if [[ -n $OPT_DOCUMENTATION ]]; then
 	    make docs
 	    make install_docs
@@ -325,6 +329,10 @@ EOF
 
 	# name the file to be uploaded
 	ln -s qt-creator-*-installer-archive.7z $SAILFISH_QTC_BASENAME$(build_arch).7z
+
+	# remove the template project from the archive. it will be
+	# installed again by the installer.
+	7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
     fi
 }
 
