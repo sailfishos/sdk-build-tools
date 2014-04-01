@@ -25,9 +25,6 @@ fi
 
 OPT_VARIANT="SailfishAlpha4"
 
-# the default revision is the git hash of Qt Creator src directory
-OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD 2>/dev/null)
-
 fail() {
     echo "FAIL: $@"
     exit 1
@@ -48,7 +45,7 @@ Options:
    -qt  | --qt-dir <DIR>       Qt (install) directory [$OPT_QTDIR]
    -i   | --install <DIR>      Qt Creator install directory [$OPT_INSTALL_ROOT]
    -v   | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
-   -r   | --revision <STRING>  Use <STRING> as the build revision [$OPT_REVISION]
+   -r   | --revision <STRING>  Use <STRING> as the build revision [git sha]
    -g   | --gdb                Build also gdb
    -go  | --gdb-only           Build only gdb
    -d   | --docs               Build Qt Creator documentation
@@ -134,6 +131,9 @@ fi
 if [[ ! -d $OPT_INSTALL_ROOT ]]; then
     mkdir -p $OPT_INSTALL_ROOT
 fi
+
+# the default revision is the git hash of Qt Creator src directory
+OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD 2>/dev/null)
 
 if [[ -z $OPT_REVISION ]]; then
     OPT_REVISION="unknown"

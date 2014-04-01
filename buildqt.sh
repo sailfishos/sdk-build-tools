@@ -30,6 +30,14 @@ else
     MY_MKSPECDIR=$SRCDIR_QT/mkspecs/win32-msvc2010
 fi
 
+# common options for unix/windows dynamic build
+# the dynamic build is used when building Qt Creator
+COMMON_CONFIG_OPTIONS="-release -confirm-license -opensource -nomake demos -nomake examples -qt-libjpeg -qt-libmng -qt-libpng -qt-libtiff -qt-zlib -no-phonon -no-phonon-backend -no-scripttools -no-multimedia -developer-build"
+
+# add these to the COMMON_CONFIG_OPTIONS for static build
+# the static build is required to build Qt Installer Framework
+COMMON_STATIC_OPTIONS="-static -no-qt3support -no-webkit -no-xmlpatterns -no-dbus -no-opengl -accessibility -no-declarative"
+
 build_static_qt_windows() {
     rm -rf   $STATIC_BUILD_DIR
     mkdir -p $STATIC_BUILD_DIR
@@ -43,11 +51,9 @@ if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 PATH=%PATH%;c:\invariant\bin
 
 call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call "C:\invariant\qt\configure.exe" -release -platform win32-msvc2010 -qt-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -confirm-license -nomake examples -nomake demos -no-qt3support -no-webkit -no-xmlpatterns -no-dbus -no-declarative -no-phonon -no-opengl -static -prefix
- 
-call jom
-call nmake install
+call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -platform win32-msvc2010 -prefix
 
+call jom
 EOF
 
     # replace the conf file with the proper one for this build
@@ -70,11 +76,9 @@ if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 PATH=%PATH%;c:\invariant\bin
 
 call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call "C:\invariant\qt\configure.exe" -release -platform win32-msvc2010 -no-scripttools -qt-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -confirm-license -nomake examples -nomake demos -developer-build -prefix
+call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2010 -prefix
  
 call jom
-call nmake install
-
 EOF
 
     # replace the conf file with the proper one for this build
@@ -102,18 +106,18 @@ prepare_windows_build() {
     [[ -e "$orig_conf.static" ]] && return
 
     # make a copy of the orig file
-    cp $orig_conf $MY_MKSPECDIR/$orig_conf.dyn
+    cp $orig_conf $orig_conf.dyn
 
     # create a static build version
-    sed -e "s/embed_manifest_dll embed_manifest_exe//g" -e "s/-MD/-MT/g" $orig_conf > $MY_MKSPECDIR/$orig_conf.static
+    sed -e "s/embed_manifest_dll embed_manifest_exe//g" -e "s/-MD/-MT/g" $orig_conf > $orig_conf.static
 }
 
 configure_static_qt4() {
-    $SRCDIR_QT/configure -static -opensource -confirm-license -release -qt-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -no-phonon -no-phonon-backend -no-dbus -no-opengl -no-qt3support -no-webkit -no-xmlpatterns -no-svg -nomake examples -nomake demos -silent -gtkstyle -no-icu -DENABLE_VIDEO=0 -accessibility -prefix $PWD 
+    $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -silent -no-icu -optimized-qmake -no-svg -gtkstyle -DENABLE_VIDEO=0 -prefix $PWD
 }
 
 configure_dynamic_qt4() {
-    $SRCDIR_QT/configure -release -qt-zlib -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -opensource -confirm-license -nomake examples -nomake demos -prefix $PWD -no-phonon -no-phonon-backend -gtkstyle -DENABLE_VIDEO=0 -no-icu -silent
+    $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -silent -no-icu -optimized-qmake -gtkstyle -DENABLE_VIDEO=0 -prefix $PWD
 }
 
 build_dynamic_qt() {
@@ -122,7 +126,8 @@ build_dynamic_qt() {
     pushd    $DYN_BUILD_DIR
     configure_dynamic_qt4
     make -j$(getconf _NPROCESSORS_ONLN)
-    make install
+    # no need to make install with -developer-build option
+    # make install
     popd
 }
 
@@ -132,11 +137,8 @@ build_static_qt() {
     pushd    $STATIC_BUILD_DIR
     configure_static_qt4
     make -j$(getconf _NPROCESSORS_ONLN)
-
-# no need to install according to
-# http://doc-snapshot.qt-project.org/qtifw-master/ifw-getting-started.html
-#    make install
-
+    # no need to make install with -developer-build option
+    # make install
     popd
 }
 
@@ -154,6 +156,9 @@ if [[ ! -d $SRCDIR_QT ]]; then
 fi
 
 pushd $BASEDIR || exit 1
+
+# stop in case of errors
+set -e
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     build_dynamic_qt
