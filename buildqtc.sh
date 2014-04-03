@@ -46,7 +46,7 @@ Options:
    -i   | --install <DIR>      Qt Creator install directory [$OPT_INSTALL_ROOT]
    -v   | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
    -r   | --revision <STRING>  Use <STRING> as the build revision [git sha]
-   -e   | --extra <STRING>     Use <STRING> as a revision suffix
+   -re  | --revextra <STRING>  Use <STRING> as a revision suffix
    -g   | --gdb                Build also gdb
    -go  | --gdb-only           Build only gdb
    -d   | --docs               Build Qt Creator documentation
@@ -74,7 +74,7 @@ while [[ ${1:-} ]]; do
 	-r | --revision ) shift
 	    OPT_REVISION=$1; shift
 	    ;;
-	-e | --extra ) shift
+	-re | --revextra ) shift
 	    OPT_REV_EXTRA=$1; shift
 	    ;;
 	-qtc | --qtc-src ) shift

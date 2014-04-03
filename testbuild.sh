@@ -49,7 +49,7 @@ Options:
    -r   | --repository         Build repository
    -p   | --git-pull           Do git pull in every src repo before building
    -v   | --variant <STRING>   Use <STRING> as the build variant
-   -e   | --extra <STRING>     Use <STRING> as a Qt Creator revision suffix
+   -re  | --revextra <STRING>  Use <STRING> as the Qt Creator revision suffix
    -d   | --download <URL>     Use <URL> to download artifacts
    -u   | --upload <DIR>       upload build results
    -uh  | --uhost <HOST>       override default upload host
@@ -97,7 +97,7 @@ while [[ ${1:-} ]]; do
 	-v | --variant ) shift
 	    OPT_VARIANT=$1; shift
 	    ;;
-	-e | --extra ) shift
+	-re | --revextra ) shift
 	    OPT_REVISION_EXTRA=$1; shift
 	    ;;
         -d | --download ) shift
@@ -246,7 +246,8 @@ do_build_ifw() {
 }
 
 do_build_qtc() {
-    # QtC docs cannot be built without also building QtC
+    # QtC docs cannot be built without also building QtC so let's not
+    # check it here
     [[ -z $OPT_BUILD_QTC ]] && [[ -z $OPT_BUILD_GDB ]] && return;
 
     echo "---------------------------------"
@@ -273,7 +274,7 @@ do_build_qtc() {
     fi
 
     if [[ -n $OPT_REVISION_EXTRA ]]; then
-	options=$options" --extra $OPT_REVISION_EXTRA"
+	options=$options" --revextra $OPT_REVISION_EXTRA"
     fi
 
     pushd $BASE_BUILD_DIR/qtc-build
