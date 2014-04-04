@@ -4,9 +4,9 @@
 
 The scripts in this project are used to build Sailfish SDK in its
 production environment. They have some assumptions of the host
-environment, but offer command line options for changing the default
-values. The scripts should offer a starting point for adapting them
-for personal use if so desired.
+environment, but may offer command line options for changing the
+default values. The scripts can act as a starting point for adapting
+them for personal use if so desired.
 
 Building Qt4 and Qt5 is only necessary once and whenever patches are
 applied, otherwise they can be left in the built state and utilized in
