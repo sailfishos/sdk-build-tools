@@ -38,6 +38,7 @@ The SDK builds are made in the following host environments:
 
 * Qt4 from `git://gitorious.org/qt/qt.git` tag `v4.8.5` and fix for [QTBUG-26844][6]
 * Qt5 from `git://gitorious.org/qt/qt5.git` tag `v5.1.1`
+* Qt Installer FW from `git://gitorious.org/installer-framework/installer-framework.git` branch `1.4`
 
 [6]: https://bugreports.qt-project.org/browse/QTBUG-26844
 
