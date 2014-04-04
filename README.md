@@ -19,7 +19,7 @@ Building Qt5 is only required for the generated documentation.
 Most of the scripts offer a `--help` option.
 
 * `buildqt.sh` - builds dynamic and static versions of Qt4
-* `buildqt5.sh` - builds Qt5 for documentation purposes `TODO`
+* `buildqt5.sh` - builds Qt5 for documentation purposes
 * `buildqtc.sh` - builds Qt Creator and cross-gdb for *i486* and *armv7hl* architectures
 * `buildifw.sh` - builds the Qt Installer Framework binaries
 * `buildmaster.sh` - start one or more build tasks in a build host

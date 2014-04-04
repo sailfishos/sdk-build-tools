@@ -324,7 +324,9 @@ do_build_qt5() {
     echo "---------------------------------"
     echo "Building Qt5 ..."
 
-    echo "Not Implemented"
+    _ pushd $INVARIANT_DIR
+    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt5.sh
+    _ popd
 }
 
 do_build_ifw() {
