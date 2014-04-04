@@ -76,6 +76,7 @@ Options:
    -g   | --gdb                Build also gdb
    -go  | --gdb-only           Build only gdb
    -d   | --docs               Build Qt Creator documentation
+   -k   | --keep-template      Keep the Sailfish template code in the package
    -u   | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
                                the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
                                the upload directory will be created if it is not there
@@ -137,6 +138,9 @@ while [[ ${1:-} ]]; do
 	    ;;
 	-uu | --uuser ) shift;
 	    OPT_UPLOAD_USER=$1; shift
+	    ;;
+	-k | --keep-template ) shift
+	    OPT_KEEP_TEMPLATE=1
 	    ;;
 	-y | --non-interactive ) shift
 	    OPT_YES=1
@@ -278,9 +282,11 @@ build_unix_qtc() {
 	# name the file to be uploaded
 	ln -s qt-creator-*-installer-archive.7z $SAILFISH_QTC_BASENAME$(build_arch).7z
 
-	# remove the template project from the archive. it will be
-	# installed again by the installer.
-	7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
+	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
+            # remove the sailfish template project from the
+            # archive. it will be reinstalled by the installer.
+	    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
+	fi
 
 	if [[ -n $OPT_DOCUMENTATION ]]; then
 	    make docs
