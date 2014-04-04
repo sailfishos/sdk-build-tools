@@ -49,24 +49,24 @@ Usage:
 
 Options:
    -q   | --qtc                Build Qt Creator
-   -qd  | --qtc-docs           Build Qt Creator documentation
+   -qd  | --qtc-docs           Build QtC documentation (requires -q)
    -g   | --gdb                Build GDB
-   -I   | --ifw                Build Installer Framework
    -i   | --installer          Build installer
-   -r   | --repository         Build repository
+   -r   | --repogen            Build SDK update repository
+   -I   | --ifw                Build Installer Framework
    -qt4 | --qt4-build          Build Qt4 (required for QtC and Ifw)
-   -qt5 | --qt5-build          Build Qt5 (required for documentation)
+   -qt5 | --qt5-build          Build Qt5 (required for SDK documentation)
    -e   | --extra              Extra suffix to installer/repo version
    -p   | --git-pull           Do git pull in every src repo before building
    -v   | --variant <STRING>   Use <STRING> as the build variant
    -re  | --revextra <STRING>  Use <STRING> as the Qt Creator revision suffix
    -d   | --download <URL>     Use <URL> to download artifacts
-   -D   | --dload-def <DIR>    Use <DIR> as default download source dir
+   -D   | --dload-def <DIR>    Create download URL using <DIR> as the source dir
    -u   | --upload <DIR>       upload build results
    -uh  | --uhost <HOST>       override default upload host
    -up  | --upath <PATH>       override default upload path
    -uu  | --uuser <USER>       override default upload user
-   -y   | --non-interactive    answer yes to all questions presented by the script
+   -y   | --non-interactive    answer yes to all questions from this script
    -z   | --dry-run            do nothing, just print out what would happen
    -h   | --help               this help
 
@@ -82,34 +82,42 @@ while [[ ${1:-} ]]; do
         -q | --qtc ) shift
             OPT_BUILD_QTC=1
             REQ_BUILD_DIR=1
+	    let numtasks++
             ;;
         -qd | --qtc-docs ) shift
             OPT_BUILD_QTC_DOCS=1
             # docs can only be built with QtC, so let's not set
-            # REQ_BUILD_DIR here
+            # REQ_BUILD_DIR here, also not a task on its own
             ;;
         -g | --gdb ) shift
             OPT_BUILD_GDB=1
             REQ_BUILD_DIR=1
+	    let numtasks++
             ;;
         -I | --ifw ) shift
             OPT_BUILD_IFW=1
             REQ_BUILD_DIR=1
+	    let numtasks++
             ;;
         -i | --installer ) shift
             OPT_BUILD_INSTALLER=1
+	    let numtasks++
             ;;
-        -r | --repository ) shift
+        -r | --repogen ) shift
             OPT_BUILD_REPO=1
+	    let numtasks++
             ;;
 	-qt4 | --qt4-build ) shift
 	    OPT_BUILD_QT4=1
+	    let numtasks++
 	    ;;
 	-qt5 | --qt5-build ) shift
 	    OPT_BUILD_QT5=1
+	    let numtasks++
 	    ;;
         -p | --git-pull ) shift
             OPT_GIT_PULL=1
+	    let numtasks++
             ;;
         -v | --variant ) shift
             OPT_VARIANT=$1; shift
@@ -162,6 +170,9 @@ while [[ ${1:-} ]]; do
             ;;
     esac
 done
+
+# is there anything to do?
+[[ $numtasks -eq 0 ]] && usage quit
 
 # some basic requirement checks
 if [[ ! -d $INVARIANT_DIR ]]; then
@@ -277,7 +288,7 @@ do_build_qt4() {
     echo "Building Qt4 ..."
 
     _ pushd $INVARIANT_DIR
-    _ $BASE_SRC_DIR/buildqt.sh
+    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt.sh
     _ popd
 }
 
