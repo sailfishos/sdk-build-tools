@@ -52,14 +52,14 @@ usage() {
 Create SDK documentation packages and optionally them to a server.
 
 Usage:
-   $0 [OPTION]
+   $(basename $0) [OPTION]
 
 Options:
    -v  | --version <STRING>   set documentation version [$OPT_DOCVERSION]
    -d  | --docdir <DIR>       search for .qch files from <DIR> [$OPT_DOCDIR]
    -u  | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
-			      the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
-			      the upload directory will be created if it is not there
+                              the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
+                              the upload directory will be created if it is not there
    -uh | --uhost <HOST>       override default upload host
    -up | --upath <PATH>       override default upload path
    -uu | --uuser <USER>       override default upload user
@@ -77,44 +77,44 @@ EOF
 # handle commandline options
 while [[ ${1:-} ]]; do
     case "$1" in
-	-v | --version ) shift
-	    OPT_DOCVERSION=$1; shift
-	    ;;
-	-d | --docdir ) shift
-	    OPT_DOCDIR=$1; shift
-	    OPT_DOCDIR=$(readlink -f $OPT_DOCDIR)
-	    ;;
-	-u | --upload ) shift
-	    OPT_UPLOAD=1
-	    OPT_UL_DIR=$1; shift
-	    if [[ -z $OPT_UL_DIR ]]; then
-		failure "upload option requires a directory name"
-	    fi
-	    ;;
-	-uh | --uhost ) shift;
-	    OPT_UPLOAD_HOST=$1; shift
-	    ;;
-	-up | --upath ) shift;
-	    OPT_UPLOAD_PATH=$1; shift
-	    ;;
-	-uu | --uuser ) shift;
-	    OPT_UPLOAD_USER=$1; shift
-	    ;;
-	-c | --compression ) shift
-	    OPT_COMPRESSION=$1; shift
-	    if [[ $OPT_COMPRESSION != [0123456789] ]]; then
-		usage quit
-	    fi
-	    ;;
-	-y | --non-interactive ) shift
-	    OPT_YES=1
-	    ;;
-	-h | --help ) shift
-	    usage quit
-	    ;;
-	* )
-	    shift
-	    ;;
+        -v | --version ) shift
+            OPT_DOCVERSION=$1; shift
+            ;;
+        -d | --docdir ) shift
+            OPT_DOCDIR=$1; shift
+            OPT_DOCDIR=$(readlink -f $OPT_DOCDIR)
+            ;;
+        -u | --upload ) shift
+            OPT_UPLOAD=1
+            OPT_UL_DIR=$1; shift
+            if [[ -z $OPT_UL_DIR ]]; then
+                failure "upload option requires a directory name"
+            fi
+            ;;
+        -uh | --uhost ) shift;
+            OPT_UPLOAD_HOST=$1; shift
+            ;;
+        -up | --upath ) shift;
+            OPT_UPLOAD_PATH=$1; shift
+            ;;
+        -uu | --uuser ) shift;
+            OPT_UPLOAD_USER=$1; shift
+            ;;
+        -c | --compression ) shift
+            OPT_COMPRESSION=$1; shift
+            if [[ $OPT_COMPRESSION != [0123456789] ]]; then
+                usage quit
+            fi
+            ;;
+        -y | --non-interactive ) shift
+            OPT_YES=1
+            ;;
+        -h | --help ) shift
+            usage quit
+            ;;
+        * )
+            shift
+            ;;
     esac
 done
 
@@ -134,18 +134,18 @@ fi
 # confirm
 if [[ -z $OPT_YES ]]; then
     while true; do
-	read -p "Do you want to continue? (y/n) " answer
-	case $answer in
-	    [Yy]*)
-		break ;;
-	    [Nn]*)
-		echo "Ok, exiting"
-		exit 0
-		;;
-	    *)
-		echo "Please answer yes or no."
-		;;
-	esac
+        read -p "Do you want to continue? (y/n) " answer
+        case $answer in
+            [Yy]*)
+                break ;;
+            [Nn]*)
+                echo "Ok, exiting"
+                exit 0
+                ;;
+            *)
+                echo "Please answer yes or no."
+                ;;
+        esac
     done
 fi
 

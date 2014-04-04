@@ -62,7 +62,7 @@ usage() {
 Build Qt Creator and optionally upload the result to a server
 
 Usage:
-   $0 [OPTION]
+   $(basename $0) [OPTION]
 
 Current values are displayed in [ ]s.
 

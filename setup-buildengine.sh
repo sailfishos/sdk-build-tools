@@ -219,8 +219,8 @@ usage() {
 Create $PACKAGE_NAME and optionally upload it to a server.
 
 Usage:
-   $0 -f <VDI> [OPTION]
-   $0 unregister [-vm <NAME>] unregister VM
+   $(basename $0) -f <VDI> [OPTION]         setup and package the VM
+   $(basename $0) unregister [-vm <NAME>]   unregister the VM
 
 Options:
    -u  | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
@@ -298,9 +298,6 @@ while [[ ${1:-} ]]; do
             ;;
         unregister ) shift
             OPT_DO_UNREGISTER=1
-            ;;
-        -* )
-            usage quit
             ;;
         * )
             usage quit

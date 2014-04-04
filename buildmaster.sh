@@ -71,7 +71,7 @@ usage() {
 Build control script
 
 Usage:
-   $0 [OPTION]
+   $(basename $0) [OPTION]
 
 Options:
    -q   | --qtc                Build Qt Creator

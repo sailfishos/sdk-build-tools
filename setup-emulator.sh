@@ -45,7 +45,7 @@ fatal() {
 
 checkForVDI() {
     if [[ ! -f "$VDI" ]];then
-	fatal "VDI file \"$VDI\" does not exist."
+        fatal "VDI file \"$VDI\" does not exist."
     fi
 }
 
@@ -54,7 +54,7 @@ usage() {
 Create emulator.7z and optionally upload it to a server.
 
 Usage:
-   $0 -f <vdi> [OPTION]
+   $(basename $0) -f <vdi> [OPTION]
 
 Options:
    -u  | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
@@ -78,40 +78,40 @@ EOF
 # handle commandline options
 while [[ ${1:-} ]]; do
     case "$1" in
-	-c | --compression ) shift
-	    OPT_COMPRESSION=$1; shift
-	    if [[ $OPT_COMPRESSION != [0123456789] ]]; then
-		usage quit
-	    fi
-	    ;;
-	-u | --upload ) shift
-	    OPT_UPLOAD=1
-	    OPT_UL_DIR=$1; shift
-	    if [[ -z $OPT_UL_DIR ]]; then
-		fatal "upload option requires a directory name"
-	    fi
-	    ;;
-	-uh | --uhost ) shift;
-	    OPT_UPLOAD_HOST=$1; shift
-	    ;;
-	-up | --upath ) shift;
-	    OPT_UPLOAD_PATH=$1; shift
-	    ;;
-	-uu | --uuser ) shift;
-	    OPT_UPLOAD_USER=$1; shift
-	    ;;
-	-y | --non-interactive ) shift
-	    OPT_YES=1
-	    ;;
-	-f | --vdi-file ) shift
-	    OPT_VDI=$1; shift
-	    ;;
-	-h | --help ) shift
-	    usage quit
-	    ;;
-	* )
-	    usage quit
-	    ;;
+        -c | --compression ) shift
+            OPT_COMPRESSION=$1; shift
+            if [[ $OPT_COMPRESSION != [0123456789] ]]; then
+                usage quit
+            fi
+            ;;
+        -u | --upload ) shift
+            OPT_UPLOAD=1
+            OPT_UL_DIR=$1; shift
+            if [[ -z $OPT_UL_DIR ]]; then
+                fatal "upload option requires a directory name"
+            fi
+            ;;
+        -uh | --uhost ) shift;
+            OPT_UPLOAD_HOST=$1; shift
+            ;;
+        -up | --upath ) shift;
+            OPT_UPLOAD_PATH=$1; shift
+            ;;
+        -uu | --uuser ) shift;
+            OPT_UPLOAD_USER=$1; shift
+            ;;
+        -y | --non-interactive ) shift
+            OPT_YES=1
+            ;;
+        -f | --vdi-file ) shift
+            OPT_VDI=$1; shift
+            ;;
+        -h | --help ) shift
+            usage quit
+            ;;
+        * )
+            usage quit
+            ;;
     esac
 done
 
@@ -147,18 +147,18 @@ fi
 # confirm
 if [[ -z $OPT_YES ]]; then
     while true; do
-	read -p "Do you want to continue? (y/n) " answer
-	case $answer in
-	    [Yy]*)
-		break ;;
-	    [Nn]*)
-		echo "Ok, exiting"
-		exit 0
-		;;
-	    *)
-		echo "Please answer yes or no."
-		;;
-	esac
+        read -p "Do you want to continue? (y/n) " answer
+        case $answer in
+            [Yy]*)
+                break ;;
+            [Nn]*)
+                echo "Ok, exiting"
+                exit 0
+                ;;
+            *)
+                echo "Please answer yes or no."
+                ;;
+        esac
     done
 fi
 

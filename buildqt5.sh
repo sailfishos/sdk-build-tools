@@ -106,7 +106,7 @@ Required directories:
  $SRCDIR_QT
 
 Usage:
-   $0 [OPTION]
+   $(basename $0) [OPTION]
 
 Options:
    -y  | --non-interactive    answer yes to all questions presented by the script
