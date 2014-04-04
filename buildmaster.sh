@@ -318,7 +318,7 @@ do_build_qt4() {
     echo "Building Qt4 ..."
 
     _ pushd $INVARIANT_DIR
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt.sh
+    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt.sh -y
     _ popd
 }
 
@@ -329,7 +329,7 @@ do_build_qt5() {
     echo "Building Qt5 ..."
 
     _ pushd $INVARIANT_DIR
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt5.sh
+    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt5.sh -y
     _ popd
 }
 

@@ -96,6 +96,67 @@ fail() {
     exit 1
 }
 
+usage() {
+    cat <<EOF
+
+Build Qt5 libraries and documentation
+
+Required directories:
+ $BASEDIR
+ $SRCDIR_QT
+
+Usage:
+   $0 [OPTION]
+
+Options:
+   -y  | --non-interactive    answer yes to all questions presented by the script
+   -h  | --help               this help
+
+EOF
+
+    # exit if any argument is given
+    [[ -n "$1" ]] && exit 1
+}
+
+
+# handle commandline options
+while [[ ${1:-} ]]; do
+    case "$1" in
+	-y | --non-interactive ) shift
+	    OPT_YES=1
+	    ;;
+	-h | --help ) shift
+	    usage quit
+	    ;;
+	* )
+	    usage quit
+	    ;;
+    esac
+done
+
+cat <<EOF
+Build Qt5 libraries and documentation using sources in
+ $SRCDIR_QT
+EOF
+
+# confirm
+if [[ -z $OPT_YES ]]; then
+    while true; do
+	read -p "Do you want to continue? (y/n) " answer
+	case $answer in
+	    [Yy]*)
+		break ;;
+	    [Nn]*)
+		echo "Ok, exiting"
+		exit 0
+		;;
+	    *)
+		echo "Please answer yes or no."
+		;;
+	esac
+    done
+fi
+
 if [[ ! -d $BASEDIR ]]; then
     fail "directory [$BASEDIR] does not exist"
 fi

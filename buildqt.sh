@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# This will use the current directory to build dynamic and static
-# versions of qt4.
+# This script build dynamic and static versions of Qt4 into
+# subdirectories in the current dir.
 #
 # Qt4 sources must be found from the current user's home directory
 # $HOME/invariant/qt or in case of Windows in C:\invariant\qt
@@ -43,13 +43,13 @@ UNAME_ARCH=$(uname -m)
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BASEDIR=$HOME/invariant
     SRCDIR_QT=$BASEDIR/qt
-
+    # the padding part in the dynamic build directory is necessary in
+    # order to accommodate rpath changes at the end of the build
     DYN_BUILD_DIR=$BASEDIR/qt-4.8.5-build_______________padding___________________
     STATIC_BUILD_DIR=$BASEDIR/qt-4.8.5-static-build
 else
     BASEDIR="/c/invariant"
     SRCDIR_QT="$BASEDIR/qt"
-
     DYN_BUILD_DIR="$BASEDIR/build-qt-dynamic"
     STATIC_BUILD_DIR="$BASEDIR/build-qt-static"
 
@@ -124,7 +124,6 @@ EOF
 # sections '-MD' with '-MT'. Furthermore you should remove
 # 'embed_manifest_dll' and 'embed_manifest_exe' from CONFIG
 #
-
 prepare_windows_build() {
     local orig_conf=$MY_MKSPECDIR/qmake.conf
 
@@ -172,6 +171,66 @@ fail() {
     echo "FAIL: $@"
     exit 1
 }
+
+usage() {
+    cat <<EOF
+Build dynamic and static versions of Qt4
+
+Required directories:
+ $BASEDIR
+ $SRCDIR_QT
+
+Usage:
+   $0 [OPTION]
+
+Options:
+   -y  | --non-interactive    answer yes to all questions presented by the script
+   -h  | --help               this help
+
+EOF
+
+    # exit if any argument is given
+    [[ -n "$1" ]] && exit 1
+}
+
+
+# handle commandline options
+while [[ ${1:-} ]]; do
+    case "$1" in
+	-y | --non-interactive ) shift
+	    OPT_YES=1
+	    ;;
+	-h | --help ) shift
+	    usage quit
+	    ;;
+	* )
+	    usage quit
+	    ;;
+    esac
+done
+
+cat <<EOF
+Build dynamic and static Qt4 libraries using sources in
+ $SRCDIR_QT
+EOF
+
+# confirm
+if [[ -z $OPT_YES ]]; then
+    while true; do
+	read -p "Do you want to continue? (y/n) " answer
+	case $answer in
+	    [Yy]*)
+		break ;;
+	    [Nn]*)
+		echo "Ok, exiting"
+		exit 0
+		;;
+	    *)
+		echo "Please answer yes or no."
+		;;
+	esac
+    done
+fi
 
 if [[ ! -d $BASEDIR ]]; then
     fail "directory [$BASEDIR] does not exist"
