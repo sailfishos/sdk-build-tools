@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# Master script to build parts of or all of the SDK installer
+#
 # Copyright (C) 2014 Jolla Oy
 #
 
@@ -11,8 +13,11 @@ OPT_UPLOAD_HOST=10.0.0.20
 OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
-OPT_VARIANT="SailfishAlpha4"
+OPT_VARIANT="SailfishAlphaX"
 
+OPT_REVISION_EXTRA="+git"
+
+DOWNLOAD_DEFAULT=http://$OPT_UPLOAD_HOST/sailfishos
 CREATOR_SRC=sailfish-qtcreator
 BUILD_TOOLS_SRC=sdk-build-tools
 INSTALLER_SRC=sailfish-sdk-installer
@@ -37,6 +42,8 @@ fail() {
 usage() {
     cat <<EOF
 
+Build control script
+
 Usage:
    $0 [OPTION]
 
@@ -47,10 +54,14 @@ Options:
    -I   | --ifw                Build Installer Framework
    -i   | --installer          Build installer
    -r   | --repository         Build repository
+   -qt4 | --qt4-build          Build Qt4 (required for QtC and Ifw)
+   -qt5 | --qt5-build          Build Qt5 (required for documentation)
+   -e   | --extra              Extra suffix to installer/repo version
    -p   | --git-pull           Do git pull in every src repo before building
    -v   | --variant <STRING>   Use <STRING> as the build variant
    -re  | --revextra <STRING>  Use <STRING> as the Qt Creator revision suffix
    -d   | --download <URL>     Use <URL> to download artifacts
+   -D   | --dload-def <DIR>    Use <DIR> as default download source dir
    -u   | --upload <DIR>       upload build results
    -uh  | --uhost <HOST>       override default upload host
    -up  | --upath <PATH>       override default upload path
@@ -68,69 +79,87 @@ EOF
 # handle commandline options
 while [[ ${1:-} ]]; do
     case "$1" in
-	-q | --qtc ) shift
-	    OPT_BUILD_QTC=1
-	    REQ_BUILD_DIR=1
+        -q | --qtc ) shift
+            OPT_BUILD_QTC=1
+            REQ_BUILD_DIR=1
+            ;;
+        -qd | --qtc-docs ) shift
+            OPT_BUILD_QTC_DOCS=1
+            # docs can only be built with QtC, so let's not set
+            # REQ_BUILD_DIR here
+            ;;
+        -g | --gdb ) shift
+            OPT_BUILD_GDB=1
+            REQ_BUILD_DIR=1
+            ;;
+        -I | --ifw ) shift
+            OPT_BUILD_IFW=1
+            REQ_BUILD_DIR=1
+            ;;
+        -i | --installer ) shift
+            OPT_BUILD_INSTALLER=1
+            ;;
+        -r | --repository ) shift
+            OPT_BUILD_REPO=1
+            ;;
+	-qt4 | --qt4-build ) shift
+	    OPT_BUILD_QT4=1
 	    ;;
-	-qd | --qtc-docs ) shift
-	    OPT_BUILD_QTC_DOCS=1
-	    # docs can only be built with qtc, so let's not set
-	    # REQ_BUILD_DIR BUILD_SOMETHING here
+	-qt5 | --qt5-build ) shift
+	    OPT_BUILD_QT5=1
 	    ;;
-	-g | --gdb ) shift
-	    OPT_BUILD_GDB=1
-	    REQ_BUILD_DIR=1
-	    ;;
-	-I | --ifw ) shift
-	    OPT_BUILD_IFW=1
-	    REQ_BUILD_DIR=1
-	    ;;
-	-i | --installer ) shift
-	    OPT_BUILD_INSTALLER=1
-	    ;;
-	-r | --repository ) shift
-	    OPT_BUILD_REPO=1
-	    ;;
-	-p | --git-pull ) shift
-	    OPT_GIT_PULL=1
-	    ;;
-	-v | --variant ) shift
-	    OPT_VARIANT=$1; shift
-	    ;;
-	-re | --revextra ) shift
-	    OPT_REVISION_EXTRA=$1; shift
-	    ;;
+        -p | --git-pull ) shift
+            OPT_GIT_PULL=1
+            ;;
+        -v | --variant ) shift
+            OPT_VARIANT=$1; shift
+            ;;
+        -re | --revextra ) shift
+            OPT_REVISION_EXTRA=$1; shift
+            ;;
+        -e | --extra ) shift
+            OPT_VERSION_EXTRA=$1; shift
+            ;;
         -d | --download ) shift
             OPT_DOWNLOAD_URL=$1; shift
+            if [[ -z $OPT_DOWNLOAD_URL ]]; then
+                fail "download option requires a valid URL"
+            fi
             ;;
-	-u | --upload ) shift
-	    OPT_UPLOAD=1
-	    OPT_UL_DIR=$1; shift
-	    if [[ -z $OPT_UL_DIR ]]; then
-		fail "upload option requires a directory name"
-	    fi
-	    ;;
-	-uh | --uhost ) shift;
-	    OPT_UPLOAD_HOST=$1; shift
-	    ;;
-	-up | --upath ) shift;
-	    OPT_UPLOAD_PATH=$1; shift
-	    ;;
-	-uu | --uuser ) shift;
-	    OPT_UPLOAD_USER=$1; shift
-	    ;;
-	-y | --non-interactive ) shift
-	    OPT_YES=1
-	    ;;
-	-z | --dry-run ) shift
-	    OPT_DRY_RUN=1
-	    ;;
-	-h | --help ) shift
-	    usage quit
-	    ;;
-	* )
-	    usage quit
-	    ;;
+        -D | --dload-def ) shift
+            OPT_DL_DIR=$1; shift
+            if [[ -z $OPT_DL_DIR ]]; then
+                fail "download option requires a directory name"
+            fi
+            ;;
+        -u | --upload ) shift
+            OPT_UPLOAD=1
+            OPT_UL_DIR=$1; shift
+            if [[ -z $OPT_UL_DIR ]]; then
+                fail "upload option requires a directory name"
+            fi
+            ;;
+        -uh | --uhost ) shift;
+            OPT_UPLOAD_HOST=$1; shift
+            ;;
+        -up | --upath ) shift;
+            OPT_UPLOAD_PATH=$1; shift
+            ;;
+        -uu | --uuser ) shift;
+            OPT_UPLOAD_USER=$1; shift
+            ;;
+        -y | --non-interactive ) shift
+            OPT_YES=1
+            ;;
+        -z | --dry-run ) shift
+            OPT_DRY_RUN=1
+            ;;
+        -h | --help ) shift
+            usage quit
+            ;;
+        * )
+            usage quit
+            ;;
     esac
 done
 
@@ -143,18 +172,22 @@ for src in $REQUIRED_SRC_DIRS; do
     [[ ! -d $BASE_SRC_DIR/$src ]] && fail "Directory [$BASE_SRC_DIR/$src] does not exist"
 done
 
+if [[ -n $OPT_DL_DIR ]]; then
+    OPT_DOWNLOAD_URL=$DOWNLOAD_DEFAULT/$OPT_DL_DIR
+fi
+
 if [[ -n $OPT_BUILD_INSTALLER ]] || [[ -n $OPT_BUILD_REPO ]] && [[ -z $OPT_DOWNLOAD_URL ]]; then
-    fail "Building the installer requires a download url [-d option]"
+    fail "Building the installer requires a download url [-d or -D]"
 fi
 
 # dry run function
 _() {
-    [[ -n $OPT_DRY_RUN ]] && echo $@ || eval $@
+    [[ -n $OPT_DRY_RUN ]] && echo "$@" || eval $@
 }
 
 # helper
 get_option() {
-    [[ -z $1 ]] && echo "no" ||	echo "yes"
+    [[ -z $1 ]] && echo " " || echo "X"
 }
 
 # summary
@@ -165,9 +198,12 @@ Summary of chosen actions:
  Build GDB ......... [$(get_option $OPT_BUILD_GDB)]
  Build Installer FW  [$(get_option $OPT_BUILD_IFW)]
  Build Installer ... [$(get_option $OPT_BUILD_INSTALLER)]
+ Build Qt4 ......... [$(get_option $OPT_BUILD_QT4)]
+ Build Qt5 ......... [$(get_option $OPT_BUILD_QT5)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
  Qt Creator Variant  [$OPT_VARIANT]
- QtC revision extra  [$OPT_REVISION_EXTRA]
+ QtC revision suffx  [${OPT_REVISION_EXTRA:- }]
+ Inst/Repo suffix .. [${OPT_VERSION_EXTRA:- }]
 EOF
 
 if [[ -n $OPT_DOWNLOAD_URL ]]; then
@@ -175,7 +211,7 @@ if [[ -n $OPT_DOWNLOAD_URL ]]; then
 fi
 
 if [[ -n $OPT_UPLOAD ]]; then
-    echo " Upload build result as user [$OPT_UPLOAD_USER] to [$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR]"
+    echo " Upload as [$OPT_UPLOAD_USER] to [$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR]"
 else
     echo " Do NOT upload build result anywhere"
 fi
@@ -183,18 +219,18 @@ fi
 # confirm
 if [[ -z $OPT_YES ]]; then
     while true; do
-	read -p "Do you want to continue? (y/n) " answer
-	case $answer in
-	    [Yy]*)
-		break ;;
-	    [Nn]*)
-		echo "Ok, exiting"
-		exit 0
-		;;
-	    *)
-		echo "Please answer yes or no."
-		;;
-	esac
+        read -p "Do you want to continue? (y/n) " answer
+        case $answer in
+            [Yy]*)
+                break ;;
+            [Nn]*)
+                echo "Ok, exiting"
+                exit 0
+                ;;
+            *)
+                echo "Please answer yes or no."
+                ;;
+        esac
     done
 fi
 
@@ -213,11 +249,11 @@ do_git_pull() {
     echo "Updating source repositories ..."
 
     for src in $REQUIRED_SRC_DIRS; do
-	pushd $BASE_SRC_DIR/$src
-	_ git clean -xdf
-	_ git reset --hard
-	_ git pull
-	popd
+        _ pushd $BASE_SRC_DIR/$src
+        _ git clean -xdf
+        _ git reset --hard
+        _ git pull
+        _ popd
     done
 }
 
@@ -234,15 +270,35 @@ do_create_build_env() {
     _ mkdir -p $BASE_BUILD_DIR/qtc-build
 }
 
+do_build_qt4() {
+    [[ -z $OPT_BUILD_QT4 ]] && return;
+
+    echo "---------------------------------"
+    echo "Building Qt4 ..."
+
+    _ pushd $INVARIANT_DIR
+    _ $BASE_SRC_DIR/buildqt.sh
+    _ popd
+}
+
+do_build_qt5() {
+    [[ -z $OPT_BUILD_QT5 ]] && return;
+
+    echo "---------------------------------"
+    echo "Building Qt5 ..."
+
+    echo "Not Implemented"
+}
+
 do_build_ifw() {
     [[ -z $OPT_BUILD_IFW ]] && return;
 
     echo "---------------------------------"
     echo "Building Installer FW ..."
 
-    pushd $BASE_BUILD_DIR/ifw-build
+    _ pushd $BASE_BUILD_DIR/ifw-build
     _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildifw.sh -y $UPLOAD_OPTIONS
-    popd
+    _ popd
 }
 
 do_build_qtc() {
@@ -252,34 +308,34 @@ do_build_qtc() {
 
     echo "---------------------------------"
 
-    local options="";
+    local options=
 
     if [[ -n $OPT_BUILD_QTC ]] && [[ -n $OPT_BUILD_GDB ]]; then
-	echo "Building Qt Creator and GDB ..."
-	options="--gdb"
+        echo "Building Qt Creator and GDB ..."
+        options="--gdb"
     elif [[ -n $OPT_BUILD_QTC ]]; then
-	echo "Building Qt Creator ..."
+        echo "Building Qt Creator ..."
     else
-	echo "Building GDB ..."
-	options="--gdb-only"
+        echo "Building GDB ..."
+        options="--gdb-only"
     fi
 
-    if [[ -n $OPT_BUILD_QTC_DOCS ]]; then
-	echo "... and QtC Documentation"
-	options=$options" --docs"
+    if [[ -n $OPT_BUILD_QTC_DOCS ]] && [[ -n $OPT_BUILD_QTC ]]; then
+        echo "... and QtC Documentation"
+        options=$options" --docs"
     fi
 
     if [[ -n $OPT_VARIANT ]]; then
-	options=$options" --variant $OPT_VARIANT"
+        options=$options" --variant $OPT_VARIANT"
     fi
 
     if [[ -n $OPT_REVISION_EXTRA ]]; then
-	options=$options" --revextra $OPT_REVISION_EXTRA"
+        options=$options" --revextra $OPT_REVISION_EXTRA"
     fi
 
-    pushd $BASE_BUILD_DIR/qtc-build
+    _ pushd $BASE_BUILD_DIR/qtc-build
     _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqtc.sh -y $options $UPLOAD_OPTIONS
-    popd
+    _ popd
 }
 
 do_build_installer() {
@@ -288,15 +344,19 @@ do_build_installer() {
     echo "---------------------------------"
     echo "Building Installer ..."
 
-    local options=""
+    local options=
 
     if [[ -n $OPT_VARIANT ]]; then
-	options=$options" --variant $OPT_VARIANT"
+        options=$options" --variant $OPT_VARIANT"
     fi
 
-    pushd $BASE_SRC_DIR/$INSTALLER_SRC
+    if [[ -n $OPT_VERSION_EXTRA ]]; then
+        options=$options" --extra $OPT_VERSION_EXTRA"
+    fi
+
+    _ pushd $BASE_SRC_DIR/$INSTALLER_SRC
     _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL
-    popd
+    _ popd
 }
 
 do_build_repo() {
@@ -305,9 +365,14 @@ do_build_repo() {
     echo "---------------------------------"
     echo "Building Repository ..."
 
-    pushd $BASE_SRC_DIR/$INSTALLER_SRC
-    _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh repogen -y $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL
-    popd
+    local options=
+    if [[ -n $OPT_VERSION_EXTRA ]]; then
+        options=$options" --extra $OPT_VERSION_EXTRA"
+    fi
+
+    _ pushd $BASE_SRC_DIR/$INSTALLER_SRC
+    _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh repogen -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL
+    _ popd
 }
 
 # record start time
@@ -316,7 +381,7 @@ BUILD_START=$(date +%s)
 # stop for any failure
 set -e
 
-# we have to do these things in a specific order
+# these steps have to be done in a specific order
 #
 # 1 - git pull
 do_git_pull
@@ -324,20 +389,31 @@ do_git_pull
 # 2 - create build directories
 do_create_build_env
 
-# 3 - build IFW
+# 3 - build qt4
+do_build_qt4
+
+# 4 - build qt5
+do_build_qt5
+
+# 5 - build IFW
 do_build_ifw
 
-# 4 - build QtC + Docs + GDB
+# 6 - build QtC + Docs + GDB
 do_build_qtc
 
-# 5 - build installer
+# 7 - build installer
 do_build_installer
 
-# 6 - build repository
+# 8 - build repository
 do_build_repo
 
 # record end time
 BUILD_END=$(date +%s)
 
 echo "================================="
-echo Time used for build: $(date -u -d @$(( BUILD_END - BUILD_START )) +"%T")
+time=$(( BUILD_END - BUILD_START ))
+hour=$(( $time / 3600 ))
+mins=$(( $time / 60 - 60*$hour ))
+secs=$(( $time - 3600*$hour - 60*$mins ))
+
+echo Time used for build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
