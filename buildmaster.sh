@@ -300,11 +300,15 @@ do_create_build_env() {
     echo "---------------------------------"
     echo "Creating build environment ..."
 
-    _ rm -rf $BASE_BUILD_DIR/ifw-build
-    _ rm -rf $BASE_BUILD_DIR/qtc-build
+    if [[ -n $OPT_BUILD_IFW ]]; then
+	_ rm -rf $BASE_BUILD_DIR/ifw-build
+	_ mkdir -p $BASE_BUILD_DIR/ifw-build
+    fi
 
-    _ mkdir -p $BASE_BUILD_DIR/ifw-build
-    _ mkdir -p $BASE_BUILD_DIR/qtc-build
+    if [[ -n $OPT_BUILD_QTC ]]; then
+	_ rm -rf $BASE_BUILD_DIR/qtc-build
+	_ mkdir -p $BASE_BUILD_DIR/qtc-build
+    fi
 }
 
 do_build_qt4() {
