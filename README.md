@@ -3,7 +3,7 @@
 ### Overview
 
 The scripts in this project are used to build Sailfish SDK in its
-production environment. They have some assumptions of the host
+production environment. They have some assumptions about the host
 environment, but may offer command line options for changing the
 default values. The scripts can act as a starting point for adapting
 them for personal use if so desired.
@@ -24,6 +24,9 @@ Most of the scripts offer a `--help` option.
 * `buildifw.sh` - builds the Qt Installer Framework binaries
 * `buildmaster.sh` - start one or more build tasks in a build host
 
+The other scripts are various helper scripts mostly to package files
+into a format suitable for the Installer FW.
+
 ### Build hosts
 
 The SDK builds are made in the following host environments:
@@ -32,7 +35,7 @@ The SDK builds are made in the following host environments:
 * Linux:   Ubuntu 10.04 32/64 bit
 * Windows: Windows 7 32 bit
 
-`These are also the oldest host operating systems the SDK is supported in.`
+`These are also the oldest host operating system versions the SDK is supported in.`
 
 ### Qt versions required for build
 
@@ -54,9 +57,12 @@ and additionally for building Qt5 documentation:
 
 ### Mac
 
-* `Xcode 5` and [p7zip][1].
+The following additional software is required in the build Mac.
+
+* `Xcode 5`, [p7zip][1] and [wget][7].
 
 [1]: http://sourceforge.net/projects/p7zip/
+[7]: https://www.gnu.org/software/wget/
 
 ### Windows
 
