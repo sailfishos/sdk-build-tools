@@ -332,9 +332,8 @@ build_windows_qtc() {
 	# Allow error code from curl
 	set +e
 	curl -s -f -o $binary_artifacts http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/$binary_artifacts
-	if [[ $? -ne 0 ]]; then
-	    echo "NOTE! Downloading binary artifacts failed [ignoring]"
-	fi
+	[[ $? -ne 0 ]] && echo "NOTE! Downloading binary artifacts failed [ignoring]"
+
 	# no more errors allowed
 	set -e
         # create the build script for windows
@@ -370,9 +369,11 @@ EOF
 	# name the file to be uploaded
 	ln -s qt-creator-*-installer-archive.7z $SAILFISH_QTC_BASENAME$(build_arch).7z
 
-	# remove the template project from the archive. it will be
-	# installed again by the installer.
-	7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
+	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
+	    # remove the template project from the archive. it will be
+	    # reinstalled by the installer.
+	    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
+	fi
     fi
 }
 

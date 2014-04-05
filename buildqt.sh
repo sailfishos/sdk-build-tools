@@ -44,7 +44,8 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BASEDIR=$HOME/invariant
     SRCDIR_QT=$BASEDIR/qt
     # the padding part in the dynamic build directory is necessary in
-    # order to accommodate rpath changes at the end of the build
+    # order to accommodate rpath changes at the end of building Qt
+    # Creator, which reads Qt resources from this directory.
     DYN_BUILD_DIR=$BASEDIR/qt-4.8.5-build_______________padding___________________
     STATIC_BUILD_DIR=$BASEDIR/qt-4.8.5-static-build
 else
