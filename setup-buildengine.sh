@@ -38,7 +38,6 @@ OPT_UPLOAD_PATH=/var/www/sailfishos
 
 # ultra compression by default
 OPT_COMPRESSION=9
-OPT_UNREGISTER=0
 OPT_TARGET_ARM="Jolla-latest-Sailfish_SDK_Target-armv7hl.tar.bz2"
 OPT_TARGET_I486="Jolla-latest-Sailfish_SDK_Target-i486.tar.bz2"
 OPT_VM="MerSDK.build"
@@ -88,6 +87,15 @@ createShares() {
     cp mersdk.pub $SSHCONFIG_PATH/ssh/mersdk/authorized_keys
     popd
 
+    # required for the MerSDK network config
+    cat <<EOF > $SSHCONFIG_PATH/vmshare/devices.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<devices>
+    <engine name="MerSDK" type="vbox">
+        <subnet>10.220.220</subnet>
+    </engine>
+</devices>
+EOF
     VBoxManage sharedfolder add "$OPT_VM" --name config --hostpath $SSHCONFIG_PATH/vmshare
 
     # and then 'targets' and 'home' for $INSTALL_PATH
@@ -98,15 +106,19 @@ createShares() {
 
 startVM() {
     VBoxManage startvm --type headless "$OPT_VM"
-}
 
+    # wait a few seconds
+    sleep 2
+}
 
 installTarget() {
     # the dumps directory is created outside the VM
     mkdir -p $INSTALL_PATH/dumps
 
-    echo "Installing $1 to $OPT_VM"
-    if [[ -n $(grep i486 <<< $1) ]]; then
+    local tgt=$1
+
+    echo "Installing $tgt to $OPT_VM"
+    if [[ -n $(grep i486 <<< $tgt) ]]; then
         TARGET_FILENAME=$OPT_TARGET_I486
         TOOLCHAIN="Mer-SB2-i486"
     else
@@ -118,16 +130,27 @@ installTarget() {
         fatal "$TARGET_FILENAME does not exist!"
     fi
 
-    echo "Waiting here for $OPT_VM to come up..."
-    cp $TARGET_FILENAME $INSTALL_PATH/
+    ln $TARGET_FILENAME $INSTALL_PATH/
 
-    echo "Creating target..."
-    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sdk-manage --target --install --jfdi \"$1\"  \"$TOOLCHAIN\" \"file:///home/mersdk/share/$TARGET_FILENAME\""
+    echo "Creating target ..."
+    ssh -o UserKnownHostsFile=/dev/null \
+	-o StrictHostKeyChecking=no \
+	-p $SSH_PORT \
+	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+	mersdk@localhost "sdk-manage --target --install --jfdi $tgt $TOOLCHAIN file:///home/mersdk/share/$TARGET_FILENAME"
 
-    echo "Saving target dumps..."
-    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sb2 -t $1 qmake -query" > $INSTALL_PATH/dumps/qmake.query.$1
+    echo "Saving target dumps ..."
+    ssh -o UserKnownHostsFile=/dev/null \
+	-o StrictHostKeyChecking=no \
+	-p $SSH_PORT \
+	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+	mersdk@localhost "sb2 -t $tgt qmake -query" > $INSTALL_PATH/dumps/qmake.query.$tgt
 
-    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sb2 -t $1 gcc -dumpmachine" > $INSTALL_PATH/dumps/gcc.dumpmachine.$1
+    ssh -o UserKnownHostsFile=/dev/null \
+	-o StrictHostKeyChecking=no \
+	-p $SSH_PORT \
+	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost \
+	"sb2 -t $tgt gcc -dumpmachine" > $INSTALL_PATH/dumps/gcc.dumpmachine.$tgt
 }
 
 checkVBox() {
@@ -145,6 +168,8 @@ initPaths() {
     INSTALL_PATH=$PWD/mersdk
     rm -rf $INSTALL_PATH
     mkdir -p $INSTALL_PATH
+    # copy refresh script to an accessible path
+    cp -a refresh-sdk-repos.sh $INSTALL_PATH
 
     SSHCONFIG_PATH=$PWD/sshconfig
     rm -rf $SSHCONFIG_PATH
@@ -186,7 +211,7 @@ packVM() {
     rm -f $INSTALL_PATH/*.tar.bz2
 
     # remove stuff that is not meant for the target
-    rm -f $INSTALL_PATH/.bash_history
+    rm -f $INSTALL_PATH/.bash_history $INSTALL_PATH/devices.xml
 
     # copy the used VDI file:
     echo "Hard linking $PWD/$OPT_VDI => $INSTALL_PATH/mer.vdi"
@@ -232,6 +257,7 @@ Options:
    -y  | --non-interactive    answer yes to all questions presented by the script
    -f  | --vdi-file <VDI>     use <VDI> file as the virtual disk image [required]
    -i  | --ignore-running     ignore running VMs
+   -r  | --refresh            force a zypper refresh for MerSDK and sb2 targets
    -c  | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
    -ta | --target-arm <FILE>  arm target rootstrap <FILE>, must be in current directory
    -ti | --target-i486 <FILE> i486 target rootstrap <FILE>, must be in current directory
@@ -267,6 +293,9 @@ while [[ ${1:-} ]]; do
             ;;
         -i | --ignore-running ) shift
             OPT_IGNORE_RUNNING=1
+            ;;
+        -r | --refresh ) shift
+            OPT_REFRESH=1
             ;;
         -u | --upload ) shift
             OPT_UPLOAD=1
@@ -341,10 +370,16 @@ checkIfVMexists
 # all go, let's do it:
 cat <<EOF
 Creating $OPT_VM, compression=$OPT_COMPRESSION
- MerSDK VDI: $OPT_VDI
- ARM target: $OPT_TARGET_ARM
-i486 target: $OPT_TARGET_I486
+ MerSDK VDI:  $OPT_VDI
+ ARM target:  $OPT_TARGET_ARM
+ i486 target: $OPT_TARGET_I486
 EOF
+if [[ -n $OPT_REFRESH ]]; then
+    echo " Force zypper refresh for repos"
+else
+    echo " Do NOT refresh repos"
+fi
+
 if [[ -n $OPT_UPLOAD ]]; then
     echo " Upload build results as user [$OPT_UPLOAD_USER] to [$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR]"
 else
@@ -369,17 +404,33 @@ if [[ -z $OPT_YES ]]; then
     done
 fi
 
+# set up machine in VirtualBox
 createVM
+# define the shared directories
 createShares
+# start the VM
 startVM
 
-# then we install targets to the VDI:
+# install targets to the VM
 for targetname in $SAILFISH_DEFAULT_TARGETS; do
     installTarget $targetname
 done
 
+# refresh the zypper repositories
+if [[ -n $OPT_REFRESH ]]; then
+    ssh -o UserKnownHostsFile=/dev/null \
+	-o StrictHostKeyChecking=no \
+	-p $SSH_PORT \
+	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+	mersdk@localhost "share/refresh-sdk-repos.sh -y"
+fi
+
 # shut the VM down cleanly so that it has time to flush its disk
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $SSH_PORT -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost "sdk-shutdown"
+ssh -o UserKnownHostsFile=/dev/null \
+    -o StrictHostKeyChecking=no \
+    -p $SSH_PORT \
+    -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+    mersdk@localhost "sdk-shutdown"
 
 echo "Giving VM 10 seconds to really shut down ..."
 while [[ $(( waitc++ )) -lt 10 ]]; do
