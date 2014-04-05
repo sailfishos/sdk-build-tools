@@ -154,7 +154,7 @@ get_targets() {
     done
 }
 
-target_change_domain() {
+refresh_target_repos() {
     [[ -z ${1:-} ]] && return
 
     local tgt=$1
@@ -209,7 +209,7 @@ rm -f $CLEANUP_FILES
 # Targets
 targets=$(get_targets)
 for target in $targets; do
-  target_change_domain $target
+  refresh_target_repos $target
 done
 
 echo "#### Done"

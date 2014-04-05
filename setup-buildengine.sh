@@ -165,16 +165,20 @@ checkVBox() {
 }
 
 initPaths() {
+    # anything under this directory will end up in the package
     INSTALL_PATH=$PWD/mersdk
     rm -rf $INSTALL_PATH
     mkdir -p $INSTALL_PATH
-    # copy refresh script to an accessible path
+    # copy refresh script to an accessible path, this needs to be
+    # removed later
     cp -a refresh-sdk-repos.sh $INSTALL_PATH
 
+    # this is not going to end up inside the package
     SSHCONFIG_PATH=$PWD/sshconfig
     rm -rf $SSHCONFIG_PATH
     mkdir -p $SSHCONFIG_PATH
 
+    # this is not going to end up inside the package
     VM_BASEFOLDER=$PWD/basefolder
     rm -rf $VM_BASEFOLDER
     mkdir -p $VM_BASEFOLDER
@@ -210,8 +214,8 @@ packVM() {
     # remove target archive files
     rm -f $INSTALL_PATH/*.tar.bz2
 
-    # remove stuff that is not meant for the target
-    rm -f $INSTALL_PATH/.bash_history $INSTALL_PATH/devices.xml
+    # remove stuff that is not meant to end up in the package
+    rm -f $INSTALL_PATH/.bash_history $INSTALL_PATH/refresh-sdk-repos.sh
 
     # copy the used VDI file:
     echo "Hard linking $PWD/$OPT_VDI => $INSTALL_PATH/mer.vdi"
