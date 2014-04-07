@@ -49,6 +49,8 @@ else
     OPT_INSTALL_ROOT="c:\build\qtc-install"
 fi
 
+QTC_BUILD_DIR=qtc-build
+
 OPT_VARIANT="SailfishAlpha4"
 
 fail() {
@@ -266,6 +268,12 @@ build_unix_qtc() {
 	export QTDIR=$OPT_QTDIR
 	export QT_PRIVATE_HEADERS=$QTDIR/include
 	export PATH=$QTDIR/bin:$PATH
+	export INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
+
+	# clear build workspace
+	rm -rf   $QTC_BUILD_DIR
+	mkdir -p $QTC_BUILD_DIR
+	pushd    $QTC_BUILD_DIR
 
 	$QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
 
@@ -279,9 +287,6 @@ build_unix_qtc() {
 
 	make bindist_installer
 
-	# name the file to be uploaded
-	ln -s qt-creator-*-installer-archive.7z $SAILFISH_QTC_BASENAME$(build_arch).7z
-
 	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
             # remove the sailfish template project from the
             # archive. it will be reinstalled by the installer.
@@ -292,6 +297,8 @@ build_unix_qtc() {
 	    make docs
 	    make install_docs
 	fi
+
+	popd
     fi
 }
 
@@ -322,6 +329,10 @@ EOF
 
 build_windows_qtc() {
     if [[ -z $OPT_GDB_ONLY ]]; then
+	# clear build workspace
+	rm -rf   $QTC_BUILD_DIR
+	mkdir -p $QTC_BUILD_DIR
+	pushd    $QTC_BUILD_DIR
 
 	# fetch the binary artifacts if they can be found
 	#
@@ -348,6 +359,7 @@ set QTDIR=$OPT_QTDIR
 set QMAKESPEC=win32-msvc2010
 set QT_PRIVATE_HEADERS=%QTDIR%\install
 set PATH=%PATH%;%_programs%\7-Zip;%QTDIR%\bin;c:\invariant\bin;c:\Python27
+set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
 call rmdir /s /q $OPT_INSTALL_ROOT
 
@@ -366,14 +378,13 @@ EOF
         # execute the bat
 	cmd //c build-windows.bat
 
-	# name the file to be uploaded
-	ln -s qt-creator-*-installer-archive.7z $SAILFISH_QTC_BASENAME$(build_arch).7z
-
 	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
 	    # remove the template project from the archive. it will be
 	    # reinstalled by the installer.
 	    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
 	fi
+
+	popd
     fi
 }
 
@@ -398,7 +409,7 @@ if  [[ -n "$OPT_UPLOAD" ]]; then
 
     if [[ -z $OPT_GDB_ONLY ]]; then
 	echo "Uploading $SAILFISH_QTC_BASENAME$(build_arch).7z ..."
-	scp $SAILFISH_QTC_BASENAME$(build_arch).7z $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$(build_arch)/
+	scp $QTC_BUILD_DIR/$SAILFISH_QTC_BASENAME$(build_arch).7z $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$(build_arch)/
     fi
 
     if [[ -n $OPT_GDB ]]; then
