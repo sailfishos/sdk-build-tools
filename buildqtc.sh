@@ -349,6 +349,12 @@ set QMAKESPEC=win32-msvc2010
 set QT_PRIVATE_HEADERS=%QTDIR%\install
 set PATH=%PATH%;%_programs%\7-Zip;%QTDIR%\bin;c:\invariant\bin;c:\Python27
 
+call rmdir /s /q $OPT_INSTALL_ROOT
+
+if exist $binary_artifacts (
+  call 7z x -o$OPT_INSTALL_ROOT $binary_artifacts
+)
+
 call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
 call %QTDIR%\bin\qmake $OPT_QTC_SRC\qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX= 
 call jom
@@ -356,12 +362,6 @@ call nmake install
 call nmake deployqt
 call nmake bindist_installer
 EOF
-
-	rm -rf $OPT_INSTALL_ROOT/*
-
-	if [[ -f $binary_artifacts ]]; then
-	    7z x -o$OPT_INSTALL_ROOT $binary_artifacts
-	fi
 
         # execute the bat
 	cmd //c build-windows.bat
