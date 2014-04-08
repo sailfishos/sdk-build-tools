@@ -170,10 +170,23 @@ pushd $BASEDIR || exit 1
 # stop in case of errors
 set -e
 
+# record start time
+BUILD_START=$(date +%s)
+
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     build_dynamic_qt
 else
     build_dynamic_qt_windows
 fi
 
+# record end time
+BUILD_END=$(date +%s)
+
 popd
+
+time=$(( BUILD_END - BUILD_START ))
+hour=$(( $time / 3600 ))
+mins=$(( $time / 60 - 60*$hour ))
+secs=$(( $time - 3600*$hour - 60*$mins ))
+
+echo Time used for Qt5 build: $(printf "%02d:%02d:%02d" $hour $mins $secs)

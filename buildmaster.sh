@@ -43,7 +43,7 @@ OPT_VARIANT="SailfishAlphaX"
 
 OPT_REVISION_EXTRA="+git"
 
-DOWNLOAD_DEFAULT=http://$OPT_UPLOAD_HOST/sailfishos
+DEFAULT_URL_PREFIX=http://$OPT_UPLOAD_HOST/sailfishos
 CREATOR_SRC=sailfish-qtcreator
 BUILD_TOOLS_SRC=sdk-build-tools
 INSTALLER_SRC=sailfish-sdk-installer
@@ -74,27 +74,28 @@ Usage:
    $(basename $0) [OPTION]
 
 Options:
-   -q   | --qtc                Build Qt Creator
-   -qd  | --qtc-docs           Build QtC documentation (requires -q)
-   -g   | --gdb                Build GDB
-   -i   | --installer          Build installer
-   -r   | --repogen            Build SDK update repository
-   -I   | --ifw                Build Installer Framework
-   -qt4 | --qt4-build          Build Qt4 (required for QtC and Ifw)
-   -qt5 | --qt5-build          Build Qt5 (required for SDK documentation)
-   -e   | --extra              Extra suffix to installer/repo version
-   -p   | --git-pull           Do git pull in every src repo before building
-   -v   | --variant <STRING>   Use <STRING> as the build variant
-   -re  | --revextra <STRING>  Use <STRING> as the Qt Creator revision suffix
-   -d   | --download <URL>     Use <URL> to download artifacts
-   -D   | --dload-def <DIR>    Create download URL using <DIR> as the source dir
-   -u   | --upload <DIR>       upload build results
-   -uh  | --uhost <HOST>       override default upload host
-   -up  | --upath <PATH>       override default upload path
-   -uu  | --uuser <USER>       override default upload user
-   -y   | --non-interactive    answer yes to all questions from this script
-   -z   | --dry-run            do nothing, just print out what would happen
-   -h   | --help               this help
+   -q   | --qtc                 Build Qt Creator
+   -qd  | --qtc-docs            Build QtC documentation (requires -q)
+   -g   | --gdb                 Build GDB
+   -i   | --installer           Build installer
+   -r   | --repogen             Build SDK update repository
+   -I   | --ifw                 Build Installer Framework
+   -qt4 | --qt4-build           Build Qt4 (required for QtC and Ifw)
+   -qt5 | --qt5-build           Build Qt5 (required for SDK documentation)
+   -e   | --extra               Extra suffix to installer/repo version
+   -p   | --git-pull            Do git pull in every src repo before building
+   -v   | --variant <STRING>    Use <STRING> as the build variant
+   -re  | --revextra <STRING>   Use <STRING> as the Qt Creator revision suffix
+   -gd  | --gdb-default         Use default download URLs for gdb build deps
+   -d   | --download <URL>      Use <URL> to download artifacts
+   -D   | --dload-def <DIR>     Create download URL using <DIR> as the source dir
+   -u   | --upload <DIR>        upload build results
+   -uh  | --uhost <HOST>        override default upload host
+   -up  | --upath <PATH>        override default upload path
+   -uu  | --uuser <USER>        override default upload user
+   -y   | --non-interactive     answer yes to all questions from this script
+   -z   | --dry-run             do nothing, just print out what would happen
+   -h   | --help                this help
 
 EOF
 
@@ -166,6 +167,9 @@ while [[ ${1:-} ]]; do
                 fail "download option requires a directory name"
             fi
             ;;
+        -gd | --gdb-default ) shift
+            OPT_GDB_DEFAULT=1
+            ;;
         -u | --upload ) shift
             OPT_UPLOAD=1
             OPT_UL_DIR=$1; shift
@@ -210,7 +214,7 @@ for src in $REQUIRED_SRC_DIRS; do
 done
 
 if [[ -n $OPT_DL_DIR ]]; then
-    OPT_DOWNLOAD_URL=$DOWNLOAD_DEFAULT/$OPT_DL_DIR
+    OPT_DOWNLOAD_URL=$DEFAULT_URL_PREFIX/$OPT_DL_DIR
 fi
 
 if [[ -n $OPT_BUILD_INSTALLER ]] || [[ -n $OPT_BUILD_REPO ]] && [[ -z $OPT_DOWNLOAD_URL ]]; then
@@ -374,6 +378,11 @@ do_build_qtc() {
 
     if [[ -n $OPT_REVISION_EXTRA ]]; then
         options=$options" --revextra $OPT_REVISION_EXTRA"
+    fi
+
+    if [[ -z $OPT_GDB_DEFAULT ]]; then
+	# only set this URL if default is not requested
+	options=$options" --gdb-download $DEFAULT_URL_PREFIX/gdb-build-deps"
     fi
 
     _ pushd $BASE_BUILD_DIR/qtc-build

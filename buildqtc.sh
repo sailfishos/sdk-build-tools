@@ -75,9 +75,10 @@ Options:
    -v   | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
    -r   | --revision <STRING>  Use <STRING> as the build revision [git sha]
    -re  | --revextra <STRING>  Use <STRING> as a revision suffix
+   -d   | --docs               Build Qt Creator documentation
    -g   | --gdb                Build also gdb
    -go  | --gdb-only           Build only gdb
-   -d   | --docs               Build Qt Creator documentation
+   -gd  | --gdb-download <URL> Use <URL> to download gdb build deps
    -k   | --keep-template      Keep the Sailfish template code in the package
    -u   | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
                                the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
@@ -124,6 +125,12 @@ while [[ ${1:-} ]]; do
 	-go | --gdb-only ) shift
 	    OPT_GDB=1
 	    OPT_GDB_ONLY=1
+	    ;;
+	-gd | --gdb-download ) shift
+	    OPT_GDB_URL=$1; shift
+	    if [[ -z $OPT_GDB_URL ]]; then
+		fail "gdb download option requires a URL"
+	    fi
 	    ;;
 	-u | --upload ) shift
 	    OPT_UPLOAD=1
@@ -202,6 +209,7 @@ fi
 
 if [[ -n $OPT_GDB ]]; then
     echo " 3) Build GDB"
+    [[ -n $OPT_GDB_URL ]] && echo "    - Download build deps from [$OPT_GDB_URL]"
 else
     echo " 3) Do NOT build GDB"
 fi
@@ -246,8 +254,9 @@ build_arch() {
 
 build_unix_gdb() {
     if [[ -n $OPT_GDB ]]; then
-	mkdir -p build-gdb
-	pushd build-gdb
+	rm -rf   gdb-build
+	mkdir -p gdb-build
+	pushd    gdb-build
 
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
 	    GDB_MAKEFILE=Makefile.linux
@@ -255,7 +264,14 @@ build_unix_gdb() {
 	    GDB_MAKEFILE=Makefile.osx
 	fi
 
-	make -f $OPT_QTC_SRC/dist/gdb/$GDB_MAKEFILE PATCHDIR=$OPT_QTC_SRC/dist/gdb/patches
+	local downloads
+	if [[ -n $OPT_GDB_URL ]]; then
+	    downloads="DOWNLOAD_URL=$OPT_GDB_URL"
+	fi
+
+	make -f $OPT_QTC_SRC/dist/gdb/$GDB_MAKEFILE \
+	    PATCHDIR=$OPT_QTC_SRC/dist/gdb/patches $downloads
+
         # move the completed package to the parent dir
 	mv $SAILFISH_GDB_BASENAME*.7z ..
 	popd
@@ -304,10 +320,16 @@ build_unix_qtc() {
 
 build_windows_gdb() {
     if [[ -n $OPT_GDB ]]; then
-	mkdir -p build-gdb
-	pushd build-gdb
+	rm -rf   gdb-build
+	mkdir -p gdb-build
+	pushd    gdb-build
 
 	GDB_MAKEFILE=Makefile.mingw
+
+	local downloads
+	if [[ -n $OPT_GDB_URL ]]; then
+	    downloads="DOWNLOAD_URL=$OPT_GDB_URL"
+	fi
 
         # dirty hax to build gdb in another mingw session, which has
         # the compiler available
@@ -317,7 +339,7 @@ build_windows_gdb() {
 
 	cat <<EOF > build-gdb.bat
 @echo off
-call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f /c/src/sailfish-qtcreator/dist/gdb/Makefile.mingw PATCHDIR=/c/src/sailfish-qtcreator/dist/gdb/patches"
+call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f /c/src/sailfish-qtcreator/dist/gdb/Makefile.mingw PATCHDIR=/c/src/sailfish-qtcreator/dist/gdb/patches $downloads"
 EOF
 	cmd //c build-gdb.bat
 
@@ -395,6 +417,9 @@ set -e
 SAILFISH_QTC_BASENAME="sailfish-qt-creator-"
 SAILFISH_GDB_BASENAME="sailfish-gdb-"
 
+# record start time
+BUILD_START=$(date +%s)
+
 if [[ $(build_arch) == "windows" ]]; then
     build_windows_qtc
     build_windows_gdb
@@ -402,6 +427,16 @@ else
     build_unix_qtc
     build_unix_gdb
 fi
+
+# record end time
+BUILD_END=$(date +%s)
+
+time=$(( BUILD_END - BUILD_START ))
+hour=$(( $time / 3600 ))
+mins=$(( $time / 60 - 60*$hour ))
+secs=$(( $time - 3600*$hour - 60*$mins ))
+
+echo Time used for QtC build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
 
 if  [[ -n "$OPT_UPLOAD" ]]; then
     # create upload dir
