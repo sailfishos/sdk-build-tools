@@ -66,6 +66,8 @@ COMMON_CONFIG_OPTIONS="-release -confirm-license -opensource -nomake demos -noma
 COMMON_STATIC_OPTIONS="-static -no-qt3support -no-webkit -no-xmlpatterns -no-dbus -no-opengl -accessibility -no-declarative"
 
 build_static_qt_windows() {
+    [[ -z $OPT_STATIC ]] && return
+
     rm -rf   $STATIC_BUILD_DIR
     mkdir -p $STATIC_BUILD_DIR
     pushd    $STATIC_BUILD_DIR
@@ -91,6 +93,8 @@ EOF
 }
 
 build_dynamic_qt_windows() {
+    [[ -z $OPT_DYNAMIC ]] && return
+
     rm -rf   $DYN_BUILD_DIR
     mkdir -p $DYN_BUILD_DIR
     pushd    $DYN_BUILD_DIR
@@ -147,6 +151,8 @@ configure_dynamic_qt4() {
 }
 
 build_dynamic_qt() {
+    [[ -z $OPT_DYNAMIC ]] && return
+
     rm -rf   $DYN_BUILD_DIR
     mkdir -p $DYN_BUILD_DIR
     pushd    $DYN_BUILD_DIR
@@ -158,6 +164,8 @@ build_dynamic_qt() {
 }
 
 build_static_qt() {
+    [[ -z $OPT_STATIC ]] && return
+
     rm -rf   $STATIC_BUILD_DIR
     mkdir -p $STATIC_BUILD_DIR
     pushd    $STATIC_BUILD_DIR
@@ -185,6 +193,8 @@ Usage:
    $(basename $0) [OPTION]
 
 Options:
+   -d  | --dynamic            build only dynamic version (default: both)
+   -s  | --static             build only static version  (default: both)
    -y  | --non-interactive    answer yes to all questions presented by the script
    -h  | --help               this help
 
@@ -198,6 +208,12 @@ EOF
 # handle commandline options
 while [[ ${1:-} ]]; do
     case "$1" in
+	-d | --dynamic ) shift
+	    OPT_DYNAMIC=1
+	    ;;
+	-s | --static ) shift
+	    OPT_STATIC=1
+	    ;;
 	-y | --non-interactive ) shift
 	    OPT_YES=1
 	    ;;
@@ -210,10 +226,15 @@ while [[ ${1:-} ]]; do
     esac
 done
 
-cat <<EOF
-Build dynamic and static Qt4 libraries using sources in
- $SRCDIR_QT
-EOF
+if [[ -z $OPT_DYNAMIC ]] && [[ -z $OPT_STATIC ]]; then
+    # default: build both
+    OPT_DYNAMIC=1
+    OPT_STATIC=1
+fi
+
+echo "Using sources from [$SRCDIR_QT]"
+[[ -n $OPT_DYNAMIC ]] && echo "- Build [dynamic] version of Qt4"
+[[ -n $OPT_STATIC ]] && echo "- Build [static] version of Qt4"
 
 # confirm
 if [[ -z $OPT_YES ]]; then
