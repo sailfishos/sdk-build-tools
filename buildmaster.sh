@@ -60,6 +60,20 @@ else
     INVARIANT_DIR=/c/invariant
 fi
 
+build_arch() {
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+	if [[ $UNAME_ARCH == "x86_64" ]]; then
+	    echo "linux-64"
+	else
+	    echo "linux-32"
+	fi
+    elif [[ $UNAME_SYSTEM == "Darwin" ]]; then
+	echo "mac"
+    else
+	echo "windows"
+    fi
+}
+
 fail() {
     echo "FAIL: $@"
     exit 1
@@ -241,11 +255,20 @@ Summary of chosen actions:
  Build Installer ... [$(get_option $OPT_BUILD_INSTALLER)]
  Build Qt4 ......... [$(get_option $OPT_BUILD_QT4)]
  Build Qt5 ......... [$(get_option $OPT_BUILD_QT5)]
+ Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
- Qt Creator Variant  [$OPT_VARIANT]
- QtC revision suffx  [${OPT_REVISION_EXTRA:- }]
- Inst/Repo suffix .. [${OPT_VERSION_EXTRA:- }]
+ SDK Config Variant  [$OPT_VARIANT]
 EOF
+
+if [[ -n $OPT_BUILD_QTC ]]; then
+    echo " QtC revision suffx  [${OPT_REVISION_EXTRA:- }]"
+fi
+
+if [[ -n $OPT_VERSION_EXTRA ]]; then
+    echo " Inst/Repo suffix .. [${OPT_VERSION_EXTRA:- }]"
+fi
+
+echo " Build architecture  [$(build_arch)]"
 
 if [[ -n $OPT_DOWNLOAD_URL ]]; then
     echo " Download URL ...... [$OPT_DOWNLOAD_URL]"
