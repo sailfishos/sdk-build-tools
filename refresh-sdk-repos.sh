@@ -118,6 +118,9 @@ repoini=$(mktemp /home/$sdk_user/repoini.XXXX)
 
 [[ ! -f $repoini ]] && { echo "Could not create tempfile $repoini. Exiting."; exit 1; }
 
+# make sure it's readable
+chmod a+r $repoini
+
 # set cleanup handler for the tempfile
 trap "{ trap - EXIT; rm -f $repoini; exit 0; }" EXIT
 
@@ -159,27 +162,27 @@ refresh_target_repos() {
 
     local tgt=$1
     local sb2session="sb2 -t $tgt -m sdk-install -R"
-    local reposbackup=$HOME/repos.ini.$$
+    local reposbackup=/home/$sdk_user/repos.ini.$$
     echo "#### Refresh $tgt repos"
 
     # save the original ini file
-    sudo -i -u $sdk_user bash -c "$sb2session cp -a $SSU_INIFILE $repoinibackup"
+    sudo -i -u $sdk_user bash -c "$sb2session cp -a $SSU_INIFILE $reposbackup"
 
     # use sed to append contents of $repoini file to ssu repos.ini
-    sudo -i -u $sdk_user bash -c "$sb2session sed -i '$ r $repoini' $SSU_INIFILE" 2>/dev/null
-    sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN" 2>/dev/null
-    sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE" 2>/dev/null
+    sudo -i -u $sdk_user bash -c "$sb2session sed -i '$ r $repoini' $SSU_INIFILE"
+    sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN"
+    sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE"
 
     # refresh repos
     sudo -i -u $sdk_user bash -c "$sb2session zypper --non-interactive ref"
 
     # restore the original ssu status
-    sudo -i -u $sdk_user bash -c "$sb2session mv $repoinibackup $SSU_INIFILE"
-    sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG" 2>/dev/null
-    sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE_ORIG" 2>/dev/null
+    sudo -i -u $sdk_user bash -c "$sb2session mv $reposbackup $SSU_INIFILE"
+    sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG"
+    sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE_ORIG"
 
     # clean up remaining stuff here
-    sudo -i -u $sdk_user bash -c "$sb2session rm -f $CLEANUP_FILES" 2>/dev/null
+    sudo -i -u $sdk_user bash -c "$sb2session rm -f $CLEANUP_FILES"
     
 }
 
@@ -187,7 +190,7 @@ refresh_target_repos() {
 #
 # Build engine
 echo "#### Refresh MerSDK repos"
-repoinibackup=$HOME/repos.ini.$$
+repoinibackup=/home/$sdk_user/repos.ini.$$
 cp -a $SSU_INIFILE $repoinibackup
 
 cat $repoini >> $SSU_INIFILE
