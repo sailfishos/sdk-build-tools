@@ -262,6 +262,7 @@ Options:
    -f  | --vdi-file <VDI>     use <VDI> file as the virtual disk image [required]
    -i  | --ignore-running     ignore running VMs
    -r  | --refresh            force a zypper refresh for MerSDK and sb2 targets
+   -td | --test-domain        keep test domain after refreshing the repos
    -c  | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
    -ta | --target-arm <FILE>  arm target rootstrap <FILE>, must be in current directory
    -ti | --target-i486 <FILE> i486 target rootstrap <FILE>, must be in current directory
@@ -295,6 +296,9 @@ while [[ ${1:-} ]]; do
         -ti | --target-i486 ) shift
             OPT_TARGET_I486=$(basename $1); shift
             ;;
+	-td | --test-domain ) shift
+	    OPT_KEEP_TEST_DOMAIN="--test-domain"
+	    ;;
         -i | --ignore-running ) shift
             OPT_IGNORE_RUNNING=1
             ;;
@@ -380,6 +384,9 @@ Creating $OPT_VM, compression=$OPT_COMPRESSION
 EOF
 if [[ -n $OPT_REFRESH ]]; then
     echo " Force zypper refresh for repos"
+    if [[ -n $OPT_KEEP_TEST_DOMAIN ]]; then
+	echo " ... and keep test ssu domain after refresh"
+    fi
 else
     echo " Do NOT refresh repos"
 fi
@@ -426,7 +433,7 @@ if [[ -n $OPT_REFRESH ]]; then
 	-o StrictHostKeyChecking=no \
 	-p $SSH_PORT \
 	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-	mersdk@localhost "share/refresh-sdk-repos.sh -y"
+	mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_KEEP_TEST_DOMAIN:-}"
 fi
 
 # shut the VM down cleanly so that it has time to flush its disk

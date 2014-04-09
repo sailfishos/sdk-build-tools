@@ -71,8 +71,9 @@ Usage:
     $0 [OPTION] [release]
 
 Options:
-    -y            answer 'yes' to all questions from this script
-    -h | --help   this help
+    -td | --test-domain       keep test domain
+    -y  | --non-interactive   answer 'yes' to all questions from this script
+    -h  | --help              this help
 
 EOF
     [[ -n $1 ]] && exit 1
@@ -80,8 +81,11 @@ EOF
 
 while [[ ${1:-} ]]; do
     case "$1" in
-	-y) shift
+	-y | --non-interactive ) shift
 	    OPT_YES=1
+	    ;;
+	-td | --test-domain ) shift
+	    OPT_KEEP_TEST_DOMAIN=1
 	    ;;
 	-h|--help|-*)
 	    usage quit
@@ -162,7 +166,7 @@ refresh_target_repos() {
 
     local tgt=$1
     local sb2session="sb2 -t $tgt -m sdk-install -R"
-    local reposbackup=/home/$sdk_user/repos.ini.$$
+    local reposbackup=/home/$sdk_user/t_repos.ini.$$
     echo "#### Refresh $tgt repos"
 
     # save the original ini file
@@ -176,10 +180,14 @@ refresh_target_repos() {
     # refresh repos
     sudo -i -u $sdk_user bash -c "$sb2session zypper --non-interactive ref"
 
-    # restore the original ssu status
-    sudo -i -u $sdk_user bash -c "$sb2session mv $reposbackup $SSU_INIFILE"
-    sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG"
-    sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE_ORIG"
+    if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
+        # restore the original ssu status
+	sudo -i -u $sdk_user bash -c "$sb2session mv $reposbackup $SSU_INIFILE"
+	sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG"
+	sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE_ORIG"
+    else
+	rm -f $reposbackup
+    fi
 
     # clean up remaining stuff here
     sudo -i -u $sdk_user bash -c "$sb2session rm -f $CLEANUP_FILES"
@@ -199,10 +207,14 @@ ssu release $SSU_RELEASE
 
 zypper --non-interactive ref
 
-# restore the original ssu status
-mv $repoinibackup $SSU_INIFILE
-ssu domain $SSU_DOMAIN_ORIG
-ssu release $SSU_RELEASE_ORIG
+if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
+    # restore the original ssu status
+    mv $repoinibackup $SSU_INIFILE
+    ssu domain $SSU_DOMAIN_ORIG
+    ssu release $SSU_RELEASE_ORIG
+else
+    rm -f $repoinibackup
+fi
 
 # cleanup remaining stuff
 rm -f $CLEANUP_FILES
