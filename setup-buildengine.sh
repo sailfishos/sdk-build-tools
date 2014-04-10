@@ -415,6 +415,9 @@ if [[ -z $OPT_YES ]]; then
     done
 fi
 
+# record start time
+BUILD_START=$(date +%s)
+
 # set up machine in VirtualBox
 createVM
 # define the shared directories
@@ -468,3 +471,14 @@ fi
 if [[ -n $OPT_UNREGISTER ]]; then
     unregisterVm
 fi
+
+# record end time
+BUILD_END=$(date +%s)
+
+echo "================================="
+time=$(( BUILD_END - BUILD_START ))
+hour=$(( $time / 3600 ))
+mins=$(( $time / 60 - 60*$hour ))
+secs=$(( $time - 3600*$hour - 60*$mins ))
+
+echo Time used: $(printf "%02d:%02d:%02d" $hour $mins $secs)
