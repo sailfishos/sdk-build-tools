@@ -35,7 +35,7 @@ SSU_RELEASE=latest
 SSU_DOMAIN=sdkinstaller
 
 SSU_RELEASE_ORIG=latest
-SSU_DOMAIN_ORIG=sailfishos
+SSU_DOMAIN_ORIG=sailfish
 
 SSU_REFRESH_DOMAIN=10.0.0.20
 
