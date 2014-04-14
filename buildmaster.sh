@@ -446,7 +446,7 @@ do_build_repo() {
     fi
 
     _ pushd $BASE_SRC_DIR/$INSTALLER_SRC
-    _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh repogen -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL
+    _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh repogen -y $options -un $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL
     _ popd
 }
 
