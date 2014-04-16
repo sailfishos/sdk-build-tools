@@ -49,7 +49,7 @@ The SDK builds are made in the following host environments:
 
 The following additional packages are required in Ubuntu 10.04
 
-* `build-essential` `libgtk2.0-dev` `chrpath` `p7zip-full` `libncurses5-dev`
+* `build-essential` `libgtk2.0-dev` `chrpath` `p7zip-full` `libncurses5-dev` `libdbus-1-dev`
 
 and additionally for building Qt5 documentation:
 
