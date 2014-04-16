@@ -252,23 +252,24 @@ Usage:
    $(basename $0) unregister [-vm <NAME>]   unregister the VM
 
 Options:
-   -u  | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
+   -u   | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
                               the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
                               the upload directory will be created if it is not there
-   -uh | --uhost <HOST>       override default upload host
-   -up | --upath <PATH>       override default upload path
-   -uu | --uuser <USER>       override default upload user
-   -y  | --non-interactive    answer yes to all questions presented by the script
-   -f  | --vdi-file <VDI>     use <VDI> file as the virtual disk image [required]
-   -i  | --ignore-running     ignore running VMs
-   -r  | --refresh            force a zypper refresh for MerSDK and sb2 targets
-   -td | --test-domain        keep test domain after refreshing the repos
-   -c  | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
-   -ta | --target-arm <FILE>  arm target rootstrap <FILE>, must be in current directory
-   -ti | --target-i486 <FILE> i486 target rootstrap <FILE>, must be in current directory
-   -un | --unregister         unregister the created VM at the end of script run
-   -vm | --vm-name <NAME>     create VM with <NAME> [$OPT_VM]
-   -h  | --help               this help
+   -uh  | --uhost <HOST>       override default upload host
+   -up  | --upath <PATH>       override default upload path
+   -uu  | --uuser <USER>       override default upload user
+   -y   | --non-interactive    answer yes to all questions presented by the script
+   -f   | --vdi-file <VDI>     use <VDI> file as the virtual disk image [required]
+   -i   | --ignore-running     ignore running VMs
+   -r   | --refresh            force a zypper refresh for MerSDK and sb2 targets
+   -td  | --test-domain        keep test domain after refreshing the repos
+   -c   | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
+   -ta  | --target-arm <FILE>  arm target rootstrap <FILE>, must be in current directory
+   -ti  | --target-i486 <FILE> i486 target rootstrap <FILE>, must be in current directory
+   -un  | --unregister         unregister the created VM at the end of script run
+   -hax | --horrible-hack      disable jolla-core.check systemCheck file
+   -vm  | --vm-name <NAME>     create VM with <NAME> [$OPT_VM]
+   -h   | --help               this help
 
 EOF
 
@@ -302,6 +303,9 @@ while [[ ${1:-} ]]; do
         -i | --ignore-running ) shift
             OPT_IGNORE_RUNNING=1
             ;;
+	-hax | --horrible-hack ) shift
+	    OPT_HACKIT=1
+	    ;;
         -r | --refresh ) shift
             OPT_REFRESH=1
             ;;
@@ -397,6 +401,10 @@ else
     echo " Do NOT upload build results"
 fi
 
+if [[ -n $OPT_HACKIT ]]; then
+    echo " ### DO HORRIBLE SYSTEMCHECK HACK!!! ###"
+fi
+
 # confirm
 if [[ -z $OPT_YES ]]; then
     while true; do
@@ -429,6 +437,15 @@ startVM
 for targetname in $SAILFISH_DEFAULT_TARGETS; do
     installTarget $targetname
 done
+
+if [[ -n $OPT_HACKIT ]]; then
+    echo "### EMBARRASSING HACK! CLEANING jolla-core.check!!!"
+    ssh -o UserKnownHostsFile=/dev/null \
+	-o StrictHostKeyChecking=no \
+	-p $SSH_PORT \
+	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+	mersdk@localhost "cat /dev/null | sudo tee /etc/zypp/systemCheck.d/jolla-core.check"
+fi
 
 # refresh the zypper repositories
 if [[ -n $OPT_REFRESH ]]; then
