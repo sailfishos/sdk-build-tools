@@ -80,6 +80,7 @@ Options:
    -go  | --gdb-only           Build only gdb
    -gd  | --gdb-download <URL> Use <URL> to download gdb build deps
    -k   | --keep-template      Keep the Sailfish template code in the package
+        | --quick              Do not run configure or clean build dir
    -u   | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
                                the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
                                the upload directory will be created if it is not there
@@ -153,6 +154,9 @@ while [[ ${1:-} ]]; do
 	    ;;
 	-y | --non-interactive ) shift
 	    OPT_YES=1
+	    ;;
+	--quick ) shift
+	    OPT_QUICK=1
 	    ;;
 	-h | --help ) shift
 	    usage quit
@@ -287,11 +291,11 @@ build_unix_qtc() {
 	export INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
 	# clear build workspace
-	rm -rf   $QTC_BUILD_DIR
+	[[ $OPT_QUICK ]] || rm -rf $QTC_BUILD_DIR
 	mkdir -p $QTC_BUILD_DIR
 	pushd    $QTC_BUILD_DIR
 
-	$QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
+	[[ $OPT_QUICK ]] || $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
 
 	make -j$(getconf _NPROCESSORS_ONLN)
 
