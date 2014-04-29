@@ -48,7 +48,9 @@ CREATOR_SRC=sailfish-qtcreator
 BUILD_TOOLS_SRC=sdk-build-tools
 INSTALLER_SRC=sailfish-sdk-installer
 
-REQUIRED_SRC_DIRS="$BUILD_TOOLS_SRC $CREATOR_SRC $INSTALLER_SRC"
+# keep these following two in sync
+REQUIRED_SRC_DIRS=($BUILD_TOOLS_SRC $CREATOR_SRC $INSTALLER_SRC)
+REQUIRED_GIT_BRANCHES=(master master jolla-1.4)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BASE_SRC_DIR=$HOME/src
@@ -62,15 +64,15 @@ fi
 
 build_arch() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-	if [[ $UNAME_ARCH == "x86_64" ]]; then
-	    echo "linux-64"
-	else
-	    echo "linux-32"
-	fi
+        if [[ $UNAME_ARCH == "x86_64" ]]; then
+            echo "linux-64"
+        else
+            echo "linux-32"
+        fi
     elif [[ $UNAME_SYSTEM == "Darwin" ]]; then
-	echo "mac"
+        echo "mac"
     else
-	echo "windows"
+        echo "windows"
     fi
 }
 
@@ -123,7 +125,7 @@ while [[ ${1:-} ]]; do
         -q | --qtc ) shift
             OPT_BUILD_QTC=1
             REQ_BUILD_DIR=1
-	    let numtasks++
+            let numtasks++
             ;;
         -qd | --qtc-docs ) shift
             OPT_BUILD_QTC_DOCS=1
@@ -133,32 +135,32 @@ while [[ ${1:-} ]]; do
         -g | --gdb ) shift
             OPT_BUILD_GDB=1
             REQ_BUILD_DIR=1
-	    let numtasks++
+            let numtasks++
             ;;
         -I | --ifw ) shift
             OPT_BUILD_IFW=1
             REQ_BUILD_DIR=1
-	    let numtasks++
+            let numtasks++
             ;;
         -i | --installer ) shift
             OPT_BUILD_INSTALLER=1
-	    let numtasks++
+            let numtasks++
             ;;
         -r | --repogen ) shift
             OPT_BUILD_REPO=1
-	    let numtasks++
+            let numtasks++
             ;;
-	-qt4 | --qt4-build ) shift
-	    OPT_BUILD_QT4=1
-	    let numtasks++
-	    ;;
-	-qt5 | --qt5-build ) shift
-	    OPT_BUILD_QT5=1
-	    let numtasks++
-	    ;;
+        -qt4 | --qt4-build ) shift
+            OPT_BUILD_QT4=1
+            let numtasks++
+            ;;
+        -qt5 | --qt5-build ) shift
+            OPT_BUILD_QT5=1
+            let numtasks++
+            ;;
         -p | --git-pull ) shift
             OPT_GIT_PULL=1
-	    let numtasks++
+            let numtasks++
             ;;
         -v | --variant ) shift
             OPT_VARIANT=$1; shift
@@ -223,7 +225,7 @@ if [[ ! -d $INVARIANT_DIR ]]; then
     fail "Directory [$INVARIANT_DIR] does not exist"
 fi
 
-for src in $REQUIRED_SRC_DIRS; do
+for src in ${REQUIRED_SRC_DIRS[*]}; do
     [[ ! -d $BASE_SRC_DIR/$src ]] && fail "Directory [$BASE_SRC_DIR/$src] does not exist"
 done
 
@@ -312,10 +314,11 @@ do_git_pull() {
     echo "---------------------------------"
     echo "Updating source repositories ..."
 
-    for src in $REQUIRED_SRC_DIRS; do
-        _ pushd $BASE_SRC_DIR/$src
+    for ((i=0; i < ${#REQUIRED_SRC_DIRS[@]}; ++i)); do
+        _ pushd $BASE_SRC_DIR/${REQUIRED_SRC_DIRS[i]}
         _ git clean -xdf
         _ git reset --hard
+        _ git checkout ${REQUIRED_GIT_BRANCHES[i]}
         _ git pull
         _ popd
     done
@@ -328,13 +331,13 @@ do_create_build_env() {
     echo "Creating build environment ..."
 
     if [[ -n $OPT_BUILD_IFW ]]; then
-	_ rm -rf $BASE_BUILD_DIR/ifw-build
-	_ mkdir -p $BASE_BUILD_DIR/ifw-build
+        _ rm -rf $BASE_BUILD_DIR/ifw-build
+        _ mkdir -p $BASE_BUILD_DIR/ifw-build
     fi
 
     if [[ -n $OPT_BUILD_QTC ]]; then
-	_ rm -rf $BASE_BUILD_DIR/qtc-build
-	_ mkdir -p $BASE_BUILD_DIR/qtc-build
+        _ rm -rf $BASE_BUILD_DIR/qtc-build
+        _ mkdir -p $BASE_BUILD_DIR/qtc-build
     fi
 }
 
@@ -404,8 +407,8 @@ do_build_qtc() {
     fi
 
     if [[ -z $OPT_GDB_DEFAULT ]]; then
-	# only set this URL if default is not requested
-	options=$options" --gdb-download $DEFAULT_URL_PREFIX/gdb-build-deps"
+        # only set this URL if default is not requested
+        options=$options" --gdb-download $DEFAULT_URL_PREFIX/gdb-build-deps"
     fi
 
     _ pushd $BASE_BUILD_DIR/qtc-build
