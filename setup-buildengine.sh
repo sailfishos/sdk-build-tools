@@ -31,6 +31,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+MYDIR=$(dirname $0)
+
 # some default values
 OPT_UPLOAD_HOST=10.0.0.20
 OPT_UPLOAD_USER=sdkinstaller
@@ -171,7 +173,7 @@ initPaths() {
     mkdir -p $INSTALL_PATH
     # copy refresh script to an accessible path, this needs to be
     # removed later
-    cp -a refresh-sdk-repos.sh $INSTALL_PATH
+    cp -a $MYDIR/refresh-sdk-repos.sh $INSTALL_PATH
 
     # this is not going to end up inside the package
     SSHCONFIG_PATH=$PWD/sshconfig
