@@ -39,6 +39,8 @@ OPT_UPLOAD_HOST=10.0.0.20
 OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
+IFW_BUILD_DIR=ifw-build
+
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     OPT_QTDIR=$HOME/invariant/qt-4.8.5-static-build
     OPT_QT_SRC_DIR=$HOME/invariant/qt
@@ -171,6 +173,10 @@ build_unix() {
     export QTDIR=$OPT_QTDIR
     export PATH=$QTDIR/bin:$PATH
 
+    rm -rf   $IFW_BUILD_DIR
+    mkdir -p $IFW_BUILD_DIR
+    pushd    $IFW_BUILD_DIR
+
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
 	$QTDIR/bin/qmake -r $OPT_IFW_SRC/installerfw.pro
     else
@@ -178,9 +184,15 @@ build_unix() {
     fi
 
     make -j$(getconf _NPROCESSORS_ONLN)
+    popd
 }
 
 build_windows() {
+
+    rm -rf   $IFW_BUILD_DIR
+    mkdir -p $IFW_BUILD_DIR
+    pushd    $IFW_BUILD_DIR
+
     # create the build script for windows
     cat <<EOF > build-windows.bat
 @echo off
@@ -199,10 +211,15 @@ EOF
 
     # execute the bat
     cmd //c build-windows.bat
+
+    popd
 }
 
 # if any step below fails, exit
 set -e
+
+# record start time
+BUILD_START=$(date +%s)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     build_unix
@@ -224,10 +241,22 @@ else
     BUILD_ARCH="windows"
 fi
 
+pushd $IFW_BUILD_DIR
+
 # install results
 mkdir -p ifw
 cp -a bin ifw
 7z a -mx=9 $IFW_PACKAGE_NAME ifw
+
+# record end time
+BUILD_END=$(date +%s)
+
+time=$(( BUILD_END - BUILD_START ))
+hour=$(( $time / 3600 ))
+mins=$(( $time / 60 - 60*$hour ))
+secs=$(( $time - 3600*$hour - 60*$mins ))
+
+echo Time used for IFW build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
 
 if  [[ -n "$OPT_UPLOAD" ]]; then
     echo "Uploading $IFW_PACKAGE_NAME ..."
@@ -235,3 +264,5 @@ if  [[ -n "$OPT_UPLOAD" ]]; then
     ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/$BUILD_ARCH
     scp $IFW_PACKAGE_NAME $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$BUILD_ARCH/
 fi
+
+popd
