@@ -136,23 +136,23 @@ installTarget() {
 
     echo "Creating target ..."
     ssh -o UserKnownHostsFile=/dev/null \
-	-o StrictHostKeyChecking=no \
-	-p $SSH_PORT \
-	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-	mersdk@localhost "sdk-manage --target --install --jfdi $tgt $TOOLCHAIN file:///home/mersdk/share/$TARGET_FILENAME"
+        -o StrictHostKeyChecking=no \
+        -p $SSH_PORT \
+        -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+        mersdk@localhost "sdk-manage --target --install --jfdi $tgt $TOOLCHAIN file:///home/mersdk/share/$TARGET_FILENAME"
 
     echo "Saving target dumps ..."
     ssh -o UserKnownHostsFile=/dev/null \
-	-o StrictHostKeyChecking=no \
-	-p $SSH_PORT \
-	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-	mersdk@localhost "sb2 -t $tgt qmake -query" > $INSTALL_PATH/dumps/qmake.query.$tgt
+        -o StrictHostKeyChecking=no \
+        -p $SSH_PORT \
+        -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+        mersdk@localhost "sb2 -t $tgt qmake -query" > $INSTALL_PATH/dumps/qmake.query.$tgt
 
     ssh -o UserKnownHostsFile=/dev/null \
-	-o StrictHostKeyChecking=no \
-	-p $SSH_PORT \
-	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost \
-	"sb2 -t $tgt gcc -dumpmachine" > $INSTALL_PATH/dumps/gcc.dumpmachine.$tgt
+        -o StrictHostKeyChecking=no \
+        -p $SSH_PORT \
+        -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost \
+        "sb2 -t $tgt gcc -dumpmachine" > $INSTALL_PATH/dumps/gcc.dumpmachine.$tgt
 }
 
 checkVBox() {
@@ -255,8 +255,8 @@ Usage:
 
 Options:
    -u   | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
-                              the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
-                              the upload directory will be created if it is not there
+                               the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
+                               the upload directory will be created if it is not there
    -uh  | --uhost <HOST>       override default upload host
    -up  | --upath <PATH>       override default upload path
    -uu  | --uuser <USER>       override default upload user
@@ -299,15 +299,15 @@ while [[ ${1:-} ]]; do
         -ti | --target-i486 ) shift
             OPT_TARGET_I486=$(basename $1); shift
             ;;
-	-td | --test-domain ) shift
-	    OPT_KEEP_TEST_DOMAIN="--test-domain"
-	    ;;
+        -td | --test-domain ) shift
+            OPT_KEEP_TEST_DOMAIN="--test-domain"
+            ;;
         -i | --ignore-running ) shift
             OPT_IGNORE_RUNNING=1
             ;;
-	-hax | --horrible-hack ) shift
-	    OPT_HACKIT=1
-	    ;;
+        -hax | --horrible-hack ) shift
+            OPT_HACKIT=1
+            ;;
         -r | --refresh ) shift
             OPT_REFRESH=1
             ;;
@@ -391,7 +391,7 @@ EOF
 if [[ -n $OPT_REFRESH ]]; then
     echo " Force zypper refresh for repos"
     if [[ -n $OPT_KEEP_TEST_DOMAIN ]]; then
-	echo " ... and keep test ssu domain after refresh"
+        echo " ... and keep test ssu domain after refresh"
     fi
 else
     echo " Do NOT refresh repos"
@@ -443,19 +443,19 @@ done
 if [[ -n $OPT_HACKIT ]]; then
     echo "### EMBARRASSING HACK! CLEANING jolla-core.check!!!"
     ssh -o UserKnownHostsFile=/dev/null \
-	-o StrictHostKeyChecking=no \
-	-p $SSH_PORT \
-	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-	mersdk@localhost "cat /dev/null | sudo tee /etc/zypp/systemCheck.d/jolla-core.check"
+        -o StrictHostKeyChecking=no \
+        -p $SSH_PORT \
+        -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+        mersdk@localhost "cat /dev/null | sudo tee /etc/zypp/systemCheck.d/jolla-core.check"
 fi
 
 # refresh the zypper repositories
 if [[ -n $OPT_REFRESH ]]; then
     ssh -o UserKnownHostsFile=/dev/null \
-	-o StrictHostKeyChecking=no \
-	-p $SSH_PORT \
-	-i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-	mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_KEEP_TEST_DOMAIN:-}"
+        -o StrictHostKeyChecking=no \
+        -p $SSH_PORT \
+        -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+        mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_KEEP_TEST_DOMAIN:-}"
 fi
 
 # shut the VM down cleanly so that it has time to flush its disk
