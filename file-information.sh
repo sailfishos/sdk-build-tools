@@ -41,6 +41,13 @@ fatal() {
     exit 1
 }
 
+rename_installers() {
+    echo "Renaming installers ..."
+    for installer in SailfishOSSDK*; do
+	mv $installer $(echo $installer | sed -e "s/\(SailfishOSSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE_CYCLE-$RELEASE-Qt5-\2-offline.\4/") || fatal "error renaming $installer"
+    done
+}
+
 usage() {
     cat <<EOF
 
@@ -53,6 +60,7 @@ Usage:
    $(basename $0) [OPTION]
 
 Options:
+   -m  | --rename             rename the installers to final names
    -r  | --release [LABEL]    release label [$RELEASE]
    -h  | --help               this help
 
@@ -66,6 +74,9 @@ EOF
 # handle commandline options
 while [[ ${1:-} ]]; do
     case "$1" in
+	-m | --rename) shift
+	    OPT_RENAME=1
+	    ;;
 	-r | --release) shift
 	    OPT_RELEASE=$1; shift
 	    [[ -z $OPT_RELEASE ]] && fatal "release label required"
@@ -80,6 +91,9 @@ while [[ ${1:-} ]]; do
     esac
 done
 
+if [[ $OPT_RENAME -eq 1 ]]; then
+    rename_installers
+fi
 
 echo "See also [https://sailfishos.org/wiki/ReleaseNote_SDK_$RELEASE '''Release notes for SDK release $RELEASE''']."
 
