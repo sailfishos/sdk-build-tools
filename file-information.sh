@@ -44,7 +44,7 @@ fatal() {
 rename_installers() {
     echo "Renaming installers ..."
     for installer in SailfishOSSDK*; do
-	mv $installer $(echo $installer | sed -e "s/\(SailfishOSSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE_CYCLE-$RELEASE-Qt5-\2-offline.\4/") || fatal "error renaming $installer"
+	mv $installer $(sed -e "s/\(SailfishOSSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE_CYCLE-$RELEASE-Qt5-\2-offline.\4/" <<< $installer) || fatal "error renaming $installer"
     done
 }
 
@@ -95,6 +95,9 @@ if [[ $OPT_RENAME -eq 1 ]]; then
     rename_installers
 fi
 
+echo "###### CUT HERE ######"
+echo
+
 echo "See also [https://sailfishos.org/wiki/ReleaseNote_SDK_$RELEASE '''Release notes for SDK release $RELEASE''']."
 
 echo "==File information=="
@@ -123,3 +126,12 @@ for ARCH in $PLATFORMS; do
 EOF
 
 done
+
+cat <<EOF
+##### CUT HERE #####
+
+Cut between the lines and copy paste a new page here:
+
+https://sailfishos.org/wiki/FileInformation_SDK_$RELEASE
+
+EOF
