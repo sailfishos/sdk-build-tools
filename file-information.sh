@@ -95,12 +95,14 @@ if [[ $OPT_RENAME -eq 1 ]]; then
     rename_installers
 fi
 
-echo "###### CUT HERE ######"
-echo
+cat <<EOF
+###### CUT HERE ######
 
-echo "See also [https://sailfishos.org/wiki/ReleaseNote_SDK_$RELEASE '''Release notes for SDK release $RELEASE''']."
+See also [https://sailfishos.org/wiki/ReleaseNote_SDK_$RELEASE '''Release notes for SDK release $RELEASE'''].
 
-echo "==File information=="
+==File information==
+
+EOF
 
 for ARCH in $PLATFORMS; do
     if [[ $ARCH == "mac" ]]; then
