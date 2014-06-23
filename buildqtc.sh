@@ -295,7 +295,7 @@ build_unix_qtc() {
 	mkdir -p $QTC_BUILD_DIR
 	pushd    $QTC_BUILD_DIR
 
-	[[ $OPT_QUICK ]] || $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
+	[[ $OPT_QUICK ]] || $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
 
 	make -j$(getconf _NPROCESSORS_ONLN)
 
@@ -398,7 +398,7 @@ if exist $binary_artifacts (
 )
 
 call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call %QTDIR%\bin\qmake $OPT_QTC_SRC\qtcreator.pro -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX= 
+call %QTDIR%\bin\qmake $OPT_QTC_SRC\qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX= 
 call jom
 call nmake install
 call nmake deployqt
