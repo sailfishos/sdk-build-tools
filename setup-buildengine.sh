@@ -229,8 +229,10 @@ packVM() {
     echo "Hard linking $PWD/$OPT_VDI => $INSTALL_PATH/mer.vdi"
     ln $PWD/$OPT_VDI $INSTALL_PATH/mer.vdi
 
-    # and 7z the mersdk with chosen compression
-    7z a -mx=$OPT_COMPRESSION $PACKAGE_NAME $INSTALL_PATH/
+    if [[ ! $OPT_NO_COMPRESSION ]]; then
+        # and 7z the mersdk with chosen compression
+	7z a -mx=$OPT_COMPRESSION $PACKAGE_NAME $INSTALL_PATH/
+    fi
 }
 
 checkForRunningVms() {
@@ -271,7 +273,9 @@ Options:
    -i   | --ignore-running     ignore running VMs
    -r   | --refresh            force a zypper refresh for MerSDK and sb2 targets
    -td  | --test-domain        keep test domain after refreshing the repos
+   -o   | --orig-release <REL> turn ssu release to this instead of latest after refreshing repos
    -c   | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
+   -nc  | --no-compression     do not create the 7z
    -ta  | --target-arm <FILE>  arm target rootstrap <FILE>, must be in current directory
    -ti  | --target-i486 <FILE> i486 target rootstrap <FILE>, must be in current directory
    -un  | --unregister         unregister the created VM at the end of script run
@@ -296,6 +300,9 @@ while [[ ${1:-} ]]; do
                 usage quit
             fi
             ;;
+	-nc | --no-compression ) shift
+	    OPT_NO_COMPRESSION=1
+	    ;;
         -f | --vdi-file ) shift
             OPT_VDI=$1; shift
             ;;
@@ -317,6 +324,10 @@ while [[ ${1:-} ]]; do
         -r | --refresh ) shift
             OPT_REFRESH=1
             ;;
+	-o | --orig-release ) shift
+	    OPT_ORIGINAL_RELEASE=$1; shift
+	    [[ -z $OPT_ORIGINAL_RELEASE ]] && fatal "empty original release option given"
+	    ;;
         -u | --upload ) shift
             OPT_UPLOAD=1
             OPT_UL_DIR=$1; shift
@@ -398,11 +409,15 @@ if [[ -n $OPT_REFRESH ]]; then
     echo " Force zypper refresh for repos"
     if [[ -n $OPT_KEEP_TEST_DOMAIN ]]; then
         echo " ... and keep test ssu domain after refresh"
+    else
+	echo " ... after update set ssu release to [${OPT_ORIGINAL_RELEASE:-latest}]"
     fi
 else
     echo " Do NOT refresh repos"
 fi
-
+if [[ $OPT_NO_COMPRESSION ]]; then
+    echo " Do NOT compress the resulting VDI"
+fi
 if [[ -n $OPT_UPLOAD ]]; then
     echo " Upload build results as user [$OPT_UPLOAD_USER] to [$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR]"
 else
@@ -461,7 +476,7 @@ if [[ -n $OPT_REFRESH ]]; then
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_KEEP_TEST_DOMAIN:-}"
+        mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
 fi
 
 # shut the VM down cleanly so that it has time to flush its disk

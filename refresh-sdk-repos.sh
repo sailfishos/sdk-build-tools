@@ -67,13 +67,15 @@ usage()
 Refresh the zypper repositories in MerSDK.
 
 Without any arguments the following values will be used:
-   domain:   $SSU_DOMAIN
-   release:  $SSU_RELEASE
+   domain:       $SSU_DOMAIN
+   release:      $SSU_RELEASE
+   orig release: $SSU_RELEASE_ORIG
 
 Usage:
     $0 [OPTION] [release]
 
 Options:
+    -r  | --release           use this release instead of 'latest' in the original ssu urls
     -td | --test-domain       keep test domain
     -y  | --non-interactive   answer 'yes' to all questions from this script
     -h  | --help              this help
@@ -90,6 +92,10 @@ while [[ ${1:-} ]]; do
 	-td | --test-domain ) shift
 	    OPT_KEEP_TEST_DOMAIN=1
 	    ;;
+	-r | --release ) shift
+	    SSU_RELEASE_ORIG=$1; shift
+	    [[ -z $SSU_RELEASE_ORIG ]] && { echo "empty original release given."; exit 1; }
+	    ;;
 	-h|--help|-*)
 	    usage quit
 	    ;;
@@ -100,8 +106,13 @@ while [[ ${1:-} ]]; do
     esac
 done
 
-echo "#### Using domain=$SSU_DOMAIN release=$SSU_RELEASE"
-echo
+cat <<EOF 
+####
+domain=$SSU_DOMAIN
+release=$SSU_RELEASE
+original release=$SSU_ORIG_RELEASE"
+
+EOF
 
 if [[ -z $OPT_YES ]]; then
     while true; do
