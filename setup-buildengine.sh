@@ -58,6 +58,12 @@ fatal() {
     exit 1
 }
 
+vboxmanage_wrapper() {
+    echo "VBoxManage $@"
+    VBoxManage "$@"
+    [[ $? -ne 0 ]] && fatal "VBoxManage failed"
+}
+
 unregisterVm() {
     echo "Unregistering $OPT_VM"
     # make sure the VM is not running
@@ -66,22 +72,22 @@ unregisterVm() {
 }
 
 createVM() {
-    VBoxManage createvm --basefolder=$VM_BASEFOLDER --name "$OPT_VM" --ostype Linux26 --register
-    VBoxManage modifyvm "$OPT_VM" --memory 1024 --vram 128 --accelerate3d off
-    VBoxManage storagectl "$OPT_VM" --name "SATA" --add sata --controller IntelAHCI $SATACOMMAND 1
-    VBoxManage storageattach "$OPT_VM" --storagectl SATA --port 0 --type hdd --mtype normal --medium $OPT_VDI
-    VBoxManage modifyvm "$OPT_VM" --nic1 nat --nictype1 virtio
-    VBoxManage modifyvm "$OPT_VM" --nic2 intnet --intnet2 sailfishsdk --nictype2 virtio --macaddress2 08005A11F155
-    VBoxManage modifyvm "$OPT_VM" --bioslogodisplaytime 1
-    VBoxManage modifyvm "$OPT_VM" --natpf1 "guestssh,tcp,127.0.0.1,${SSH_PORT},,22"
-    VBoxManage modifyvm "$OPT_VM" --natpf1 "guestwww,tcp,127.0.0.1,${HTTP_PORT},,9292"
-    VBoxManage modifyvm "$OPT_VM" --natdnshostresolver1 on
+    vboxmanage_wrapper createvm --basefolder=$VM_BASEFOLDER --name "$OPT_VM" --ostype Linux26 --register
+    vboxmanage_wrapper modifyvm "$OPT_VM" --memory 1024 --vram 128 --accelerate3d off
+    vboxmanage_wrapper storagectl "$OPT_VM" --name "SATA" --add sata --controller IntelAHCI $SATACOMMAND 1
+    vboxmanage_wrapper storageattach "$OPT_VM" --storagectl SATA --port 0 --type hdd --mtype normal --medium $OPT_VDI
+    vboxmanage_wrapper modifyvm "$OPT_VM" --nic1 nat --nictype1 virtio
+    vboxmanage_wrapper modifyvm "$OPT_VM" --nic2 intnet --intnet2 sailfishsdk --nictype2 virtio --macaddress2 08005A11F155
+    vboxmanage_wrapper modifyvm "$OPT_VM" --bioslogodisplaytime 1
+    vboxmanage_wrapper modifyvm "$OPT_VM" --natpf1 "guestssh,tcp,127.0.0.1,${SSH_PORT},,22"
+    vboxmanage_wrapper modifyvm "$OPT_VM" --natpf1 "guestwww,tcp,127.0.0.1,${HTTP_PORT},,9292"
+    vboxmanage_wrapper modifyvm "$OPT_VM" --natdnshostresolver1 on
 }
 
 createShares() {
     # put 'ssh' and 'vmshare' into $SSHCONFIG_PATH
     mkdir -p $SSHCONFIG_PATH/ssh/mersdk
-    VBoxManage sharedfolder add "$OPT_VM" --name ssh --hostpath $SSHCONFIG_PATH/ssh
+    vboxmanage_wrapper sharedfolder add "$OPT_VM" --name ssh --hostpath $SSHCONFIG_PATH/ssh
 
     mkdir -p $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine
     pushd $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine
@@ -98,16 +104,16 @@ createShares() {
     </engine>
 </devices>
 EOF
-    VBoxManage sharedfolder add "$OPT_VM" --name config --hostpath $SSHCONFIG_PATH/vmshare
+    vboxmanage_wrapper sharedfolder add "$OPT_VM" --name config --hostpath $SSHCONFIG_PATH/vmshare
 
     # and then 'targets' and 'home' for $INSTALL_PATH
     mkdir -p $INSTALL_PATH/targets
-    VBoxManage sharedfolder add "$OPT_VM" --name targets --hostpath $INSTALL_PATH/targets
-    VBoxManage sharedfolder add "$OPT_VM" --name home --hostpath $INSTALL_PATH
+    vboxmanage_wrapper sharedfolder add "$OPT_VM" --name targets --hostpath $INSTALL_PATH/targets
+    vboxmanage_wrapper sharedfolder add "$OPT_VM" --name home --hostpath $INSTALL_PATH
 }
 
 startVM() {
-    VBoxManage startvm --type headless "$OPT_VM"
+    vboxmanage_wrapper startvm --type headless "$OPT_VM"
 
     # wait a few seconds
     sleep 2
