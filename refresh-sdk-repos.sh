@@ -35,7 +35,10 @@ SSU_RELEASE=latest
 SSU_DOMAIN=sdkinstaller
 
 SSU_RELEASE_ORIG=latest
+# mersdk and emulator are on sailfish domain
 SSU_DOMAIN_ORIG=sailfish
+# targets are on sales domain
+SSU_DOMAIN_ORIG_TARGET=sales
 
 SSU_REFRESH_DOMAIN=10.0.0.20
 
@@ -183,7 +186,7 @@ refresh_target_repos() {
     if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
         # restore the original ssu status
 	sudo -i -u $sdk_user bash -c "$sb2session mv $reposbackup $SSU_INIFILE"
-	sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG"
+	sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG_TARGET"
 	sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE_ORIG"
     else
 	rm -f $reposbackup
