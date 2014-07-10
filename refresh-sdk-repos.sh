@@ -110,7 +110,7 @@ cat <<EOF
 ####
 domain=$SSU_DOMAIN
 release=$SSU_RELEASE
-original release=$SSU_ORIG_RELEASE"
+original release=$SSU_RELEASE_ORIG
 
 EOF
 
