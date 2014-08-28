@@ -59,7 +59,7 @@ fi
 
 # common options for unix/windows dynamic build
 # the dynamic build is used when building Qt Creator
-COMMON_CONFIG_OPTIONS="-release -confirm-license -opensource -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -qt-xkbcommon -no-eglfs -no-linuxfb -no-kms -no-sql-mysql -no-sql-odbc -developer-build"
+COMMON_CONFIG_OPTIONS="-release -confirm-license -opensource -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -no-eglfs -no-linuxfb -no-kms -no-sql-mysql -no-sql-odbc -developer-build"
 
 # add these to the COMMON_CONFIG_OPTIONS for static build
 # the static build is required to build Qt Installer Framework
@@ -152,7 +152,7 @@ configure_static_qt5() {
 
 configure_dynamic_qt5() {
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
-		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -qt-xcb -gtkstyle -DENABLE_VIDEO=0 -I $HOME/invariant/icu-install/include -L $HOME/invariant/icu-install/lib -prefix $PWD/qtbase
+		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -DENABLE_VIDEO=0 -I $HOME/invariant/icu-install/include -L $HOME/invariant/icu-install/lib -prefix $PWD/qtbase
 	else
 		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -DENABLE_VIDEO=0 -prefix $PWD/qtbase
 	fi
