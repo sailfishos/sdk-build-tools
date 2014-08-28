@@ -40,7 +40,7 @@ OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    OPT_QTDIR=$HOME/invariant/qt-4.8.5-build_______________padding___________________
+    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.2.1-build
     OPT_QTC_SRC=$HOME/src/sailfish-qtcreator
     OPT_INSTALL_ROOT=$HOME/build/qtc-install
 else
@@ -51,7 +51,7 @@ fi
 
 QTC_BUILD_DIR=qtc-build
 
-OPT_VARIANT="SailfishAlpha4"
+OPT_VARIANT="SailfishBeta1"
 
 fail() {
     echo "FAIL: $@"
@@ -308,13 +308,15 @@ build_unix_qtc() {
 	make bindist_installer
 
 	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
-            # remove the sailfish template project from the
-            # archive. it will be reinstalled by the installer.
-	    if [[ $UNAME_SYSTEM == "Darwin" ]]; then
-		7z d $SAILFISH_QTC_BASENAME$(build_arch).7z "bin/Qt Creator.app/Contents/Resources/templates/wizards/sailfishos-qtquick2app"
-	    else
-		7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
-	    fi
+		# remove the sailfish template project from the
+		# archive. it will be reinstalled by the installer.
+		if [[ $UNAME_SYSTEM == "Darwin" ]]; then
+		    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z "bin/Qt Creator.app/Contents/Resources/templates/wizards/sailfishos-qtquick2app"
+			7z d $SAILFISH_QTC_BASENAME$(build_arch).7z "bin/Qt Creator.app/Contents/Resources/templates/wizards/bb-*"
+		else
+			7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
+			7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/bb-*
+		fi
 	fi
 
 	if [[ -n $OPT_DOCUMENTATION ]]; then
