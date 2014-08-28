@@ -285,7 +285,7 @@ build_unix_gdb() {
 build_unix_qtc() {
     if [[ -z $OPT_GDB_ONLY ]]; then
 	export INSTALL_ROOT=$OPT_INSTALL_ROOT
-	export QTDIR=$OPT_QTDIR
+	export QTDIR=$OPT_QTDIR/qtbase
 	export QT_PRIVATE_HEADERS=$QTDIR/include
 	export PATH=$QTDIR/bin:$PATH
 	export INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
