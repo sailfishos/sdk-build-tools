@@ -152,9 +152,9 @@ configure_static_qt5() {
 
 configure_dynamic_qt5() {
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
-		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -no-icu -optimized-qmake -gtkstyle -DENABLE_VIDEO=0 -prefix $PWD/qtbase
+		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -gtkstyle -DENABLE_VIDEO=0 -I $HOME/invariant/icu-install/include -L $HOME/invariant/icu-install/lib -prefix $PWD/qtbase
 	else
-		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -no-icu -optimized-qmake -DENABLE_VIDEO=0 -prefix $PWD/qtbase
+		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -DENABLE_VIDEO=0 -prefix $PWD/qtbase
 	fi
 }
 
