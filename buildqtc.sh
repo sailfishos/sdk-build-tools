@@ -312,10 +312,8 @@ build_unix_qtc() {
 		# archive. it will be reinstalled by the installer.
 		if [[ $UNAME_SYSTEM == "Darwin" ]]; then
 		    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z "bin/Qt Creator.app/Contents/Resources/templates/wizards/sailfishos-qtquick2app"
-			7z d $SAILFISH_QTC_BASENAME$(build_arch).7z "bin/Qt Creator.app/Contents/Resources/templates/wizards/bb-*"
 		else
 			7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
-			7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/bb-*
 		fi
 	fi
 
