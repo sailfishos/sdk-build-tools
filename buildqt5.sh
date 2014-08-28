@@ -144,7 +144,7 @@ prepare_windows_build() {
 
 configure_static_qt5() {
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
-		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -no-opengl -no-icu -optimized-qmake -gtkstyle-DENABLE_VIDEO=0 -prefix $PWD/qtbase
+		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -no-opengl -no-icu -optimized-qmake -gtkstyle -DENABLE_VIDEO=0 -prefix $PWD/qtbase
 	else
 		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -no-icu -optimized-qmake -DENABLE_VIDEO=0 -prefix $PWD/qtbase
 	fi
