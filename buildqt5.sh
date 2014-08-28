@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# This will use the current directory to build Qt5
+# This script build dynamic and static versions of Qt5 into
+# subdirectories in the current dir.
 #
 # Qt5 sources must be found from the current user's home directory
 # $HOME/invariant/qt5 or in case of Windows in C:\invariant\qt5
@@ -42,22 +43,61 @@ UNAME_ARCH=$(uname -m)
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BASEDIR=$HOME/invariant
     SRCDIR_QT=$BASEDIR/qt5
-    BUILD_DIR=$BASEDIR/qt5-build
+    # the padding part in the dynamic build directory is necessary in
+    # order to accommodate rpath changes at the end of building Qt
+    # Creator, which reads Qt resources from this directory.
+    DYN_BUILD_DIR=$BASEDIR/qt-everywhere-opensource-src-5.2.1-build
+    STATIC_BUILD_DIR=$BASEDIR/qt-everywhere-opensource-src-5.2.1-static-build
 else
     BASEDIR="/c/invariant"
-    SRCDIR_QT="$BASEDIR/qt5"
-    BUILD_DIR="$BASEDIR/build-qt5"
+    SRCDIR_QT="$BASEDIR/qt"
+    DYN_BUILD_DIR="$BASEDIR/build-qt-dynamic"
+    STATIC_BUILD_DIR="$BASEDIR/build-qt-static"
+
+    MY_MKSPECDIR=$SRCDIR_QT/mkspecs/win32-msvc2010
 fi
 
-COMMON_CONFIG_OPTIONS="-developer-build -opensource -confirm-license -nomake examples -nomake tests -qt-xcb -prefix $BUILD_DIR"
+# common options for unix/windows dynamic build
+# the dynamic build is used when building Qt Creator
+COMMON_CONFIG_OPTIONS="-release -confirm-license -opensource -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -qt-xkbcommon -no-eglfs -no-linuxfb -no-kms -no-sql-mysql -no-sql-odbc -developer-build"
+
+# add these to the COMMON_CONFIG_OPTIONS for static build
+# the static build is required to build Qt Installer Framework
+COMMON_STATIC_OPTIONS="-static -accessibility -no-cups -no-sql-sqlite -skip qtactiveqt -skip qtlocation -skip qtmultimedia -skip qtserialport -skip qtquick1 -skip qtquickcontrols -skip qtsensors -skip qtwebkit -skip qtxmlpatterns -skip qtandroidextras -skip qtdoc -skip qtsvg"
+
+build_static_qt_windows() {
+    [[ -z $OPT_STATIC ]] && return
+
+    rm -rf   $STATIC_BUILD_DIR
+    mkdir -p $STATIC_BUILD_DIR
+    pushd    $STATIC_BUILD_DIR
+
+    cat <<EOF > build-stat.bat
+@echo off
+if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
+if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
+
+PATH=%PATH%;c:\invariant\bin
+
+call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
+call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -platform win32-msvc2010 -prefix
+
+call jom
+EOF
+
+    # replace the conf file with the proper one for this build
+    cp $MY_MKSPECDIR/qmake.conf.static $MY_MKSPECDIR/qmake.conf
+    cmd //c build-stat.bat
+
+    popd
+}
 
 build_dynamic_qt_windows() {
-    echo "Building Qt5 not tested in Windows yet - exiting"
-    return
+    [[ -z $OPT_DYNAMIC ]] && return
 
-    rm -rf   $BUILD_DIR
-    mkdir -p $BUILD_DIR
-    pushd    $BUILD_DIR
+    rm -rf   $DYN_BUILD_DIR
+    mkdir -p $DYN_BUILD_DIR
+    pushd    $DYN_BUILD_DIR
 
     cat <<EOF > build-dyn.bat
 @echo off
@@ -67,27 +107,80 @@ if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 PATH=%PATH%;c:\invariant\bin
 
 call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call "C:\invariant\qt5\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2010 -prefix
+call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2010 -prefix
  
 call jom
 EOF
+
+    # replace the conf file with the proper one for this build
+    cp $MY_MKSPECDIR/qmake.conf.dyn $MY_MKSPECDIR/qmake.conf
 
     cmd //c build-dyn.bat
     popd
 }
 
+# Windows needs different options in the mkspec for static and dynamic
+# builds.
+#
+# http://doc-snapshot.qt-project.org/qtifw-master/ifw-getting-started.html
+#
+# If you are using e.g. the Microsoft Visual Studio 2010 compiler, you
+# edit mkspecs\win32-msvc2010\qmake.conf and replace in the CFLAGS
+# sections '-MD' with '-MT'. Furthermore you should remove
+# 'embed_manifest_dll' and 'embed_manifest_exe' from CONFIG
+#
+prepare_windows_build() {
+    local orig_conf=$MY_MKSPECDIR/qmake.conf
+
+    # if the created file exists, return
+    [[ -e "$orig_conf.static" ]] && return
+
+    # make a copy of the orig file
+    cp $orig_conf $orig_conf.dyn
+
+    # create a static build version
+    sed -e "s/embed_manifest_dll embed_manifest_exe//g" -e "s/-MD/-MT/g" $orig_conf > $orig_conf.static
+}
+
+configure_static_qt5() {
+	if [[ $UNAME_SYSTEM == "Linux" ]]; then
+		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -no-opengl -no-icu -optimized-qmake -gtkstyle-DENABLE_VIDEO=0 -prefix $PWD/qtbase
+	else
+		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -no-icu -optimized-qmake -DENABLE_VIDEO=0 -prefix $PWD/qtbase
+	fi
+}
+
 configure_dynamic_qt5() {
-    $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS
+	if [[ $UNAME_SYSTEM == "Linux" ]]; then
+		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -no-icu -optimized-qmake -gtkstyle -DENABLE_VIDEO=0 -prefix $PWD/qtbase
+	else
+		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -no-icu -optimized-qmake -DENABLE_VIDEO=0 -prefix $PWD/qtbase
+	fi
 }
 
 build_dynamic_qt() {
-    rm -rf   $BUILD_DIR
-    mkdir -p $BUILD_DIR
-    pushd    $BUILD_DIR
+    [[ -z $OPT_DYNAMIC ]] && return
+
+    rm -rf   $DYN_BUILD_DIR
+    mkdir -p $DYN_BUILD_DIR
+    pushd    $DYN_BUILD_DIR
     configure_dynamic_qt5
     make -j$(getconf _NPROCESSORS_ONLN)
-    make install
-    make docs
+    # no need to make install with -developer-build option
+    # make install
+    popd
+}
+
+build_static_qt() {
+    [[ -z $OPT_STATIC ]] && return
+
+    rm -rf   $STATIC_BUILD_DIR
+    mkdir -p $STATIC_BUILD_DIR
+    pushd    $STATIC_BUILD_DIR
+    configure_static_qt5
+    make -j$(getconf _NPROCESSORS_ONLN)
+    # no need to make install with -developer-build option
+    # make install
     popd
 }
 
@@ -98,8 +191,7 @@ fail() {
 
 usage() {
     cat <<EOF
-
-Build Qt5 libraries and documentation
+Build dynamic and static versions of Qt5
 
 Required directories:
  $BASEDIR
@@ -109,6 +201,8 @@ Usage:
    $(basename $0) [OPTION]
 
 Options:
+   -d  | --dynamic            build only dynamic version (default: both)
+   -s  | --static             build only static version  (default: both)
    -y  | --non-interactive    answer yes to all questions presented by the script
    -h  | --help               this help
 
@@ -122,6 +216,12 @@ EOF
 # handle commandline options
 while [[ ${1:-} ]]; do
     case "$1" in
+	-d | --dynamic ) shift
+	    OPT_DYNAMIC=1
+	    ;;
+	-s | --static ) shift
+	    OPT_STATIC=1
+	    ;;
 	-y | --non-interactive ) shift
 	    OPT_YES=1
 	    ;;
@@ -134,10 +234,15 @@ while [[ ${1:-} ]]; do
     esac
 done
 
-cat <<EOF
-Build Qt5 libraries and documentation using sources in
- $SRCDIR_QT
-EOF
+if [[ -z $OPT_DYNAMIC ]] && [[ -z $OPT_STATIC ]]; then
+    # default: build both
+    OPT_DYNAMIC=1
+    OPT_STATIC=1
+fi
+
+echo "Using sources from [$SRCDIR_QT]"
+[[ -n $OPT_DYNAMIC ]] && echo "- Build [dynamic] version of Qt5"
+[[ -n $OPT_STATIC ]] && echo "- Build [static] version of Qt5"
 
 # confirm
 if [[ -z $OPT_YES ]]; then
@@ -175,10 +280,12 @@ BUILD_START=$(date +%s)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     build_dynamic_qt
+    build_static_qt
 else
+    prepare_windows_build
     build_dynamic_qt_windows
+    build_static_qt_windows
 fi
-
 # record end time
 BUILD_END=$(date +%s)
 
