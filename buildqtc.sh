@@ -319,6 +319,20 @@ build_unix_qtc() {
 		fi
 	fi
 
+    # Remove blackberry templates
+    if [[ $UNAME_SYSTEM == "Darwin" ]]; then
+        7z d $SAILFISH_QTC_BASENAME$(build_arch).7z "bin/Qt Creator.app/Contents/Resources/templates/wizards/bb-*"
+    else
+        7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/bb-*
+    fi
+
+    # Add icu library
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        pushd $HOME/invariant/icu-build
+        7z a $QTC_BUILD_DIR/$SAILFISH_QTC_BASENAME$(build_arch).7z lib/*
+        popd
+    fi
+    
 	if [[ -n $OPT_DOCUMENTATION ]]; then
 	    make docs
 	    make install_docs
