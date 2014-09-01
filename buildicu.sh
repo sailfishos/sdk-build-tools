@@ -45,7 +45,7 @@ BUILD_DIR=$BASEDIR/icu-build
 INSTALL_DIR=$BASEDIR/icu-install
 
 configure_icu() {
-    $SRCDIR_ICU/source/runConfigureICU Linux --disable-draft --disable-extras --disable-icuio --disable-layout --disable-test --disable-samples --prefix=$INSTALL_DIR
+    $SRCDIR_ICU/source/runConfigureICU Linux --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$INSTALL_DIR
 }
 
 build_icu() {

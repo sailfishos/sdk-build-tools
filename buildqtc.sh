@@ -1,3 +1,4 @@
+
 #!/bin/bash
 #
 # Builds Qt Creator and optionally uploads it to a server
@@ -43,6 +44,7 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.2.1-build
     OPT_QTC_SRC=$HOME/src/sailfish-qtcreator
     OPT_INSTALL_ROOT=$HOME/build/qtc-install
+    OPT_ICU_LIBS=$HOME/invariant/icu-install/lib
 else
     OPT_QTDIR="c:\invariant\build-qt-dynamic"
     OPT_QTC_SRC="c:\src\sailfish-qtcreator"
@@ -289,6 +291,7 @@ build_unix_qtc() {
 	export QT_PRIVATE_HEADERS=$QTDIR/include
 	export PATH=$QTDIR/bin:$PATH
 	export INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPT_ICU_LIBS
 
 	# clear build workspace
 	[[ $OPT_QUICK ]] || rm -rf $QTC_BUILD_DIR
@@ -475,3 +478,11 @@ if  [[ -n "$OPT_UPLOAD" ]]; then
 	scp $SAILFISH_GDB_BASENAME*.7z $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$(build_arch)/
     fi
 fi
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=4 expandtab:
