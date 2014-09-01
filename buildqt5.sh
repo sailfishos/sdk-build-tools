@@ -42,24 +42,26 @@ UNAME_ARCH=$(uname -m)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BASEDIR=$HOME/invariant
-    SRCDIR_QT=$BASEDIR/qt5
+    SRCDIR_QT=$BASEDIR/qt-everywhere-opensource-src-5.2.1
     # the padding part in the dynamic build directory is necessary in
     # order to accommodate rpath changes at the end of building Qt
     # Creator, which reads Qt resources from this directory.
     DYN_BUILD_DIR=$BASEDIR/qt-everywhere-opensource-src-5.2.1-build
     STATIC_BUILD_DIR=$BASEDIR/qt-everywhere-opensource-src-5.2.1-static-build
+    ICU_INSTALL_DIR=$BASEDIR/icu-install
 else
     BASEDIR="/c/invariant"
     SRCDIR_QT="$BASEDIR/qt"
-    DYN_BUILD_DIR="$BASEDIR/build-qt-dynamic"
-    STATIC_BUILD_DIR="$BASEDIR/build-qt-static"
+    DYN_BUILD_DIR="$BASEDIR/build-qt5-dynamic"
+    STATIC_BUILD_DIR="$BASEDIR/build-qt5-static"
+    ICU_INSTALL_DIR=$BASEDIR/icu
 
     MY_MKSPECDIR=$SRCDIR_QT/mkspecs/win32-msvc2010
 fi
 
 # common options for unix/windows dynamic build
 # the dynamic build is used when building Qt Creator
-COMMON_CONFIG_OPTIONS="-release -confirm-license -opensource -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -no-eglfs -no-linuxfb -no-kms -no-sql-mysql -no-sql-odbc -developer-build"
+COMMON_CONFIG_OPTIONS="-release -confirm-license -opensource -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -no-eglfs -no-linuxfb -no-kms -no-sql-mysql -no-sql-odbc -developer-build -skip qtandroidextras"
 
 # add these to the COMMON_CONFIG_OPTIONS for static build
 # the static build is required to build Qt Installer Framework
@@ -67,6 +69,9 @@ COMMON_STATIC_OPTIONS="-static -accessibility -no-cups -no-sql-sqlite -skip qtac
 
 build_static_qt_windows() {
     [[ -z $OPT_STATIC ]] && return
+
+    echo "Static Qt5 build not required at the moment"
+    return
 
     rm -rf   $STATIC_BUILD_DIR
     mkdir -p $STATIC_BUILD_DIR
@@ -119,43 +124,12 @@ EOF
     popd
 }
 
-# Windows needs different options in the mkspec for static and dynamic
-# builds.
-#
-# http://doc-snapshot.qt-project.org/qtifw-master/ifw-getting-started.html
-#
-# If you are using e.g. the Microsoft Visual Studio 2010 compiler, you
-# edit mkspecs\win32-msvc2010\qmake.conf and replace in the CFLAGS
-# sections '-MD' with '-MT'. Furthermore you should remove
-# 'embed_manifest_dll' and 'embed_manifest_exe' from CONFIG
-#
-prepare_windows_build() {
-    local orig_conf=$MY_MKSPECDIR/qmake.conf
-
-    # if the created file exists, return
-    [[ -e "$orig_conf.static" ]] && return
-
-    # make a copy of the orig file
-    cp $orig_conf $orig_conf.dyn
-
-    # create a static build version
-    sed -e "s/embed_manifest_dll embed_manifest_exe//g" -e "s/-MD/-MT/g" $orig_conf > $orig_conf.static
-}
-
-configure_static_qt5() {
-	if [[ $UNAME_SYSTEM == "Linux" ]]; then
-		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -no-opengl -no-icu -optimized-qmake -qt-xcb -gtkstyle -DENABLE_VIDEO=0 -prefix $PWD/qtbase
-	else
-		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -no-icu -optimized-qmake -DENABLE_VIDEO=0 -prefix $PWD/qtbase
-	fi
-}
-
 configure_dynamic_qt5() {
-	if [[ $UNAME_SYSTEM == "Linux" ]]; then
-		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -DENABLE_VIDEO=0 -I $HOME/invariant/icu-install/include -L $HOME/invariant/icu-install/lib -prefix $PWD/qtbase
-	else
-		$SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -DENABLE_VIDEO=0 -prefix $PWD/qtbase
-	fi
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake  -qt-xcb -qt-xkbcommon -gtkstyle -DENABLE_VIDEO=0 -I $ICU_INSTALL_DIR/include -L $ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
+    else
+        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -DENABLE_VIDEO=0
+    fi
 }
 
 build_dynamic_qt() {
@@ -173,6 +147,9 @@ build_dynamic_qt() {
 
 build_static_qt() {
     [[ -z $OPT_STATIC ]] && return
+
+    echo "Static Qt5 build not required at the moment"
+    return
 
     rm -rf   $STATIC_BUILD_DIR
     mkdir -p $STATIC_BUILD_DIR
@@ -216,28 +193,27 @@ EOF
 # handle commandline options
 while [[ ${1:-} ]]; do
     case "$1" in
-	-d | --dynamic ) shift
-	    OPT_DYNAMIC=1
-	    ;;
-	-s | --static ) shift
-	    OPT_STATIC=1
-	    ;;
-	-y | --non-interactive ) shift
-	    OPT_YES=1
-	    ;;
-	-h | --help ) shift
-	    usage quit
-	    ;;
-	* )
-	    usage quit
-	    ;;
+    -d | --dynamic ) shift
+        OPT_DYNAMIC=1
+        ;;
+    -s | --static ) shift
+        OPT_STATIC=1
+        ;;
+    -y | --non-interactive ) shift
+        OPT_YES=1
+        ;;
+    -h | --help ) shift
+        usage quit
+        ;;
+    * )
+        usage quit
+        ;;
     esac
 done
 
 if [[ -z $OPT_DYNAMIC ]] && [[ -z $OPT_STATIC ]]; then
-    # default: build both
+    # default: build dynamic only
     OPT_DYNAMIC=1
-    OPT_STATIC=1
 fi
 
 echo "Using sources from [$SRCDIR_QT]"
@@ -247,18 +223,18 @@ echo "Using sources from [$SRCDIR_QT]"
 # confirm
 if [[ -z $OPT_YES ]]; then
     while true; do
-	read -p "Do you want to continue? (y/n) " answer
-	case $answer in
-	    [Yy]*)
-		break ;;
-	    [Nn]*)
-		echo "Ok, exiting"
-		exit 0
-		;;
-	    *)
-		echo "Please answer yes or no."
-		;;
-	esac
+    read -p "Do you want to continue? (y/n) " answer
+    case $answer in
+        [Yy]*)
+        break ;;
+        [Nn]*)
+        echo "Ok, exiting"
+        exit 0
+        ;;
+        *)
+        echo "Please answer yes or no."
+        ;;
+    esac
     done
 fi
 
@@ -275,14 +251,17 @@ pushd $BASEDIR || exit 1
 # stop in case of errors
 set -e
 
+
 # record start time
 BUILD_START=$(date +%s)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        export LD_LIBRARY_PATH=$ICU_INSTALL_DIR/lib
+    fi
     build_dynamic_qt
     build_static_qt
 else
-    prepare_windows_build
     build_dynamic_qt_windows
     build_static_qt_windows
 fi
@@ -297,3 +276,11 @@ mins=$(( $time / 60 - 60*$hour ))
 secs=$(( $time - 3600*$hour - 60*$mins ))
 
 echo Time used for Qt5 build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=4 expandtab:
