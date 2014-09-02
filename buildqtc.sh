@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #
 # Builds Qt Creator and optionally uploads it to a server
@@ -44,11 +43,12 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.2.1-build
     OPT_QTC_SRC=$HOME/src/sailfish-qtcreator
     OPT_INSTALL_ROOT=$HOME/build/qtc-install
-    OPT_ICU_LIBS=$HOME/invariant/icu-install/lib
+    OPT_ICU_PATH=$HOME/invariant/icu-install
 else
-    OPT_QTDIR="c:\invariant\build-qt-dynamic"
+    OPT_QTDIR="c:\invariant\build-qt5-dynamic-msvc2012"
     OPT_QTC_SRC="c:\src\sailfish-qtcreator"
     OPT_INSTALL_ROOT="c:\build\qtc-install"
+    OPT_ICU_PATH="C:\invariant\icu"
 fi
 
 QTC_BUILD_DIR=qtc-build
@@ -291,7 +291,7 @@ build_unix_qtc() {
 	export QT_PRIVATE_HEADERS=$QTDIR/include
 	export PATH=$QTDIR/bin:$PATH
 	export INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPT_ICU_LIBS
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPT_ICU_PATH/lib
 
 	# clear build workspace
 	[[ $OPT_QUICK ]] || rm -rf $QTC_BUILD_DIR
@@ -378,7 +378,7 @@ EOF
 build_windows_qtc() {
     if [[ -z $OPT_GDB_ONLY ]]; then
 	# clear build workspace
-	rm -rf   $QTC_BUILD_DIR
+	[[ $OPT_QUICK ]] || rm -rf $QTC_BUILD_DIR
 	mkdir -p $QTC_BUILD_DIR
 	pushd    $QTC_BUILD_DIR
 
@@ -402,11 +402,12 @@ build_windows_qtc() {
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
+
 set INSTALL_ROOT=$OPT_INSTALL_ROOT
-set QTDIR=$OPT_QTDIR
-set QMAKESPEC=win32-msvc2010
-set QT_PRIVATE_HEADERS=%QTDIR%\install
-set PATH=%PATH%;%_programs%\7-Zip;%QTDIR%\bin;c:\invariant\bin;c:\Python27
+set QTDIR=$OPT_QTDIR\qtbase
+set QMAKESPEC=win32-msvc2012
+set QT_PRIVATE_HEADERS=%QTDIR%\include
+set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;C:\invariant\bin;c:\python27;$OPT_ICU_PATH\bin
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
 call rmdir /s /q $OPT_INSTALL_ROOT
@@ -415,11 +416,19 @@ if exist $binary_artifacts (
   call 7z x -o$OPT_INSTALL_ROOT $binary_artifacts
 )
 
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call %QTDIR%\bin\qmake $OPT_QTC_SRC\qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX= 
+call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
+call %QTDIR%\bin\qmake C:\src\sailfish-qtcreator\qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
+
 call jom
 call nmake install
 call nmake deployqt
+
+rem copy all the necessary libraries to the install directory
+copy $OPT_QTDIR\qtbase\bin\libEGL.dll %INSTALL_ROOT%\bin
+copy $OPT_QTDIR\qtbase\bin\libGLESv2*.dll %INSTALL_ROOT%\bin
+copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin
+copy $OPT_ICU_PATH\bin\*.dll %INSTALL_ROOT%\bin
+
 call nmake bindist_installer
 EOF
 
@@ -431,6 +440,9 @@ EOF
 	    # reinstalled by the installer.
 	    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
 	fi
+
+    # Remove blackberry templates
+    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/bb-*
 
 	popd
     fi
