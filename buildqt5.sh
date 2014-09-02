@@ -51,74 +51,33 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     ICU_INSTALL_DIR=$BASEDIR/icu-install
 else
     BASEDIR="/c/invariant"
-    SRCDIR_QT="$BASEDIR/qt"
-    DYN_BUILD_DIR="$BASEDIR/build-qt5-dynamic"
-    STATIC_BUILD_DIR="$BASEDIR/build-qt5-static"
+    SRCDIR_QT="$BASEDIR/qt-everywhere-opensource-src-5.2.1"
+    BUILD_DIR="$BASEDIR/build-qt5-msvc2012"
     ICU_INSTALL_DIR=$BASEDIR/icu
-
-    MY_MKSPECDIR=$SRCDIR_QT/mkspecs/win32-msvc2010
 fi
 
 # common options for unix/windows dynamic build
 # the dynamic build is used when building Qt Creator
-COMMON_CONFIG_OPTIONS="-release -confirm-license -opensource -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -no-eglfs -no-linuxfb -no-kms -no-sql-mysql -no-sql-odbc -developer-build -skip qtandroidextras"
+COMMON_CONFIG_OPTIONS="-release -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -no-sql-mysql -no-sql-odbc -developer-build -confirm-license -opensource -skip qtandroidextras"
 
-# add these to the COMMON_CONFIG_OPTIONS for static build
-# the static build is required to build Qt Installer Framework
-COMMON_STATIC_OPTIONS="-static -accessibility -no-cups -no-sql-sqlite -skip qtactiveqt -skip qtlocation -skip qtmultimedia -skip qtserialport -skip qtquick1 -skip qtquickcontrols -skip qtsensors -skip qtwebkit -skip qtxmlpatterns -skip qtandroidextras -skip qtdoc -skip qtsvg"
-
-build_static_qt_windows() {
-    [[ -z $OPT_STATIC ]] && return
-
-    echo "Static Qt5 build not required at the moment"
-    return
-
-    rm -rf   $STATIC_BUILD_DIR
-    mkdir -p $STATIC_BUILD_DIR
-    pushd    $STATIC_BUILD_DIR
-
-    cat <<EOF > build-stat.bat
-@echo off
-if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
-if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
-
-PATH=%PATH%;c:\invariant\bin
-
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -platform win32-msvc2010 -prefix
-
-call jom
-EOF
-
-    # replace the conf file with the proper one for this build
-    cp $MY_MKSPECDIR/qmake.conf.static $MY_MKSPECDIR/qmake.conf
-    cmd //c build-stat.bat
-
-    popd
-}
+LINUX_CONFIG_OPTIONS="-no-eglfs -no-linuxfb -no-kms"
 
 build_dynamic_qt_windows() {
-    [[ -z $OPT_DYNAMIC ]] && return
-
-    rm -rf   $DYN_BUILD_DIR
-    mkdir -p $DYN_BUILD_DIR
-    pushd    $DYN_BUILD_DIR
+    rm -rf   $BUILD_DIR
+    mkdir -p $BUILD_DIR
+    pushd    $BUILD_DIR
 
     cat <<EOF > build-dyn.bat
 @echo off
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-PATH=%PATH%;c:\invariant\bin
-
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2010 -prefix
+set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;C:\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;c:\invariant\icu\bin;C:\invariant\qt-everywhere-opensource-src-5.2.1\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;c:\invariant\bin
+call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
+call c:\invariant\qt-everywhere-opensource-src-5.2.1\configure.bat $COMMON_CONFIG_OPTIONS -icu -I $ICU_INSTALL_DIR\include -L $ICU_INSTALL_DIR\lib -angle -platform win32-msvc2012 -prefix
  
-call jom
+call jom /j 1
 EOF
-
-    # replace the conf file with the proper one for this build
-    cp $MY_MKSPECDIR/qmake.conf.dyn $MY_MKSPECDIR/qmake.conf
 
     cmd //c build-dyn.bat
     popd
@@ -126,7 +85,7 @@ EOF
 
 configure_dynamic_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake  -qt-xcb -qt-xkbcommon -gtkstyle -DENABLE_VIDEO=0 -I $ICU_INSTALL_DIR/include -L $ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
+        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -DENABLE_VIDEO=0 -I $ICU_INSTALL_DIR/include -L $ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
     else
         $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -DENABLE_VIDEO=0
     fi
@@ -145,20 +104,18 @@ build_dynamic_qt() {
     popd
 }
 
+build_static_qt_windows() {
+    [[ -z $OPT_STATIC ]] && return
+
+    echo "Static Qt5 build not required at the moment"
+    return
+}
+
 build_static_qt() {
     [[ -z $OPT_STATIC ]] && return
 
     echo "Static Qt5 build not required at the moment"
     return
-
-    rm -rf   $STATIC_BUILD_DIR
-    mkdir -p $STATIC_BUILD_DIR
-    pushd    $STATIC_BUILD_DIR
-    configure_static_qt5
-    make -j$(getconf _NPROCESSORS_ONLN)
-    # no need to make install with -developer-build option
-    # make install
-    popd
 }
 
 fail() {
@@ -178,8 +135,8 @@ Usage:
    $(basename $0) [OPTION]
 
 Options:
-   -d  | --dynamic            build only dynamic version (default: both)
-   -s  | --static             build only static version  (default: both)
+   -d  | --dynamic            build dynamic version (default)
+   -s  | --static             build static version
    -y  | --non-interactive    answer yes to all questions presented by the script
    -h  | --help               this help
 

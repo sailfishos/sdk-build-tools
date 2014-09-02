@@ -54,6 +54,7 @@ build_icu() {
     pushd    $BUILD_DIR
     configure_icu
     make -j$(getconf _NPROCESSORS_ONLN)
+    rm -rf $INSTALL_DIR
     make install
     popd
 }
