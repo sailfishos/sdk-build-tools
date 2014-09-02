@@ -45,16 +45,13 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BUILD_DIR=$BASEDIR/qt5-build
 else
     BASEDIR="/c/invariant"
-    SRCDIR_QT="$BASEDIR/qt5"
-    BUILD_DIR="$BASEDIR/build-qt5"
+    SRCDIR_QT="$BASEDIR/qt-everywhere-opensource-src-5.2.1"
+    BUILD_DIR="$BASEDIR/build-qt5-xxx-msvc2012"
 fi
 
 COMMON_CONFIG_OPTIONS="-developer-build -opensource -confirm-license -nomake examples -nomake tests -qt-xcb -prefix $BUILD_DIR"
 
 build_dynamic_qt_windows() {
-    echo "Building Qt5 not tested in Windows yet - exiting"
-    return
-
     rm -rf   $BUILD_DIR
     mkdir -p $BUILD_DIR
     pushd    $BUILD_DIR
@@ -64,12 +61,11 @@ build_dynamic_qt_windows() {
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-PATH=%PATH%;c:\invariant\bin
-
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call "C:\invariant\qt5\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2010 -prefix
+set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;C:\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;c:\invariant\icu\bin;C:\invariant\qt-everywhere-opensource-src-5.2.1\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;c:\invariant\bin
+call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
+call c:\invariant\qt-everywhere-opensource-src-5.2.1\configure.bat -debug -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -no-sql-mysql -no-sql-odbc -developer-build -confirm-license -opensource -icu -I c:\invariant\icu\include -L c:\invariant\icu\lib -angle -skip qtandroidextras -platform win32-msvc2012 -prefix
  
-call jom
+call jom /j 1
 EOF
 
     cmd //c build-dyn.bat

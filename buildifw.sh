@@ -46,7 +46,7 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     OPT_QT_SRC_DIR=$HOME/invariant/qt
     OPT_IFW_SRC=$HOME/invariant/installer-framework
 else
-    OPT_QTDIR="c:\invariant\build-qt-static"
+    OPT_QTDIR="c:\invariant\build-qt-static-2012"
     OPT_IFW_SRC="c:\invariant\installer-framework"
 fi
 
@@ -201,10 +201,10 @@ if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set QTDIR=$OPT_QTDIR
-set QMAKESPEC=win32-msvc2010
+set QMAKESPEC=win32-msvc2012
 set PATH=%PATH%;c:\invariant\bin
 
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
+call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
 call %QTDIR%\bin\qmake -r $OPT_IFW_SRC\installerfw.pro
 call jom
 EOF

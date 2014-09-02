@@ -51,10 +51,10 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
 else
     BASEDIR="/c/invariant"
     SRCDIR_QT="$BASEDIR/qt"
-    DYN_BUILD_DIR="$BASEDIR/build-qt-dynamic"
-    STATIC_BUILD_DIR="$BASEDIR/build-qt-static"
+    DYN_BUILD_DIR="$BASEDIR/build-qt-dynamic-2012"
+    STATIC_BUILD_DIR="$BASEDIR/build-qt-static-2012"
 
-    MY_MKSPECDIR=$SRCDIR_QT/mkspecs/win32-msvc2010
+    MY_MKSPECDIR=$SRCDIR_QT/mkspecs/win32-msvc2012
 fi
 
 # common options for unix/windows dynamic build
@@ -79,10 +79,10 @@ if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 PATH=%PATH%;c:\invariant\bin
 
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -platform win32-msvc2010 -prefix
+call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
+call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -platform win32-msvc2012 -prefix
 
-call jom
+call jom /j 1
 EOF
 
     # replace the conf file with the proper one for this build
@@ -106,8 +106,8 @@ if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 PATH=%PATH%;c:\invariant\bin
 
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2010 -prefix
+call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
+call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2012 -prefix
  
 call jom
 EOF
