@@ -39,7 +39,7 @@ OPT_UPLOAD_HOST=10.0.0.20
 OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
-OPT_VARIANT="SailfishAlphaX"
+OPT_VARIANT="SailfishBetaX"
 
 OPT_REVISION_EXTRA="+git"
 
@@ -96,8 +96,9 @@ Options:
    -i   | --installer           Build installer
    -r   | --repogen             Build SDK update repository
    -I   | --ifw                 Build Installer Framework
-   -qt4 | --qt4-build           Build Qt4 (required for QtC and Ifw)
-   -qt5 | --qt5-build           Build Qt5 (required for SDK documentation)
+   -qt4 | --qt4-build           Build Qt4 (required for Installer framework)
+   -qt5 | --qt5-build           Build Qt5 (required for QtC)
+   -icu | --icu-build           Build ICU library (Linux and Windows)
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
    -v   | --variant <STRING>    Use <STRING> as the build variant
@@ -150,6 +151,10 @@ while [[ ${1:-} ]]; do
             OPT_BUILD_REPO=1
             let numtasks++
             ;;
+	-icu | --icu-build ) shift
+	    OPT_BUILD_ICU=1
+	    let numtasks++
+	    ;;
         -qt4 | --qt4-build ) shift
             OPT_BUILD_QT4=1
             let numtasks++
@@ -257,6 +262,7 @@ Summary of chosen actions:
  Build Installer ... [$(get_option $OPT_BUILD_INSTALLER)]
  Build Qt4 ......... [$(get_option $OPT_BUILD_QT4)]
  Build Qt5 ......... [$(get_option $OPT_BUILD_QT5)]
+ Build ICU ......... [$(get_option $OPT_BUILD_ICU)]
  Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
  SDK Config Variant  [$OPT_VARIANT]
@@ -374,6 +380,17 @@ do_build_ifw() {
     _ popd
 }
 
+do_build_icu() {
+    [[ -z $OPT_BUILD_ICU ]] || [[ $UNAME_SYSTEM == "Darwin" ]] && return;
+
+    echo "---------------------------------"
+    echo "Building ICU ..."
+
+    _ pushd $INVARIANT_DIR
+    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildicu.sh -y
+    _ popd
+}
+
 do_build_qtc() {
     # QtC docs cannot be built without also building QtC so let's not
     # check it here
@@ -470,6 +487,9 @@ do_create_build_env
 # 3 - build qt4
 do_build_qt4
 
+# 3.5 - build ICU for linux and windows
+do_build_icu
+
 # 4 - build qt5
 do_build_qt5
 
@@ -495,3 +515,11 @@ mins=$(( $time / 60 - 60*$hour ))
 secs=$(( $time - 3600*$hour - 60*$mins ))
 
 echo Time used for build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=4 expandtab:
