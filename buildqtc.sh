@@ -48,7 +48,7 @@ else
     OPT_QTDIR="c:\invariant\build-qt5-dynamic-msvc2012"
     OPT_QTC_SRC="c:\src\sailfish-qtcreator"
     OPT_INSTALL_ROOT="c:\build\qtc-install"
-    OPT_ICU_PATH="C:\invariant\icu"
+    OPT_ICU_PATH="c:\invariant\icu"
 fi
 
 QTC_BUILD_DIR=qtc-build

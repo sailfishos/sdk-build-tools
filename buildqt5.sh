@@ -52,7 +52,7 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
 else
     BASEDIR="/c/invariant"
     SRCDIR_QT="$BASEDIR/qt-everywhere-opensource-src-5.2.1"
-    BUILD_DIR="$BASEDIR/build-qt5-msvc2012"
+    BUILD_DIR="$BASEDIR/build-qt5-dynamic-msvc2012"
     ICU_INSTALL_DIR=$BASEDIR/icu
 fi
 
@@ -74,7 +74,7 @@ if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;C:\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;c:\invariant\icu\bin;C:\invariant\qt-everywhere-opensource-src-5.2.1\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;c:\invariant\bin
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
-call c:\invariant\qt-everywhere-opensource-src-5.2.1\configure.bat $COMMON_CONFIG_OPTIONS -icu -I $ICU_INSTALL_DIR\include -L $ICU_INSTALL_DIR\lib -angle -platform win32-msvc2012 -prefix
+call c:\invariant\qt-everywhere-opensource-src-5.2.1\configure.bat $COMMON_CONFIG_OPTIONS -icu -I c:\invariant\icu\include -L c:\invariant\icu\lib -angle -platform win32-msvc2012 -prefix
  
 call jom /j 1
 EOF
