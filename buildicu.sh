@@ -42,7 +42,11 @@ export LC_ALL=C
 UNAME_SYSTEM=$(uname -s)
 UNAME_ARCH=$(uname -m)
 
-BASEDIR=$HOME/invariant
+if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
+    BASEDIR=$HOME/invariant
+else
+    BASEDIR="c:\invariant"
+fi
 SRCDIR_ICU=$BASEDIR/icu
 BUILD_DIR=$BASEDIR/icu-build
 INSTALL_DIR=$BASEDIR/icu-install
