@@ -1,9 +1,12 @@
 #!/bin/bash
 #
-# This script build ICU library into subdirectories in the current dir.
+# On Linux this script builds ICU library into subdirectories in
+# the $HOME/invariant dir. ICU sources must be found from the current user's
+# home directory $HOME/invariant/icu.
 #
-# ICU sources must be found from the current user's home directory
-# $HOME/invariant/icu.
+# On Windows this script downloads the ICU library and extracts it into
+# the $HOME/invariant dir.
+#
 #
 # Copyright (C) 2014 Jolla Oy
 # Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
@@ -43,6 +46,8 @@ BASEDIR=$HOME/invariant
 SRCDIR_ICU=$BASEDIR/icu
 BUILD_DIR=$BASEDIR/icu-build
 INSTALL_DIR=$BASEDIR/icu-install
+WIN_ICU_DOWNLOAD_URL="http://10.0.0.20/sailfishos/win32-binary-artifacts/icu/icu4c-4_8_1_1-Win32-msvc10.zip"
+WIN_ICU_BINARY_ZIP=$(echo $WIN_ICU_DOWNLOAD_URL |sed 's/.*\///')
 
 configure_icu() {
     $SRCDIR_ICU/source/runConfigureICU Linux --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$INSTALL_DIR
@@ -59,19 +64,48 @@ build_icu() {
     popd
 }
 
+download_icu_win() {
+    curl -O $WIN_ICU_DOWNLOAD_URL
+    7z -y x $WIN_ICU_BINARY_ZIP
+}
+
+build_arch() {
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        echo "linux"
+    elif [[ $UNAME_SYSTEM == "Darwin" ]]; then
+        echo "mac"
+    else
+        echo "windows"
+    fi
+}
+
 fail() {
     echo "FAIL: $@"
     exit 1
 }
 
 usage() {
-    cat <<EOF
+    if [[ $(build_arch) == "linux" ]]; then
+        cat <<EOF
 Build ICU library
 
 Required directories:
  $BASEDIR
  $SRCDIR_ICU
 
+EOF
+
+    elif [[ $(build_arch) == "windows" ]]; then
+        cat <<EOF
+Download ICU library
+
+Required directories
+ $BASEDIR
+
+EOF
+    fi
+
+    cat <<EOF
 Usage:
    $(basename $0) [OPTION]
 
@@ -101,7 +135,11 @@ while [[ ${1:-} ]]; do
     esac
 done
 
-echo "Using sources from [$SRCDIR_ICU]"
+if [[ $(build_arch) == "linux" ]]; then
+    echo "Using sources from [$SRCDIR_ICU]"
+elif [[ $(build_arch) == "windows" ]]; then
+    echo "Downloading ICU from [$WIN_ICU_DOWNLOAD_URL]"
+fi
 
 # confirm
 if [[ -z $OPT_YES ]]; then
@@ -125,7 +163,7 @@ if [[ ! -d $BASEDIR ]]; then
     fail "directory [$BASEDIR] does not exist"
 fi
 
-if [[ ! -d $SRCDIR_ICU ]]; then
+if [[ $(build_arch) == "linux" && ! -d $SRCDIR_ICU ]]; then
     fail "directory [$SRCDIR_ICU] does not exist"
 fi
 
@@ -137,11 +175,12 @@ set -e
 # record start time
 BUILD_START=$(date +%s)
 
-if [[ $UNAME_SYSTEM == "Linux" ]]; then
+if [[ $(build_arch) == "linux" ]]; then
     build_icu
+elif [[ $(build_arch) == "windows" ]]; then
+    download_icu_win
 else
-    echo Windows or OSX builds are not yet supported.
-    exit 0
+    echo This platform is not yet supported.
 fi
 # record end time
 BUILD_END=$(date +%s)
