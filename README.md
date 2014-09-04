@@ -62,7 +62,8 @@ For Windows use a pre-built package:
 
 The following additional packages are required in Ubuntu 10.04
 
-* `build-essential` `git` `libgtk2.0-dev` `chrpath` `p7zip-full` `libncurses5-dev` `libdbus-1-dev` `ruby` `libgl1-mesa-dev`
+* `build-essential` `pkg-config` `git` `libgtk2.0-dev` `chrpath` `p7zip-full` `libncurses5-dev` `libdbus-1-dev` `ruby` `libgl1-mesa-dev`
+  `"^libxcb.*"` `libx11-xcb-dev` `libxrender-dev` `libxi-dev` `flex` `bison` `gperf` `libxslt-dev`
 
 ### Mac
 
