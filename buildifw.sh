@@ -46,7 +46,7 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     OPT_QT_SRC_DIR=$HOME/invariant/qt
     OPT_IFW_SRC=$HOME/invariant/installer-framework
 else
-    OPT_QTDIR="c:\invariant\build-qt-static"
+    OPT_QTDIR="c:\invariant\build-qt-static-2012"
     OPT_IFW_SRC="c:\invariant\installer-framework"
 fi
 
