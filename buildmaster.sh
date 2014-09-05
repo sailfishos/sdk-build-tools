@@ -40,6 +40,8 @@ OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
 OPT_VARIANT="SailfishBetaX"
+OPT_RELEASE="yydd"
+OPT_RELCYCLE="Beta"
 
 OPT_REVISION_EXTRA="+git"
 
@@ -101,7 +103,9 @@ Options:
    -icu | --icu-build           Build ICU library (Linux and Windows)
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
-   -v   | --variant <STRING>    Use <STRING> as the build variant
+   -v   | --variant <STRING>    Use <STRING> as the build variant [$OPT_VARIANT]
+        | --release <STRING>    SDK release version [$OPT_RELEASE]
+        | --rel-cycle <STRING>  SDK release cycle [$OPT_RELCYCLE]
    -re  | --revextra <STRING>   Use <STRING> as the Qt Creator revision suffix
    -gd  | --gdb-default         Use default download URLs for gdb build deps
    -d   | --download <URL>      Use <URL> to download artifacts
@@ -151,10 +155,10 @@ while [[ ${1:-} ]]; do
             OPT_BUILD_REPO=1
             let numtasks++
             ;;
-	-icu | --icu-build ) shift
-	    OPT_BUILD_ICU=1
-	    let numtasks++
-	    ;;
+        -icu | --icu-build ) shift
+            OPT_BUILD_ICU=1
+            let numtasks++
+            ;;
         -qt4 | --qt4-build ) shift
             OPT_BUILD_QT4=1
             let numtasks++
@@ -169,6 +173,12 @@ while [[ ${1:-} ]]; do
             ;;
         -v | --variant ) shift
             OPT_VARIANT=$1; shift
+            ;;
+        --release ) shift
+            OPT_RELEASE=$1; shift
+            ;;
+        --rel-cycle ) shift
+            OPT_RELCYCLE=$1; shift
             ;;
         -re | --revextra ) shift
             OPT_REVISION_EXTRA=$1; shift
@@ -266,6 +276,8 @@ Summary of chosen actions:
  Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
  SDK Config Variant  [$OPT_VARIANT]
+ SDK Release Version [$OPT_RELEASE]
+ SDK Release Cycle   [$OPT_RELCYCLE]
 EOF
 
 if [[ -n $OPT_BUILD_QTC ]]; then
@@ -443,6 +455,14 @@ do_build_installer() {
 
     if [[ -n $OPT_VARIANT ]]; then
         options=$options" --variant $OPT_VARIANT"
+    fi
+
+    if [[ -n $OPT_RELEASE ]]; then
+        options=$options" --release $OPT_RELEASE"
+    fi
+
+    if [[ -n $OPT_RELCYCLE ]]; then
+        options=$options" --rel-cycle $OPT_RELCYCLE"
     fi
 
     if [[ -n $OPT_VERSION_EXTRA ]]; then
