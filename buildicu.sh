@@ -69,6 +69,7 @@ build_icu() {
 }
 
 download_icu_win() {
+    rm -rf icu
     curl -O $WIN_ICU_DOWNLOAD_URL
     7z -y x $WIN_ICU_BINARY_ZIP
 }
