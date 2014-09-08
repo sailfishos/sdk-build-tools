@@ -427,6 +427,7 @@ rem copy all the necessary libraries to the install directory
 copy $OPT_QTDIR\qtbase\bin\libEGL.dll %INSTALL_ROOT%\bin
 copy $OPT_QTDIR\qtbase\bin\libGLESv2*.dll %INSTALL_ROOT%\bin
 copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin
+copy "%_programs%\microsoft visual studio 12.0\vc\redist\x86\microsoft.vc120.crt\*.dll" %INSTALL_ROOT%\bin
 copy $OPT_ICU_PATH\bin\*.dll %INSTALL_ROOT%\bin
 
 call nmake bindist_installer
