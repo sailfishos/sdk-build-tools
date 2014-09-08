@@ -117,6 +117,12 @@ done
 
 if [[ -n $OPT_VDI ]]; then
     VDIFILE=$OPT_VDI
+
+    if [[ ${VDIFILE: -4} == ".bz2" ]]; then
+	echo "unpacking $VDIFILE ..."
+	bunzip2 -f -k $VDIFILE
+	VDIFILE=${VDIFILE%.bz2}
+    fi
 else
     # Always require a given vdi file
     # VDIFILE=$(find . -iname "*.vdi" | head -1)

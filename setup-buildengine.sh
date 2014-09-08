@@ -382,6 +382,12 @@ if [[ -z $OPT_VDI ]]; then
     fatal "VDI file option is required (-f filename.vdi)"
 fi
 
+if [[ ${OPT_VDI: -4} == ".bz2" ]]; then
+    echo "unpacking $OPT_VDI ..."
+    bunzip2 -f -k $OPT_VDI
+    OPT_VDI=${OPT_VDI%.bz2}
+fi
+
 # get our VDI's formatted filename
 OPT_VDI=$(basename $OPT_VDI)
 
