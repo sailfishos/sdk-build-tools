@@ -272,6 +272,7 @@ Options:
    -f   | --vdi-file <VDI>     use <VDI> file as the virtual disk image [required]
    -i   | --ignore-running     ignore running VMs
    -r   | --refresh            force a zypper refresh for MerSDK and sb2 targets
+   -p   | --private            use private rpm repository in 10.0.0.20
    -td  | --test-domain        keep test domain after refreshing the repos
    -o   | --orig-release <REL> turn ssu release to this instead of latest after refreshing repos
    -c   | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
@@ -324,6 +325,9 @@ while [[ ${1:-} ]]; do
         -r | --refresh ) shift
             OPT_REFRESH=1
             ;;
+	-p | --private ) shift
+	    OPT_PRIVATE_REPO=1
+	    ;;
 	-o | --orig-release ) shift
 	    OPT_ORIGINAL_RELEASE=$1; shift
 	    [[ -z $OPT_ORIGINAL_RELEASE ]] && fatal "empty original release option given"
@@ -413,10 +417,12 @@ Creating $OPT_VM, compression=$OPT_COMPRESSION
 EOF
 if [[ -n $OPT_REFRESH ]]; then
     echo " Force zypper refresh for repos"
-    if [[ -n $OPT_KEEP_TEST_DOMAIN ]]; then
-        echo " ... and keep test ssu domain after refresh"
-    else
-	echo " ... after update set ssu release to [${OPT_ORIGINAL_RELEASE:-latest}]"
+    if [[ -n $OPT_PRIVATE_REPO ]]; then
+	if [[ -n $OPT_KEEP_TEST_DOMAIN ]]; then
+            echo " ... and keep test ssu domain after refresh"
+	else
+	    echo " ... after update set ssu release to [${OPT_ORIGINAL_RELEASE:-latest}]"
+	fi
     fi
 else
     echo " Do NOT refresh repos"
@@ -482,7 +488,7 @@ if [[ -n $OPT_REFRESH ]]; then
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
+        mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_PRIVATE_REPO:--p} ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
 fi
 
 # shut the VM down cleanly so that it has time to flush its disk

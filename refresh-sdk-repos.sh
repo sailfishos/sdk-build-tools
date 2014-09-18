@@ -31,6 +31,10 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# default is to use public repositories, which means no domain changes
+# are necessary
+OPT_PUBLIC_REPOS=1
+
 SSU_RELEASE=latest
 SSU_DOMAIN=sdkinstaller
 
@@ -67,14 +71,15 @@ usage()
 Refresh the zypper repositories in MerSDK.
 
 Without any arguments the following values will be used:
-   domain:       $SSU_DOMAIN
-   release:      $SSU_RELEASE
-   orig release: $SSU_RELEASE_ORIG
+   domain:       current
+   release:      current
+   orig release: current
 
 Usage:
     $0 [OPTION] [release]
 
 Options:
+    -p  | --private           use private repositories (default is public)
     -r  | --release           use this release instead of 'latest' in the original ssu urls
     -td | --test-domain       keep test domain
     -y  | --non-interactive   answer 'yes' to all questions from this script
@@ -86,48 +91,56 @@ EOF
 
 while [[ ${1:-} ]]; do
     case "$1" in
-	-y | --non-interactive ) shift
-	    OPT_YES=1
-	    ;;
-	-td | --test-domain ) shift
-	    OPT_KEEP_TEST_DOMAIN=1
-	    ;;
-	-r | --release ) shift
-	    SSU_RELEASE_ORIG=$1; shift
-	    [[ -z $SSU_RELEASE_ORIG ]] && { echo "empty original release given."; exit 1; }
-	    ;;
-	-h|--help|-*)
-	    usage quit
-	    ;;
-	*)
-	    SSU_RELEASE=$1
-	    break
-	    ;;
+        -y | --non-interactive ) shift
+            OPT_YES=1
+            ;;
+        -p | --private ) shift
+            OPT_PUBLIC_REPOS=0
+            ;;
+        -td | --test-domain ) shift
+            OPT_KEEP_TEST_DOMAIN=1
+            ;;
+        -r | --release ) shift
+            SSU_RELEASE_ORIG=$1; shift
+            [[ -z $SSU_RELEASE_ORIG ]] && { echo "empty original release given."; exit 1; }
+            ;;
+        -h|--help|-*)
+            usage quit
+            ;;
+        *)
+            SSU_RELEASE=$1
+            break
+            ;;
     esac
 done
 
-cat <<EOF 
+if [[ $OPT_PUBLIC_REPOS -eq 1 ]]; then
+    echo "Going to just run zypper refresh without changing domain."
+else
+
+    cat <<EOF
 ####
 domain=$SSU_DOMAIN
 release=$SSU_RELEASE
 original release=$SSU_RELEASE_ORIG
 
 EOF
+fi
 
 if [[ -z $OPT_YES ]]; then
     while true; do
-	read -p "Do you want to continue? (y/n) " answer
-	case $answer in
-	    [Yy]*)
-		break ;;
-	    [Nn]*)
-		echo "Ok, exiting"
-		exit 0
-		;;
-	    *)
-		echo "Please answer yes or no."
-		;;
-	esac
+    read -p "Do you want to continue? (y/n) " answer
+    case $answer in
+        [Yy]*)
+        break ;;
+        [Nn]*)
+        echo "Ok, exiting"
+        exit 0
+        ;;
+        *)
+        echo "Please answer yes or no."
+        ;;
+    esac
     done
 fi
 
@@ -158,8 +171,8 @@ check_target_visible() {
     local sbox2dir=/home/$sdk_user/.scratchbox2
     . $sbox2dir/$tgt/sb2.config 2>/dev/null
     if [[ ! -d "$SBOX_TARGET_ROOT" ]]; then
-	echo "no"
-	return
+    echo "no"
+    return
     fi
     echo "yes"
 }
@@ -169,9 +182,9 @@ get_targets() {
     [[ $? -ne 0 ]] && return
 
     for t in $tgts; do
-	if [[ $(check_target_visible $t) == "yes" ]]; then
-	    echo $t
-	fi
+    if [[ $(check_target_visible $t) == "yes" ]]; then
+        echo $t
+    fi
     done
 }
 
@@ -183,51 +196,59 @@ refresh_target_repos() {
     local reposbackup=/home/$sdk_user/t_repos.ini.$$
     echo "#### Refresh $tgt repos"
 
-    # save the original ini file
-    sudo -i -u $sdk_user bash -c "$sb2session cp -a $SSU_INIFILE $reposbackup"
-
-    # use sed to append contents of $repoini file to ssu repos.ini
-    sudo -i -u $sdk_user bash -c "$sb2session sed -i '$ r $repoini' $SSU_INIFILE"
-    sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN"
-    sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE"
-
-    # refresh repos
-    sudo -i -u $sdk_user bash -c "$sb2session zypper --non-interactive ref"
-
-    if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
-        # restore the original ssu status
-	sudo -i -u $sdk_user bash -c "$sb2session mv $reposbackup $SSU_INIFILE"
-	sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG_TARGET"
-	sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE_ORIG"
+    if [[ $OPT_PUBLIC_REPOS -eq 1 ]]; then
+        # refresh repos
+        sudo -i -u $sdk_user bash -c "$sb2session zypper --non-interactive ref"
     else
-	rm -f $reposbackup
+        # save the original ini file
+        sudo -i -u $sdk_user bash -c "$sb2session cp -a $SSU_INIFILE $reposbackup"
+
+        # use sed to append contents of $repoini file to ssu repos.ini
+        sudo -i -u $sdk_user bash -c "$sb2session sed -i '$ r $repoini' $SSU_INIFILE"
+        sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN"
+        sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE"
+
+        # refresh repos
+        sudo -i -u $sdk_user bash -c "$sb2session zypper --non-interactive ref"
+
+        if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
+            # restore the original ssu status
+            sudo -i -u $sdk_user bash -c "$sb2session mv $reposbackup $SSU_INIFILE"
+            sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG_TARGET"
+            sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE_ORIG"
+        else
+            rm -f $reposbackup
+        fi
     fi
 
     # clean up remaining stuff here
     sudo -i -u $sdk_user bash -c "$sb2session rm -f $CLEANUP_FILES"
-    
 }
 
 ######
 #
 # Build engine
 echo "#### Refresh MerSDK repos"
-repoinibackup=/home/$sdk_user/repos.ini.$$
-cp -a $SSU_INIFILE $repoinibackup
-
-cat $repoini >> $SSU_INIFILE
-ssu domain $SSU_DOMAIN
-ssu release $SSU_RELEASE
-
-zypper --non-interactive ref
-
-if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
-    # restore the original ssu status
-    mv $repoinibackup $SSU_INIFILE
-    ssu domain $SSU_DOMAIN_ORIG
-    ssu release $SSU_RELEASE_ORIG
+if [[ $OPT_PUBLIC_REPOS -eq 1 ]]; then
+    zypper --non-interactive ref
 else
-    rm -f $repoinibackup
+    repoinibackup=/home/$sdk_user/repos.ini.$$
+    cp -a $SSU_INIFILE $repoinibackup
+
+    cat $repoini >> $SSU_INIFILE
+    ssu domain $SSU_DOMAIN
+    ssu release $SSU_RELEASE
+
+    zypper --non-interactive ref
+
+    if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
+        # restore the original ssu status
+        mv $repoinibackup $SSU_INIFILE
+        ssu domain $SSU_DOMAIN_ORIG
+        ssu release $SSU_RELEASE_ORIG
+    else
+        rm -f $repoinibackup
+    fi
 fi
 
 # cleanup remaining stuff
@@ -238,7 +259,15 @@ rm -f $CLEANUP_FILES
 # Targets
 targets=$(get_targets)
 for target in $targets; do
-  refresh_target_repos $target
+    refresh_target_repos $target
 done
 
 echo "#### Done"
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=4 expandtab:
