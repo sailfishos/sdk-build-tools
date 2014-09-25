@@ -326,7 +326,7 @@ while [[ ${1:-} ]]; do
             OPT_REFRESH=1
             ;;
 	-p | --private ) shift
-	    OPT_PRIVATE_REPO=1
+	    OPT_PRIVATE_REPO="-p"
 	    ;;
 	-o | --orig-release ) shift
 	    OPT_ORIGINAL_RELEASE=$1; shift
@@ -488,7 +488,7 @@ if [[ -n $OPT_REFRESH ]]; then
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_PRIVATE_REPO:--p} ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
+        mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_PRIVATE_REPO:-} ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
 fi
 
 # shut the VM down cleanly so that it has time to flush its disk
