@@ -481,6 +481,19 @@ do_build_repo() {
     echo "Building Repository ..."
 
     local options=
+    
+    if [[ -n $OPT_VARIANT ]]; then
+        options=$options" --variant $OPT_VARIANT"
+    fi
+
+    if [[ -n $OPT_RELEASE ]]; then
+        options=$options" --release $OPT_RELEASE"
+    fi
+
+    if [[ -n $OPT_RELCYCLE ]]; then
+        options=$options" --rel-cycle $OPT_RELCYCLE"
+    fi
+
     if [[ -n $OPT_VERSION_EXTRA ]]; then
         options=$options" --extra $OPT_VERSION_EXTRA"
     fi
