@@ -67,12 +67,66 @@ The following additional packages are required in Ubuntu 10.04
 
 ### Mac
 
-The following additional software is required in the build Mac.
+The following additional software is required in the build Mac:
 
-* `Xcode 5`, [p7zip][1] and [wget][7].
+* Xcode 5
+* [p7zip][1] (required for packaging Qt Creator)
+* [wget][8]
 
 [1]: http://sourceforge.net/projects/p7zip/
-[7]: https://www.gnu.org/software/wget/
+[8]: https://www.gnu.org/software/wget/
+
+To build on OS X 10.10 the following versions of Xcode and Qt are required:
+
+* [Xcode 6.1][9] or later, available on the Mac App Store
+* [Qt 5.4.0][10] or later
+
+[9]: https://itunes.apple.com/fi/app/xcode/id497799835?mt=12
+[10]: http://download.qt.io/archive/qt/5.4/5.4.0/single/
+
+The build Mac should be prepared for command line development. To make sure
+this is the case, please refer to [Technical Note TN2339][11] "Building from
+the Command Line with Xcode FAQ", available in the Apple Mac Developer Library.
+
+[11]: https://developer.apple.com/library/mac/technotes/tn2339/_index.html#//apple_ref/doc/uid/DTS40014588
+
+By default, the build scripts use Qt 5.2.1. To build a different version of Qt,
+set the `QT_SOURCE_PACKAGE` variable in the `buildqt5.sh` script to the name of
+the directory containing the Qt source code, e.g.:
+
+```
+QT_SOURCE_PACKAGE=qt-everywhere-opensource-src-5.4.0
+```
+
+Similarly, when building Qt Creator you need to supply the non-default Qt build
+directory to the `buildqtc.sh` script, e.g.
+
+```
+$ ./buildqtc.sh --qt-dir ~/invariant/qt-everywhere-opensource-src-5.4.0-build
+```
+
+When building p7zip, follow the BUILD instructions in the accompanying README
+file. However, to build p7zip (as of writing version 9.38.1) on OS X 10.10 with
+Xcode 6, the architecture-specific makefile needs to be modified to use the
+correct path for the command line tools. After preparing the makefile with:
+
+```
+$ cp makefile.macosx_llvm_64bits makefile.machine
+```
+
+change the compiler paths in `makefile.machine` from:
+
+```
+CXX=/Developer/usr/bin/llvm-g++
+CC=/Developer/usr/bin/llvm-gcc
+```
+
+to the paths used by Xcode 6 command line tool shims:
+
+```
+CXX=/usr/bin/llvm-g++
+CC=/usr/bin/llvm-gcc
+```
 
 ### Windows
 
@@ -87,4 +141,3 @@ Other build requirements include `perl`, `python` and `ruby` and they are docume
 [5]: http://www.7-zip.org/
 [6]: https://bugreports.qt-project.org/browse/QTBUG-26844
 [7]: http://qt-project.org/doc/qt-5/windows-requirements.html
-
