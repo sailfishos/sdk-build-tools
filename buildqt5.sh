@@ -1,10 +1,14 @@
 #!/bin/bash
 #
-# This script build dynamic and static versions of Qt5 into
-# subdirectories in the current dir.
+# This script builds dynamic and static versions of Qt5 into
+# subdirectories in the parent directory of the Qt source directory.
 #
 # Qt5 sources must be found from the current user's home directory
-# $HOME/invariant/qt5 or in case of Windows in C:\invariant\qt5
+# $HOME/invariant/qt-everywhere-opensource-src-5.2.1 or in in case of
+# Windows in C:\invariant\qt-everywhere-opensource-src-5.2.1.
+#
+# To build a version of Qt other than 5.2.1, change the value of the
+# QT_SOURCE_PACKAGE variable.
 #
 # Copyright (C) 2014 Jolla Oy
 # Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
@@ -40,18 +44,20 @@ export LC_ALL=C
 UNAME_SYSTEM=$(uname -s)
 UNAME_ARCH=$(uname -m)
 
+QT_SOURCE_PACKAGE=qt-everywhere-opensource-src-5.2.1
+
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BASEDIR=$HOME/invariant
-    SRCDIR_QT=$BASEDIR/qt-everywhere-opensource-src-5.2.1
+    SRCDIR_QT=$BASEDIR/$QT_SOURCE_PACKAGE
     # the padding part in the dynamic build directory is necessary in
     # order to accommodate rpath changes at the end of building Qt
     # Creator, which reads Qt resources from this directory.
-    DYN_BUILD_DIR=$BASEDIR/qt-everywhere-opensource-src-5.2.1-build
-    STATIC_BUILD_DIR=$BASEDIR/qt-everywhere-opensource-src-5.2.1-static-build
+    DYN_BUILD_DIR=$BASEDIR/$QT_SOURCE_PACKAGE-build
+    STATIC_BUILD_DIR=$BASEDIR/$QT_SOURCE_PACKAGE-static-build
     ICU_INSTALL_DIR=$BASEDIR/icu-install
 else
     BASEDIR="/c/invariant"
-    SRCDIR_QT="$BASEDIR/qt-everywhere-opensource-src-5.2.1"
+    SRCDIR_QT="$BASEDIR/$QT_SOURCE_PACKAGE"
     BUILD_DIR="$BASEDIR/build-qt5-dynamic-msvc2012"
     ICU_INSTALL_DIR=$BASEDIR/icu
 fi
@@ -72,10 +78,10 @@ build_dynamic_qt_windows() {
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;C:\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;c:\invariant\icu\bin;C:\invariant\qt-everywhere-opensource-src-5.2.1\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;c:\invariant\bin
+set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;C:\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;c:\invariant\icu\bin;C:\invariant\$QT_SOURCE_PACKAGE\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;c:\invariant\bin
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
-call c:\invariant\qt-everywhere-opensource-src-5.2.1\configure.bat $COMMON_CONFIG_OPTIONS -icu -I c:\invariant\icu\include -L c:\invariant\icu\lib -angle -platform win32-msvc2012 -prefix
- 
+call c:\invariant\$QT_SOURCE_PACKAGE\configure.bat $COMMON_CONFIG_OPTIONS -icu -I c:\invariant\icu\include -L c:\invariant\icu\lib -angle -platform win32-msvc2012 -prefix
+
 call jom /j 1
 EOF
 
