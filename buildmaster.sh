@@ -52,7 +52,8 @@ INSTALLER_SRC=sailfish-sdk-installer
 
 # keep these following two in sync
 REQUIRED_SRC_DIRS=($BUILD_TOOLS_SRC $CREATOR_SRC $INSTALLER_SRC)
-REQUIRED_GIT_BRANCHES=(next next jolla-1.6)
+REQUIRED_GIT_DEVEL_BRANCHES=(next next jolla-1.6)
+REQUIRED_GIT_RELEASE_BRANCHES=(next next sdk-release)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BASE_SRC_DIR=$HOME/src
@@ -104,6 +105,7 @@ Options:
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
    -v   | --variant <STRING>    Use <STRING> as the build variant [$OPT_VARIANT]
+        | --release-build       Do a release build
         | --release <STRING>    SDK release version [$OPT_RELEASE]
         | --rel-cycle <STRING>  SDK release cycle [$OPT_RELCYCLE]
    -re  | --revextra <STRING>   Use <STRING> as the Qt Creator revision suffix
@@ -173,6 +175,9 @@ while [[ ${1:-} ]]; do
             ;;
         -v | --variant ) shift
             OPT_VARIANT=$1; shift
+            ;;
+        --release-build ) shift
+            OPT_RELEASE_BUILD=1
             ;;
         --release ) shift
             OPT_RELEASE=$1; shift
@@ -275,6 +280,7 @@ Summary of chosen actions:
  Build ICU ......... [$(get_option $OPT_BUILD_ICU)]
  Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
+ Do a release build  [$(get_option $OPT_RELEASE_BUILD)]
  SDK Config Variant  [$OPT_VARIANT]
  SDK Release Version [$OPT_RELEASE]
  SDK Release Cycle   [$OPT_RELCYCLE]
@@ -324,6 +330,13 @@ if [[ -n $OPT_UPLOAD ]]; then
     [[ -n $OPT_UPLOAD_HOST ]] && UPLOAD_OPTIONS=$UPLOAD_OPTIONS" -uh $OPT_UPLOAD_HOST"
     [[ -n $OPT_UPLOAD_PATH ]] && UPLOAD_OPTIONS=$UPLOAD_OPTIONS" -up $OPT_UPLOAD_PATH"
     [[ -n $OPT_UPLOAD_USER ]] && UPLOAD_OPTIONS=$UPLOAD_OPTIONS" -uu $OPT_UPLOAD_USER"
+fi
+
+# use the correct branches for release/devel build of the sdk
+if [[ -n $OPT_RELEASE_BUILD ]]; then
+    REQUIRED_GIT_BRANCHES=(${REQUIRED_GIT_RELEASE_BRANCHES[@]})
+else
+    REQUIRED_GIT_BRANCHES=(${REQUIRED_GIT_DEVEL_BRANCHES[@]})
 fi
 
 do_git_pull() {
