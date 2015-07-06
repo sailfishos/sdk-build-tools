@@ -32,7 +32,7 @@
 #
 
 RELEASE="1406"
-RELEASE_CYCLE="Alpha"
+RELEASE_CYCLE="Beta"
 CHECK="md5"
 PLATFORMS="linux-32 linux-64 mac windows"
 
