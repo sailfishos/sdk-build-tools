@@ -284,6 +284,16 @@ build_unix_gdb() {
     fi
 }
 
+setup_unix_qtc_ccache() {
+    # This only needs to be done on OSX at the moment as OSX QMake
+    # just plain refuses to obey any command to set the compiler from
+    # the outside. Not future proof either, as QMake's internal files
+    # are not guaranteed to be stable.
+    if [ -f /Users/builder/src/ccache-3.2.2/ccache ]; then
+        sed -e 's|macosx.QMAKE_CXX =|macosx.QMAKE_CXX = /Users/builder/src/ccache-3.2.2/ccache |' -i '' .qmake.stash
+    fi
+}
+
 build_unix_qtc() {
     if [[ -z $OPT_GDB_ONLY ]]; then
 	export INSTALL_ROOT=$OPT_INSTALL_ROOT
@@ -299,6 +309,8 @@ build_unix_qtc() {
 	pushd    $QTC_BUILD_DIR
 
 	[[ $OPT_QUICK ]] || $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
+
+	setup_unix_qtc_ccache
 
 	make -j$(getconf _NPROCESSORS_ONLN)
 
