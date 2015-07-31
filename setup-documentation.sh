@@ -163,7 +163,7 @@ done
 rm -f $INSTALL_PATH/*
 
 # create Sailfish documentation package
-for NAME in $(ls $OPT_DOCDIR/sail*.qch); do
+for NAME in $(ls $OPT_DOCDIR/sail*.qch $OPT_DOCDIR/lipstick*.qch $OPT_DOCDIR/nemo*.qch); do
     newname=$(basename $NAME)
     ln $NAME $INSTALL_PATH/${newname%.qch}$OPT_DOCVERSION.qch
 done
