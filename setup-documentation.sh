@@ -40,7 +40,7 @@ OPT_DOCDIR=$PWD
 OPT_COMPRESSION=9
 
 QTDOC_NAME=qtdocumentation.7z
-SAILDOC_NAME=silicadocumentation.7z
+SAILDOC_NAME=sailfishdocumentation.7z
 
 failure() {
     echo "Error: $1"
