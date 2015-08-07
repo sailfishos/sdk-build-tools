@@ -411,8 +411,14 @@ build_windows_qtc() {
 	cat <<EOF > build-windows.bat
 @echo off
 
-if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
-if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
+if DEFINED ProgramFiles(x86) (
+    set _programs=%ProgramFiles(x86)%
+    set _systemdir=%windir%\system
+)
+if Not DEFINED ProgramFiles(x86) (
+    set _programs=%ProgramFiles%
+    set _systemdir=%windir%\system32
+)
 
 
 set INSTALL_ROOT=$OPT_INSTALL_ROOT
@@ -440,6 +446,7 @@ copy $OPT_QTDIR\qtbase\bin\libEGL.dll %INSTALL_ROOT%\bin
 copy $OPT_QTDIR\qtbase\bin\libGLESv2*.dll %INSTALL_ROOT%\bin
 copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin
 copy "%_programs%\microsoft visual studio 12.0\vc\redist\x86\microsoft.vc120.crt\*.dll" %INSTALL_ROOT%\bin
+copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin
 copy $OPT_ICU_PATH\bin\*.dll %INSTALL_ROOT%\bin
 
 call nmake bindist_installer
