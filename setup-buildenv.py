@@ -29,25 +29,28 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Download and extract all source dependencies that we have.
-# Run this in ~/invariant
+# Run this in ~/invariant (or C:\invariant on Windows).
 
 import platform
 import os, sys
 import urllib
 import shutil
 import subprocess
-import tarfile
+import tarfile, zipfile
 
 # Only download gzipped files because Python2 does not have xz
 # unpacker. (Python 3 has it.)
 
+downloads = [
+    ('https://download.qt.io/official_releases/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz', 'qt-everywhere-opensource-src-4.8.7.tar.gz', 'qt-everywhere-opensource-src-4.8.7'),
+    ('https://download.qt.io/archive/qt/5.2/5.2.1/single/qt-everywhere-opensource-src-5.2.1.tar.gz', 'qt-everywhere-opensource-src-5.2.1.tar.gz', 'qt-everywhere-opensource-src-5.2.1'),
+    ('https://download.qt.io/official_releases/qt-installer-framework/2.0.1/qt-installer-framework-opensource-2.0.1-src.tar.gz', 'qt-installer-framework-opensource-2.0.1-src.tar.gz', 'qt-installer-framework-opensource-2.0.1-src'),
+    ]
+
 if platform.system() == 'Linux':
-    downloads = [
-        ('http://download.icu-project.org/files/icu4c/4.2.1/icu4c-4_2_1-src.tgz', 'icu4c-4_2_1-src.tgz', 'icu'),
-        ('https://download.qt.io/official_releases/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz', 'qt-everywhere-opensource-src-4.8.7.tar.gz', 'qt-everywhere-opensource-src-4.8.7'),
-        ('https://download.qt.io/archive/qt/5.2/5.2.1/single/qt-everywhere-opensource-src-5.2.1.tar.gz', 'qt-everywhere-opensource-src-5.2.1.tar.gz', 'qt-everywhere-opensource-src-5.2.1'),
-        ('https://download.qt.io/official_releases/qt-installer-framework/2.0.1/qt-installer-framework-opensource-2.0.1-src.tar.gz', 'qt-installer-framework-opensource-2.0.1-src.tar.gz', 'qt-installer-framework-opensource-2.0.1-src'),
-        ]
+    downloads.append(('http://download.icu-project.org/files/icu4c/4.2.1/icu4c-4_2_1-src.tgz', 'icu4c-4_2_1-src.tgz', 'icu'))
+elif platform.system() == 'Windows':
+    downloads.append(('http://download.icu-project.org/files/icu4c/4.8.1.1/icu4c-4_8_1_1-Win32-msvc10.zip', 'icu4c-4_8_1_1-Win32-msvc10.zip', 'icu'))
 else:
     print('Unknown platform.')
     sys.exit(1)
@@ -61,7 +64,10 @@ for d in downloads:
     print 'Downloading', url
     urllib.urlretrieve(url, fname)
     shutil.rmtree(dirname, ignore_errors=True)
-    tf = tarfile.open(fname)
+    if fname.endswith('.zip'):
+        tf = zipfile.ZipFile(fname, 'r')
+    else:
+        tf = tarfile.open(fname)
     print 'Extracting', fname
     tf.extractall()
 
