@@ -51,8 +51,10 @@ if platform.system() == 'Linux':
     downloads.append(('http://download.icu-project.org/files/icu4c/4.2.1/icu4c-4_2_1-src.tgz', 'icu4c-4_2_1-src.tgz', 'icu'))
 elif platform.system() == 'Windows':
     downloads.append(('http://download.icu-project.org/files/icu4c/4.8.1.1/icu4c-4_8_1_1-Win32-msvc10.zip', 'icu4c-4_8_1_1-Win32-msvc10.zip', 'icu'))
+elif platform.system() == 'Darwin':
+    pass # OSX does not need ICU.
 else:
-    print('Unknown platform.')
+    print 'Unknown platform:', platform.system()
     sys.exit(1)
 
 for d in downloads:
