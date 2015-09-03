@@ -77,10 +77,10 @@ build_static_qt_windows() {
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-PATH=%PATH%;c:\invariant\bin
+PATH=%PATH%;c:\\invariant\\bin
 
-call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
-call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -platform win32-msvc2012 -prefix
+call "%_programs%\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat"
+call "C:\\invariant\\qt\\configure.exe" $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -platform win32-msvc2012 -prefix
 
 call jom /j 1
 EOF
@@ -104,10 +104,10 @@ build_dynamic_qt_windows() {
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-PATH=%PATH%;c:\invariant\bin
+PATH=%PATH%;c:\\invariant\\bin
 
-call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
-call "C:\invariant\qt\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2012 -prefix
+call "%_programs%\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat"
+call "C:\\invariant\\qt\\configure.exe" $COMMON_CONFIG_OPTIONS -platform win32-msvc2012 -prefix
  
 call jom
 EOF

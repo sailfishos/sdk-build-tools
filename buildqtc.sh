@@ -45,10 +45,10 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     OPT_INSTALL_ROOT=$HOME/build/qtc-install
     OPT_ICU_PATH=$HOME/invariant/icu-install
 else
-    OPT_QTDIR="c:\invariant\build-qt5-dynamic-msvc2012"
-    OPT_QTC_SRC="c:\src\sailfish-qtcreator"
-    OPT_INSTALL_ROOT="c:\build\qtc-install"
-    OPT_ICU_PATH="c:\invariant\icu"
+    OPT_QTDIR="c:\\invariant\\build-qt5-dynamic-msvc2012"
+    OPT_QTC_SRC="c:\\src\\sailfish-qtcreator"
+    OPT_INSTALL_ROOT="c:\\build\\qtc-install"
+    OPT_ICU_PATH="c:\\invariant\\icu"
 fi
 
 QTC_BUILD_DIR=qtc-build
@@ -377,7 +377,7 @@ build_windows_gdb() {
 
 	cat <<EOF > build-gdb.bat
 @echo off
-call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f /c/src/sailfish-qtcreator/dist/gdb/Makefile.mingw PATCHDIR=/c/src/sailfish-qtcreator/dist/gdb/patches $downloads"
+call C:\\mingw\\msys\\1.0\\bin\\env -u PATH C:\\mingw\\msys\\1.0\\bin\\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f /c/src/sailfish-qtcreator/dist/gdb/Makefile.mingw PATCHDIR=/c/src/sailfish-qtcreator/dist/gdb/patches $downloads"
 EOF
 	cmd //c build-gdb.bat
 
@@ -413,19 +413,19 @@ build_windows_qtc() {
 
 if DEFINED ProgramFiles(x86) (
     set _programs=%ProgramFiles(x86)%
-    set _systemdir=%windir%\system
+    set _systemdir=%windir%\\system
 )
 if Not DEFINED ProgramFiles(x86) (
     set _programs=%ProgramFiles%
-    set _systemdir=%windir%\system32
+    set _systemdir=%windir%\\system32
 )
 
 
 set INSTALL_ROOT=$OPT_INSTALL_ROOT
-set QTDIR=$OPT_QTDIR\qtbase
+set QTDIR=$OPT_QTDIR\\qtbase
 set QMAKESPEC=win32-msvc2012
-set QT_PRIVATE_HEADERS=%QTDIR%\include
-set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;C:\invariant\bin;c:\python27;$OPT_ICU_PATH\bin
+set QT_PRIVATE_HEADERS=%QTDIR%\\include
+set PATH=%PATH%;%_programs%\\7-zip;%QTDIR%\\bin;C:\\invariant\\bin;c:\\python27;$OPT_ICU_PATH\\bin
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
 call rmdir /s /q $OPT_INSTALL_ROOT
@@ -434,20 +434,20 @@ if exist $binary_artifacts (
   call 7z x -o$OPT_INSTALL_ROOT $binary_artifacts
 )
 
-call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
-call %QTDIR%\bin\qmake C:\src\sailfish-qtcreator\qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
+call "%_programs%\\microsoft visual studio 12.0\\vc\\vcvarsall.bat"
+call %QTDIR%\\bin\\qmake C:\\src\\sailfish-qtcreator\\qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
 
 call jom
 call nmake install
 call nmake deployqt
 
 rem copy all the necessary libraries to the install directory
-copy $OPT_QTDIR\qtbase\bin\libEGL.dll %INSTALL_ROOT%\bin
-copy $OPT_QTDIR\qtbase\bin\libGLESv2*.dll %INSTALL_ROOT%\bin
-copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin
-copy "%_programs%\microsoft visual studio 12.0\vc\redist\x86\microsoft.vc120.crt\*.dll" %INSTALL_ROOT%\bin
-copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin
-copy $OPT_ICU_PATH\bin\*.dll %INSTALL_ROOT%\bin
+copy $OPT_QTDIR\\qtbase\\bin\\libEGL.dll %INSTALL_ROOT%\\bin
+copy $OPT_QTDIR\\qtbase\\bin\\libGLESv2*.dll %INSTALL_ROOT%\\bin
+copy "%_programs%\\microsoft visual studio 12.0\\vc\\bin\\D3Dcompiler_47.dll" %INSTALL_ROOT%\\bin
+copy "%_programs%\\microsoft visual studio 12.0\\vc\\redist\\x86\\microsoft.vc120.crt\\*.dll" %INSTALL_ROOT%\\bin
+copy "%_systemdir%\\msvc*100.dll" %INSTALL_ROOT%\\bin
+copy $OPT_ICU_PATH\\bin\\*.dll %INSTALL_ROOT%\\bin
 
 call nmake bindist_installer
 EOF
