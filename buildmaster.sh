@@ -45,6 +45,8 @@ OPT_RELCYCLE="Beta"
 
 OPT_REVISION_EXTRA="+git"
 
+OPT_REPO_URL=''
+
 DEFAULT_URL_PREFIX=http://$OPT_UPLOAD_HOST/sailfishos
 CREATOR_SRC=sailfish-qtcreator
 BUILD_TOOLS_SRC=sdk-build-tools
@@ -108,6 +110,7 @@ Options:
         | --release-build       Do a release build
         | --release <STRING>    SDK release version [$OPT_RELEASE]
         | --rel-cycle <STRING>  SDK release cycle [$OPT_RELCYCLE]
+        | --repourl <STRING>    Repo location, if set overrides the public repo URL
    -re  | --revextra <STRING>   Use <STRING> as the Qt Creator revision suffix
    -gd  | --gdb-default         Use default download URLs for gdb build deps
    -d   | --download <URL>      Use <URL> to download artifacts
@@ -184,6 +187,9 @@ while [[ ${1:-} ]]; do
             ;;
         --rel-cycle ) shift
             OPT_RELCYCLE=$1; shift
+            ;;
+        --repourl ) shift
+            OPT_REPO_URL=$1; shift
             ;;
         -re | --revextra ) shift
             OPT_REVISION_EXTRA=$1; shift
@@ -494,7 +500,7 @@ do_build_repo() {
     echo "Building Repository ..."
 
     local options=
-    
+
     if [[ -n $OPT_VARIANT ]]; then
         options=$options" --variant $OPT_VARIANT"
     fi
@@ -509,6 +515,13 @@ do_build_repo() {
 
     if [[ -n $OPT_VERSION_EXTRA ]]; then
         options=$options" --extra $OPT_VERSION_EXTRA"
+    fi
+
+    if [[ "x$OPT_REPO_URL" -neq "x" ]]; then
+       _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-linux-32.xml
+       _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-linux-64.xml
+       _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-mac.xml
+       _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-windows.xml
     fi
 
     _ pushd $BASE_SRC_DIR/$INSTALLER_SRC
