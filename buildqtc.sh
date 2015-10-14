@@ -298,7 +298,6 @@ build_unix_qtc() {
     if [[ -z $OPT_GDB_ONLY ]]; then
 	export INSTALL_ROOT=$OPT_INSTALL_ROOT
 	export QTDIR=$OPT_QTDIR/qtbase
-	export QT_PRIVATE_HEADERS=$QTDIR/include
 	export PATH=$QTDIR/bin:$PATH
 	export INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPT_ICU_PATH/lib
@@ -424,7 +423,6 @@ if Not DEFINED ProgramFiles(x86) (
 set INSTALL_ROOT=$OPT_INSTALL_ROOT
 set QTDIR=$OPT_QTDIR\qtbase
 set QMAKESPEC=win32-msvc2012
-set QT_PRIVATE_HEADERS=%QTDIR%\include
 set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;C:\invariant\bin;c:\python27;$OPT_ICU_PATH\bin
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
