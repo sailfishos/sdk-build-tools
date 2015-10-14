@@ -40,12 +40,12 @@ OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.2.1-build
+    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.5.0-build
     OPT_QTC_SRC=$HOME/src/sailfish-qtcreator
     OPT_INSTALL_ROOT=$HOME/build/qtc-install
     OPT_ICU_PATH=$HOME/invariant/icu-install
 else
-    OPT_QTDIR="c:\invariant\build-qt5-dynamic-msvc2012"
+    OPT_QTDIR="c:\invariant\qt-everywhere-opensource-src-5.5.0-build-msvc2012"
     OPT_QTC_SRC="c:\src\sailfish-qtcreator"
     OPT_INSTALL_ROOT="c:\build\qtc-install"
     OPT_ICU_PATH="c:\invariant\icu"

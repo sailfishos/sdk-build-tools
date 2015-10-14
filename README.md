@@ -43,7 +43,7 @@ The SDK builds are made in the following host environments:
 * Qt4 from `git://gitorious.org/qt/qt.git` tag `v4.8.5` and fix for [QTBUG-26844][6]
 * also https://qt.gitorious.org/qt/qtscript/commit/24d678ce9c3996f46d1069c2b1193e7ec1083fc8
 
-* Qt5 from `http://download.qt-project.org/archive/qt/5.2/5.2.1/single/`
+* Qt5 from `http://download.qt.io/archive/qt/5.5/5.5.0/single/`
 * Qt Installer FW from `git://gitorious.org/installer-framework/installer-framework.git` branch `1.6`
 
 ### ICU version
@@ -90,7 +90,7 @@ the Command Line with Xcode FAQ", available in the Apple Mac Developer Library.
 
 [11]: https://developer.apple.com/library/mac/technotes/tn2339/_index.html#//apple_ref/doc/uid/DTS40014588
 
-By default, the build scripts use Qt 5.2.1. To build a different version of Qt,
+By default, the build scripts use Qt 5.5.0. To build a different version of Qt,
 set the `QT_SOURCE_PACKAGE` variable in the `buildqt5.sh` script to the name of
 the directory containing the Qt source code, e.g.:
 
