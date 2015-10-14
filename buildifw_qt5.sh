@@ -39,15 +39,14 @@ OPT_UPLOAD_HOST=10.0.0.20
 OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
-IFW_BUILD_DIR=ifw-build
+IFW_BUILD_DIR=ifw-build-2.0.1
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    OPT_QTDIR=$HOME/invariant/qt-4.8.5-static-build
-    OPT_QT_SRC_DIR=$HOME/invariant/qt
-    OPT_IFW_SRC=$HOME/invariant/installer-framework
+    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.5.0-static-build
+    OPT_IFW_SRC=$HOME/invariant/installer-framework-2.0.1
 else
-    OPT_QTDIR="c:\invariant\build-qt-static"
-    OPT_IFW_SRC="c:\invariant\installer-framework"
+    OPT_QTDIR="c:\invariant\qt-everywhere-opensource-src-5.5.0-static-build-msvc2012"
+    OPT_IFW_SRC="c:\invariant\installer-framework-2.0.1"
 fi
 
 fail() {
@@ -68,7 +67,6 @@ Current values are displayed in [ ]s.
 Options:
    -ifw | --ifw-src <DIR>      Installer FW source directory [$OPT_IFW_SRC]
    -qt  | --qt-dir <DIR>       Static Qt (install) directory [$OPT_QTDIR]
-   -qts | --qt-src <DIR>       Qt source directory (required for OSX) [$OPT_QT_SRC_DIR]
    -u   | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
                                the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
                                the upload directory will be created if it is not there
@@ -92,9 +90,6 @@ while [[ ${1:-} ]]; do
 	    ;;
 	-qt | --qt-dir ) shift
 	    OPT_QTDIR=$1; shift
-	    ;;
-	-qts | --qts-dir ) shift
-	    OPT_QT_SRC_DIR=$1; shift
 	    ;;
 	-u | --upload ) shift
 	    OPT_UPLOAD=1
@@ -126,10 +121,6 @@ done
 
 if [[ ! -d $OPT_QTDIR ]]; then
     fail "Qt directory [$OPT_QTDIR] not found"
-fi
-
-if [[ $UNAME_SYSTEM == "Darwin" ]] && [[ ! -d $OPT_QT_SRC_DIR ]]; then
-    fail "Qt source directory [$OPT_QT_SRC_DIR] not found"
 fi
 
 if [[ ! -d $OPT_IFW_SRC ]]; then
@@ -171,17 +162,13 @@ fi
 
 build_unix() {
     export QTDIR=$OPT_QTDIR
-    export PATH=$QTDIR/bin:$PATH
+    export PATH=$QTDIR/qtbase/bin:$PATH
 
     rm -rf   $IFW_BUILD_DIR
     mkdir -p $IFW_BUILD_DIR
     pushd    $IFW_BUILD_DIR
 
-    if [[ $UNAME_SYSTEM == "Linux" ]]; then
-	$QTDIR/bin/qmake -r $OPT_IFW_SRC/installerfw.pro
-    else
-	$QTDIR/bin/qmake QT_MENU_NIB_DIR=$OPT_QT_SRC_DIR/qtbase/src/plugins/platforms/cocoa/qt_menu.nib -r $OPT_IFW_SRC/installerfw.pro
-    fi
+    $QTDIR/qtbase/bin/qmake -r $OPT_IFW_SRC/installerfw.pro
 
     make -j$(getconf _NPROCESSORS_ONLN)
     popd
@@ -201,11 +188,11 @@ if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set QTDIR=$OPT_QTDIR
-set QMAKESPEC=win32-msvc2010
+set QMAKESPEC=win32-msvc2012
 set PATH=%PATH%;c:\invariant\bin
 
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call %QTDIR%\bin\qmake -r $OPT_IFW_SRC\installerfw.pro
+call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
+call %QTDIR%\qtbase\bin\qmake -r $OPT_IFW_SRC\installerfw.pro
 call jom
 EOF
 
