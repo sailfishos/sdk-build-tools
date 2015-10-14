@@ -4,10 +4,10 @@
 # subdirectories in the parent directory of the Qt source directory.
 #
 # Qt5 sources must be found from the current user's home directory
-# $HOME/invariant/qt-everywhere-opensource-src-5.2.1 or in in case of
-# Windows in C:\invariant\qt-everywhere-opensource-src-5.2.1.
+# $HOME/invariant/qt-everywhere-opensource-src-5.5.0 or in in case of
+# Windows in C:\invariant\qt-everywhere-opensource-src-5.5.0.
 #
-# To build a version of Qt other than 5.2.1, change the value of the
+# To build a version of Qt other than 5.5.0, change the value of the
 # QT_SOURCE_PACKAGE variable.
 #
 # Copyright (C) 2014 Jolla Oy
@@ -44,7 +44,7 @@ export LC_ALL=C
 UNAME_SYSTEM=$(uname -s)
 UNAME_ARCH=$(uname -m)
 
-QT_SOURCE_PACKAGE=qt-everywhere-opensource-src-5.2.1
+QT_SOURCE_PACKAGE=qt-everywhere-opensource-src-5.5.0
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     BASEDIR=$HOME/invariant
@@ -58,7 +58,7 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
 else
     BASEDIR="/c/invariant"
     SRCDIR_QT="$BASEDIR/$QT_SOURCE_PACKAGE"
-    BUILD_DIR="$BASEDIR/build-qt5-dynamic-msvc2012"
+    BUILD_DIR="$BASEDIR/$QT_SOURCE_PACKAGE-build-msvc2012"
     ICU_INSTALL_DIR=$BASEDIR/icu
 fi
 
@@ -90,10 +90,14 @@ EOF
 }
 
 configure_dynamic_qt5() {
+    # The argument to '-i' is mandatory for compatibility with mac
+    sed -i~ '/^[[:space:]]*WEBKIT_CONFIG[[:space:]]*+=.*\<video\>/s/^/#/' \
+        $SRCDIR_QT/qtwebkit/Tools/qmake/mkspecs/features/features.prf
+
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -DENABLE_VIDEO=0 -I $ICU_INSTALL_DIR/include -L $ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
+        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -no-gstreamer -I $ICU_INSTALL_DIR/include -L $ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
     else
-        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -DENABLE_VIDEO=0
+        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -no-gstreamer
     fi
 }
 
