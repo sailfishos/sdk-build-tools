@@ -39,15 +39,15 @@ OPT_UPLOAD_HOST=10.0.0.20
 OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
-IFW_BUILD_DIR=ifw-build
+IFW_BUILD_DIR=ifw-build-2.0.1
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    OPT_QTDIR=$HOME/invariant/qt-4.8.5-static-build
-    OPT_QT_SRC_DIR=$HOME/invariant/qt
-    OPT_IFW_SRC=$HOME/invariant/installer-framework
+    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.5.0-static-build
+    OPT_QT_SRC_DIR=$HOME/invariant/qt-everywhere-opensource-src-5.5.0
+    OPT_IFW_SRC=$HOME/invariant/installer-framework-2.0.1
 else
-    OPT_QTDIR="c:\invariant\build-qt-static"
-    OPT_IFW_SRC="c:\invariant\installer-framework"
+    OPT_QTDIR="c:\invariant\qt-everywhere-opensource-src-5.5.0-static-build-msvc2012"
+    OPT_IFW_SRC="c:\invariant\installer-framework-2.0.1"
 fi
 
 fail() {
@@ -178,9 +178,9 @@ build_unix() {
     pushd    $IFW_BUILD_DIR
 
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-	$QTDIR/bin/qmake -r $OPT_IFW_SRC/installerfw.pro
+        $QTDIR/qtbase/bin/qmake -r $OPT_IFW_SRC/installerfw.pro
     else
-	$QTDIR/bin/qmake QT_MENU_NIB_DIR=$OPT_QT_SRC_DIR/qtbase/src/plugins/platforms/cocoa/qt_menu.nib -r $OPT_IFW_SRC/installerfw.pro
+        $QTDIR/qtbase/bin/qmake QT_MENU_NIB_DIR=$OPT_QT_SRC_DIR/qtbase/src/plugins/platforms/cocoa/qt_menu.nib -r $OPT_IFW_SRC/installerfw.pro
     fi
 
     make -j$(getconf _NPROCESSORS_ONLN)
@@ -201,11 +201,11 @@ if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set QTDIR=$OPT_QTDIR
-set QMAKESPEC=win32-msvc2010
+set QMAKESPEC=win32-msvc2012
 set PATH=%PATH%;c:\invariant\bin
 
-call "%_programs%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-call %QTDIR%\bin\qmake -r $OPT_IFW_SRC\installerfw.pro
+call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
+call %QTDIR%\qtbase\bin\qmake -r $OPT_IFW_SRC\installerfw.pro
 call jom
 EOF
 
