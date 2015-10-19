@@ -52,7 +52,7 @@ INSTALLER_SRC=sailfish-sdk-installer
 
 # keep these following two in sync
 REQUIRED_SRC_DIRS=($BUILD_TOOLS_SRC $CREATOR_SRC $INSTALLER_SRC)
-REQUIRED_GIT_DEVEL_BRANCHES=(master next jolla-1.6)
+REQUIRED_GIT_DEVEL_BRANCHES=(master next next)
 REQUIRED_GIT_RELEASE_BRANCHES=(master master sdk-release)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
