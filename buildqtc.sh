@@ -316,9 +316,9 @@ build_unix_qtc() {
 	rm -rf $OPT_INSTALL_ROOT/*
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
 	    make install
-	    make deployqt
 	fi
 
+	make deployqt
 	make bindist_installer
 
 	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
