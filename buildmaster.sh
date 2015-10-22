@@ -51,7 +51,7 @@ INSTALLER_BUILD_OPTIONS=''
 
 DEFAULT_URL_PREFIX=http://$OPT_UPLOAD_HOST/sailfishos
 CREATOR_SRC=sailfish-qtcreator
-BUILD_TOOLS_SRC=sdk-build-tools
+BUILD_TOOLS_SRC=$(dirname $0)
 INSTALLER_SRC=sailfish-sdk-installer
 
 # keep these following two in sync
@@ -394,7 +394,7 @@ do_build_qt_static() {
     echo "Building Qt (static) ..."
 
     _ pushd $INVARIANT_DIR
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt5.sh -y --static
+    _ $BUILD_TOOLS_SRC/buildqt5.sh -y --static
     _ popd
 }
 
@@ -405,7 +405,7 @@ do_build_qt_dynamic() {
     echo "Building Qt (dynamic) ..."
 
     _ pushd $INVARIANT_DIR
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt5.sh -y
+    _ $BUILD_TOOLS_SRC/buildqt5.sh -y
     _ popd
 }
 
@@ -416,7 +416,7 @@ do_build_ifw() {
     echo "Building Installer FW ..."
 
     _ pushd $BASE_BUILD_DIR/ifw-build
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildifw_qt5.sh -y $UPLOAD_OPTIONS
+    _ $BUILD_TOOLS_SRC/buildifw_qt5.sh -y $UPLOAD_OPTIONS
     _ popd
 }
 
@@ -427,7 +427,7 @@ do_build_icu() {
     echo "Building ICU ..."
 
     _ pushd $INVARIANT_DIR
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildicu.sh -y
+    _ $BUILD_TOOLS_SRC/buildicu.sh -y
     _ popd
 }
 
@@ -469,7 +469,7 @@ do_build_qtc() {
     fi
 
     _ pushd $BASE_BUILD_DIR/qtc-build
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqtc.sh -y $options $UPLOAD_OPTIONS
+    _ $BUILD_TOOLS_SRC/buildqtc.sh -y $options $UPLOAD_OPTIONS
     _ popd
 }
 
