@@ -31,43 +31,24 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-UNAME_SYSTEM=$(uname -s)
-UNAME_ARCH=$(uname -m)
+. $(dirname $0)/defaults.sh
 
-# some default values
-OPT_UPLOAD_HOST=10.0.0.20
-OPT_UPLOAD_USER=sdkinstaller
-OPT_UPLOAD_PATH=/var/www/sailfishos
-
-OPT_VARIANT="SailfishBetaX"
-OPT_RELEASE="yydd"
-OPT_RELCYCLE="Beta"
-
-OPT_VERSION_DESC=""
-
+OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
+OPT_UPLOAD_USER=$DEF_UPLOAD_USER
+OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
 OPT_REPO_URL=''
 
-INSTALLER_BUILD_OPTIONS=''
-
-DEFAULT_URL_PREFIX=http://$OPT_UPLOAD_HOST/sailfishos
-CREATOR_SRC=sailfish-qtcreator
-BUILD_TOOLS_SRC=$(dirname $0)
-INSTALLER_SRC=sailfish-sdk-installer
+OPT_VARIANT=$DEF_VARIANT
+OPT_RELEASE=$DEF_RELEASE
+OPT_RELCYCLE=$DEF_RELCYCLE
+OPT_VERSION_DESC=$DEF_VERSION_DESC
 
 # keep these following two in sync
-REQUIRED_SRC_DIRS=($CREATOR_SRC $INSTALLER_SRC)
+REQUIRED_SRC_DIRS=($DEF_QTC_SRC_DIR $DEF_INSTALLER_SRC_DIR)
 REQUIRED_GIT_DEVEL_BRANCHES=(next next)
 REQUIRED_GIT_RELEASE_BRANCHES=(master master)
 
-if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    BASE_SRC_DIR=$HOME/src
-    BASE_BUILD_DIR=$HOME/build
-    INVARIANT_DIR=$HOME/invariant
-else
-    BASE_SRC_DIR=/c/src
-    BASE_BUILD_DIR=/c/build
-    INVARIANT_DIR=/c/invariant
-fi
+INSTALLER_BUILD_OPTIONS=''
 
 build_arch() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
@@ -143,22 +124,17 @@ while [[ ${1:-} ]]; do
     case "$1" in
         -q | --qtc ) shift
             OPT_BUILD_QTC=1
-            REQ_BUILD_DIR=1
             let numtasks++
             ;;
         -qd | --qtc-docs ) shift
             OPT_BUILD_QTC_DOCS=1
-            # docs can only be built with QtC, so let's not set
-            # REQ_BUILD_DIR here, also not a task on its own
             ;;
         -g | --gdb ) shift
             OPT_BUILD_GDB=1
-            REQ_BUILD_DIR=1
             let numtasks++
             ;;
         -I | --ifw ) shift
             OPT_BUILD_IFW=1
-            REQ_BUILD_DIR=1
             let numtasks++
             ;;
         -i | --installer ) shift
@@ -256,16 +232,12 @@ done
 [[ $numtasks -eq 0 ]] && usage quit
 
 # some basic requirement checks
-if [[ ! -d $INVARIANT_DIR ]]; then
-    fail "Directory [$INVARIANT_DIR] does not exist"
-fi
-
 for src in ${REQUIRED_SRC_DIRS[*]}; do
-    [[ ! -d $BASE_SRC_DIR/$src ]] && fail "Directory [$BASE_SRC_DIR/$src] does not exist"
+    [[ ! -d $src ]] && fail "Directory [$src] does not exist"
 done
 
 if [[ -n $OPT_DL_DIR ]]; then
-    OPT_DOWNLOAD_URL=$DEFAULT_URL_PREFIX/$OPT_DL_DIR
+    OPT_DOWNLOAD_URL=$DEF_URL_PREFIX/$OPT_DL_DIR
 fi
 
 if [[ -n $OPT_BUILD_INSTALLER ]] || [[ -n $OPT_BUILD_REPO ]] && [[ -z $OPT_DOWNLOAD_URL ]]; then
@@ -361,7 +333,7 @@ do_git_pull() {
     echo "Updating source repositories ..."
 
     for ((i=0; i < ${#REQUIRED_SRC_DIRS[@]}; ++i)); do
-        _ pushd $BASE_SRC_DIR/${REQUIRED_SRC_DIRS[i]}
+        _ pushd ${REQUIRED_SRC_DIRS[i]}
         _ git clean -xdf
         _ git reset --hard
         _ git checkout ${REQUIRED_GIT_BRANCHES[i]}
@@ -371,32 +343,13 @@ do_git_pull() {
     done
 }
 
-do_create_build_env() {
-    [[ -z $REQ_BUILD_DIR ]] && return;
-
-    echo "---------------------------------"
-    echo "Creating build environment ..."
-
-    if [[ -n $OPT_BUILD_IFW ]]; then
-        _ rm -rf $BASE_BUILD_DIR/ifw-build
-        _ mkdir -p $BASE_BUILD_DIR/ifw-build
-    fi
-
-    if [[ -n $OPT_BUILD_QTC ]]; then
-        _ rm -rf $BASE_BUILD_DIR/qtc-build
-        _ mkdir -p $BASE_BUILD_DIR/qtc-build
-    fi
-}
-
 do_build_qt_static() {
     [[ -z $OPT_BUILD_QT_STATIC ]] && return;
 
     echo "---------------------------------"
     echo "Building Qt (static) ..."
 
-    _ pushd $INVARIANT_DIR
     _ $BUILD_TOOLS_SRC/buildqt5.sh -y --static
-    _ popd
 }
 
 do_build_qt_dynamic() {
@@ -405,9 +358,7 @@ do_build_qt_dynamic() {
     echo "---------------------------------"
     echo "Building Qt (dynamic) ..."
 
-    _ pushd $INVARIANT_DIR
     _ $BUILD_TOOLS_SRC/buildqt5.sh -y
-    _ popd
 }
 
 do_build_ifw() {
@@ -416,9 +367,7 @@ do_build_ifw() {
     echo "---------------------------------"
     echo "Building Installer FW ..."
 
-    _ pushd $BASE_BUILD_DIR/ifw-build
     _ $BUILD_TOOLS_SRC/buildifw_qt5.sh -y $UPLOAD_OPTIONS
-    _ popd
 }
 
 do_build_icu() {
@@ -427,9 +376,7 @@ do_build_icu() {
     echo "---------------------------------"
     echo "Building ICU ..."
 
-    _ pushd $INVARIANT_DIR
     _ $BUILD_TOOLS_SRC/buildicu.sh -y
-    _ popd
 }
 
 do_build_qtc() {
@@ -466,12 +413,10 @@ do_build_qtc() {
 
     if [[ -z $OPT_GDB_DEFAULT ]]; then
         # only set this URL if default is not requested
-        options=$options" --gdb-download $DEFAULT_URL_PREFIX/gdb-build-deps"
+        options=$options" --gdb-download $DEF_URL_PREFIX/gdb-build-deps"
     fi
 
-    _ pushd $BASE_BUILD_DIR/qtc-build
     _ $BUILD_TOOLS_SRC/buildqtc.sh -y $options $UPLOAD_OPTIONS
-    _ popd
 }
 
 do_build_installer() {
@@ -498,8 +443,8 @@ do_build_installer() {
         options=$options" --extra $OPT_VERSION_EXTRA"
     fi
 
-    _ pushd $BASE_SRC_DIR/$INSTALLER_SRC
-    _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL $INSTALLER_BUILD_OPTIONS
+    _ pushd $DEF_INSTALLER_SRC_DIR
+    _ ./build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL $INSTALLER_BUILD_OPTIONS
     _ popd
 }
 
@@ -540,8 +485,8 @@ do_build_repo() {
         options=$options" --extra $OPT_VERSION_EXTRA"
     fi
 
-    _ pushd $BASE_SRC_DIR/$INSTALLER_SRC
-    _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh repogen -y $options -un $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL
+    _ pushd $DEF_INSTALLER_SRC_DIR
+    _ ./build.sh repogen -y $options -un $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL
     _ popd
 }
 
@@ -556,13 +501,10 @@ set -e
 # 1 - git pull
 do_git_pull
 
-# 2 - create build directories
-do_create_build_env
-
-# 3 - build qt static
+# 2 - build qt static
 do_build_qt_static
 
-# 3.5 - build ICU for linux and windows
+# 3 - build ICU for linux and windows
 do_build_icu
 
 # 4 - build qt dynamic

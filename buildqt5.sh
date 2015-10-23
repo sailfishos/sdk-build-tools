@@ -41,27 +41,7 @@
 
 export LC_ALL=C
 
-UNAME_SYSTEM=$(uname -s)
-UNAME_ARCH=$(uname -m)
-
-QT_SOURCE_PACKAGE=qt-everywhere-opensource-src-5.5.0
-
-if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    BASEDIR=$HOME/invariant
-    SRCDIR_QT=$BASEDIR/$QT_SOURCE_PACKAGE
-    # the padding part in the dynamic build directory is necessary in
-    # order to accommodate rpath changes at the end of building Qt
-    # Creator, which reads Qt resources from this directory.
-    DYN_BUILD_DIR=$BASEDIR/$QT_SOURCE_PACKAGE-build
-    STATIC_BUILD_DIR=$BASEDIR/$QT_SOURCE_PACKAGE-static-build
-    ICU_INSTALL_DIR=$BASEDIR/icu-install
-else
-    BASEDIR="/c/invariant"
-    SRCDIR_QT="$BASEDIR/$QT_SOURCE_PACKAGE"
-    DYN_BUILD_DIR="$BASEDIR/$QT_SOURCE_PACKAGE-build-msvc2012"
-    STATIC_BUILD_DIR="$BASEDIR/$QT_SOURCE_PACKAGE-static-build-msvc2012"
-    ICU_INSTALL_DIR=$BASEDIR/icu
-fi
+. $(dirname $0)/defaults.sh
 
 # common options for unix/windows dynamic build
 # the dynamic build is used when building Qt Creator
@@ -76,20 +56,20 @@ COMMON_STATIC_OPTIONS="-static -skip qtwebkit -skip qtxmlpatterns -no-dbus -skip
 build_dynamic_qt_windows() {
     [[ -z $OPT_DYNAMIC ]] && return
 
-    rm -rf   $DYN_BUILD_DIR
-    mkdir -p $DYN_BUILD_DIR
-    pushd    $DYN_BUILD_DIR
+    rm -rf   $DEF_QT_DYN_BUILD_DIR
+    mkdir -p $DEF_QT_DYN_BUILD_DIR
+    pushd    $DEF_QT_DYN_BUILD_DIR
 
     cat <<EOF > build-dyn.bat
 @echo off
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;C:\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;c:\invariant\icu\bin;C:\invariant\\$QT_SOURCE_PACKAGE\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;c:\invariant\bin
+set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;$(win_path $DEF_PREFIX)\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;$(win_path $DEF_ICU_INSTALL_DIR)\bin;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;$(win_path $DEF_PREFIX)\invariant\bin
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
 
 set MAKE=jom
-call c:\invariant\\$QT_SOURCE_PACKAGE\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -icu -I c:\invariant\icu\include -L c:\invariant\icu\lib -angle -platform win32-msvc2012 -prefix
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -angle -platform win32-msvc$DEF_MSVC_VER -prefix
 
 call jom /j 1
 EOF
@@ -100,30 +80,30 @@ EOF
 
 configure_static_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
     else
-        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -no-gstreamer -no-warnings-are-errors
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -no-gstreamer -no-warnings-are-errors
     fi
 }
 
 configure_dynamic_qt5() {
     # The argument to '-i' is mandatory for compatibility with mac
     sed -i~ '/^[[:space:]]*WEBKIT_CONFIG[[:space:]]*+=.*\<video\>/s/^/#/' \
-        $SRCDIR_QT/qtwebkit/Tools/qmake/mkspecs/features/features.prf
+        $DEF_QT_SRC_DIR/qtwebkit/Tools/qmake/mkspecs/features/features.prf
 
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -no-gstreamer -I $ICU_INSTALL_DIR/include -L $ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -no-gstreamer -I $DEF_ICU_INSTALL_DIR/include -L $DEF_ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
     else
-        $SRCDIR_QT/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -no-gstreamer
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -no-gstreamer
     fi
 }
 
 build_dynamic_qt() {
     [[ -z $OPT_DYNAMIC ]] && return
 
-    rm -rf   $DYN_BUILD_DIR
-    mkdir -p $DYN_BUILD_DIR
-    pushd    $DYN_BUILD_DIR
+    rm -rf   $DEF_QT_DYN_BUILD_DIR
+    mkdir -p $DEF_QT_DYN_BUILD_DIR
+    pushd    $DEF_QT_DYN_BUILD_DIR
     configure_dynamic_qt5
     make -j$(getconf _NPROCESSORS_ONLN)
     # no need to make install with -developer-build option
@@ -134,20 +114,20 @@ build_dynamic_qt() {
 build_static_qt_windows() {
     [[ -z $OPT_STATIC ]] && return
 
-    rm -rf   $STATIC_BUILD_DIR
-    mkdir -p $STATIC_BUILD_DIR
-    pushd    $STATIC_BUILD_DIR
+    rm -rf   $DEF_QT_STATIC_BUILD_DIR
+    mkdir -p $DEF_QT_STATIC_BUILD_DIR
+    pushd    $DEF_QT_STATIC_BUILD_DIR
 
     cat <<EOF > build-dyn.bat
 @echo off
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;C:\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;c:\invariant\icu\bin;C:\invariant\\$QT_SOURCE_PACKAGE\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;c:\invariant\bin
+set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;$(win_path $DEF_PREFIX)\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;$(win_path $DEF_ICU_INSTALL_DIR)\bin;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;$(win_path $DEF_PREFIX)\invariant\bin
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
 
 set MAKE=jom
-call c:\invariant\\$QT_SOURCE_PACKAGE\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform win32-msvc2012 -static-runtime -prefix
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform win32-msvc$DEF_MSVC_VER -static-runtime -prefix
 
 call jom /j 1
 EOF
@@ -159,9 +139,9 @@ EOF
 build_static_qt() {
     [[ -z $OPT_STATIC ]] && return
 
-    rm -rf   $STATIC_BUILD_DIR
-    mkdir -p $STATIC_BUILD_DIR
-    pushd    $STATIC_BUILD_DIR
+    rm -rf   $DEF_QT_STATIC_BUILD_DIR
+    mkdir -p $DEF_QT_STATIC_BUILD_DIR
+    pushd    $DEF_QT_STATIC_BUILD_DIR
     configure_static_qt5
     make -j$(getconf _NPROCESSORS_ONLN)
     # no need to make install with -developer-build option
@@ -178,9 +158,13 @@ usage() {
     cat <<EOF
 Build dynamic and static versions of Qt5
 
-Required directories:
- $BASEDIR
- $SRCDIR_QT
+Prerequisites:
+ - Qt sources
+   [$DEF_QT_SRC_DIR]
+ - Build directory for dynamic build (will be created)
+   [$DEF_QT_DYN_BUILD_DIR]
+ - Build directory for static build (will be created)
+   [$DEF_QT_STATIC_BUILD_DIR]
 
 Usage:
    $(basename $0) [OPTION]
@@ -224,7 +208,7 @@ if [[ -z $OPT_DYNAMIC ]] && [[ -z $OPT_STATIC ]]; then
     OPT_DYNAMIC=1
 fi
 
-echo "Using sources from [$SRCDIR_QT]"
+echo "Using sources from [$DEF_QT_SRC_DIR]"
 [[ -n $OPT_DYNAMIC ]] && echo "- Build [dynamic] version of Qt5"
 [[ -n $OPT_STATIC ]] && echo "- Build [static] version of Qt5"
 
@@ -246,15 +230,9 @@ if [[ -z $OPT_YES ]]; then
     done
 fi
 
-if [[ ! -d $BASEDIR ]]; then
-    fail "directory [$BASEDIR] does not exist"
+if [[ ! -d $DEF_QT_SRC_DIR ]]; then
+    fail "directory [$DEF_QT_SRC_DIR] does not exist"
 fi
-
-if [[ ! -d $SRCDIR_QT ]]; then
-    fail "directory [$SRCDIR_QT] does not exist"
-fi
-
-pushd $BASEDIR || exit 1
 
 # stop in case of errors
 set -e
@@ -265,7 +243,7 @@ BUILD_START=$(date +%s)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        export LD_LIBRARY_PATH=$ICU_INSTALL_DIR/lib
+        export LD_LIBRARY_PATH=$DEF_ICU_INSTALL_DIR/lib
     fi
     build_dynamic_qt
     build_static_qt
@@ -275,8 +253,6 @@ else
 fi
 # record end time
 BUILD_END=$(date +%s)
-
-popd
 
 time=$(( BUILD_END - BUILD_START ))
 hour=$(( $time / 3600 ))

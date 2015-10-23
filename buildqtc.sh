@@ -31,29 +31,18 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-UNAME_SYSTEM=$(uname -s)
-UNAME_ARCH=$(uname -m)
+. $(dirname $0)/defaults.sh
 
-# some default values
-OPT_UPLOAD_HOST=10.0.0.20
-OPT_UPLOAD_USER=sdkinstaller
-OPT_UPLOAD_PATH=/var/www/sailfishos
+OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
+OPT_UPLOAD_USER=$DEF_UPLOAD_USER
+OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
 
-if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.5.0-build
-    OPT_QTC_SRC=$HOME/src/sailfish-qtcreator
-    OPT_INSTALL_ROOT=$HOME/build/qtc-install
-    OPT_ICU_PATH=$HOME/invariant/icu-install
-else
-    OPT_QTDIR="c:\invariant\qt-everywhere-opensource-src-5.5.0-build-msvc2012"
-    OPT_QTC_SRC="c:\src\sailfish-qtcreator"
-    OPT_INSTALL_ROOT="c:\build\qtc-install"
-    OPT_ICU_PATH="c:\invariant\icu"
-fi
-
-QTC_BUILD_DIR=qtc-build
-
-OPT_VARIANT="SailfishBeta1"
+OPT_QTDIR=$DEF_QT_DYN_BUILD_DIR
+OPT_QTC_SRC_DIR=$DEF_QTC_SRC_DIR
+QTC_BUILD_DIR=$DEF_QTC_BUILD_DIR
+QTC_INSTALL_ROOT=$DEF_QTC_INSTALL_ROOT
+OPT_ICU_PATH=$DEF_ICU_INSTALL_DIR
+OPT_VARIANT=$DEF_VARIANT
 
 fail() {
     echo "FAIL: $@"
@@ -71,9 +60,8 @@ Usage:
 Current values are displayed in [ ]s.
 
 Options:
-   -qtc | --qtc-src <DIR>      Qt Creator source directory [$OPT_QTC_SRC]
+   -qtc | --qtc-src <DIR>      Qt Creator source directory [$OPT_QTC_SRC_DIR]
    -qt  | --qt-dir <DIR>       Qt (install) directory [$OPT_QTDIR]
-   -i   | --install <DIR>      Qt Creator install directory [$OPT_INSTALL_ROOT]
    -v   | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
    -r   | --revision <STRING>  Use <STRING> as the build revision [git sha]
    -vd  | --version-desc <STRING>  Use <STRING> as a version description (appears
@@ -112,13 +100,12 @@ while [[ ${1:-} ]]; do
 	    OPT_VERSION_DESC=$1; shift
 	    ;;
 	-qtc | --qtc-src ) shift
-	    OPT_QTC_SRC=$1; shift
+	    OPT_QTC_SRC_DIR=$1; shift
+        QTC_BUILD_DIR=$OPT_QTC_SRC_DIR$DEF_QTC_BUILD_SUFFIX
+        QTC_INSTALL_ROOT=$OPT_QTC_SRC_DIR$DEF_QTC_INSTALL_SUFFIX
 	    ;;
 	-qt | --qt-dir ) shift
 	    OPT_QTDIR=$1; shift
-	    ;;
-	-i | --install ) shift
-	    OPT_INSTALL_ROOT=$1; shift
 	    ;;
 	-d | --docs ) shift
 	    OPT_DOCUMENTATION=1
@@ -174,17 +161,17 @@ if [[ ! -d $OPT_QTDIR ]]; then
     fail "Qt directory [$OPT_QTDIR] not found"
 fi
 
-if [[ ! -d $OPT_QTC_SRC ]]; then
-    fail "Qt Creator source directory [$OPT_QTC_SRC] not found"
+if [[ ! -d $OPT_QTC_SRC_DIR ]]; then
+    fail "Qt Creator source directory [$OPT_QTC_SRC_DIR] not found"
 fi
 
-if [[ ! -d $OPT_INSTALL_ROOT ]]; then
-    mkdir -p $OPT_INSTALL_ROOT
+if [[ ! -d $QTC_INSTALL_ROOT ]]; then
+    mkdir -p $QTC_INSTALL_ROOT
 fi
 
 # the default revision is the git hash of Qt Creator src directory
 if [[ -z $OPT_REVISION ]]; then
-    OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD 2>/dev/null)
+    OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC_DIR/.git rev-parse --short HEAD 2>/dev/null)
 fi
 
 if [[ -z $OPT_REVISION ]]; then
@@ -195,9 +182,9 @@ fi
 echo "Summary of chosen actions:"
 cat <<EOF
   QT Creator variant [$OPT_VARIANT] revision [$OPT_REVISION]
-   - Use [$PWD] as the build directory
-   - Install QtC build results to [$OPT_INSTALL_ROOT]
-   - Qt Creator source directory [$OPT_QTC_SRC]
+   - Qt Creator source directory [$OPT_QTC_SRC_DIR]
+   - Qt Creator build directory [$QTC_BUILD_DIR]
+   - Qt Creator installation directory [$QTC_INSTALL_ROOT]
    - Qt directory [$OPT_QTDIR]
 EOF
 if [[ -z $OPT_GDB_ONLY ]]; then
@@ -274,8 +261,8 @@ build_unix_gdb() {
 	    downloads="DOWNLOAD_URL=$OPT_GDB_URL"
 	fi
 
-	make -f $OPT_QTC_SRC/dist/gdb/$GDB_MAKEFILE \
-	    PATCHDIR=$OPT_QTC_SRC/dist/gdb/patches $downloads
+	make -f $OPT_QTC_SRC_DIR/dist/gdb/$GDB_MAKEFILE \
+	    PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads
 
         # move the completed package to the parent dir
 	mv $SAILFISH_GDB_BASENAME*.7z ..
@@ -295,7 +282,7 @@ setup_unix_qtc_ccache() {
 
 build_unix_qtc() {
     if [[ -z $OPT_GDB_ONLY ]]; then
-	export INSTALL_ROOT=$OPT_INSTALL_ROOT
+	export INSTALL_ROOT=$QTC_INSTALL_ROOT
 	export QTDIR=$OPT_QTDIR/qtbase
 	export PATH=$QTDIR/bin:$PATH
 	export INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
@@ -307,7 +294,7 @@ build_unix_qtc() {
 	pushd    $QTC_BUILD_DIR
 
     if ! [[ $OPT_QUICK ]]; then
-        $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro CONFIG+=release -r \
+        $QTDIR/bin/qmake $OPT_QTC_SRC_DIR/qtcreator.pro CONFIG+=release -r \
             QTC_SHOW_BUILD_DATE=1 \
             -after "DEFINES+=IDE_REVISION=$OPT_REVISION" \
             ${OPT_VERSION_DESC:+"DEFINES+=IDE_VERSION_DESCRIPTION=$OPT_VERSION_DESC"} \
@@ -320,7 +307,7 @@ build_unix_qtc() {
 
 	make -j$(getconf _NPROCESSORS_ONLN)
 
-	rm -rf $OPT_INSTALL_ROOT/*
+	rm -rf $QTC_INSTALL_ROOT/*
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
 	    make install
 	fi
@@ -329,7 +316,7 @@ build_unix_qtc() {
 
     # Add icu library
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        cp $HOME/invariant/icu-build/lib/* $OPT_INSTALL_ROOT/lib/qtcreator
+        cp $OPT_ICU_PATH/lib/* $QTC_INSTALL_ROOT/lib/qtcreator
     fi
 
 	make bindist_installer
@@ -381,7 +368,7 @@ build_windows_gdb() {
 
 	cat <<EOF > build-gdb.bat
 @echo off
-call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f /c/src/sailfish-qtcreator/dist/gdb/Makefile.mingw PATCHDIR=/c/src/sailfish-qtcreator/dist/gdb/patches $downloads"
+call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads"
 EOF
 	cmd //c build-gdb.bat
 
@@ -425,21 +412,21 @@ if Not DEFINED ProgramFiles(x86) (
 )
 
 
-set INSTALL_ROOT=$OPT_INSTALL_ROOT
-set QTDIR=$OPT_QTDIR\qtbase
-set QMAKESPEC=win32-msvc2012
-set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;C:\invariant\bin;c:\python27;$OPT_ICU_PATH\bin
+set INSTALL_ROOT=$(win_path $QTC_INSTALL_ROOT)
+set QTDIR=$(win_path $OPT_QTDIR)\qtbase
+set QMAKESPEC=win32-msvc$DEF_MSVC_VER
+set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;$(win_path $DEF_PREFIX)\invariant\bin;c:\python27;$(win_path $OPT_ICU_PATH)\bin
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
-call rmdir /s /q $OPT_INSTALL_ROOT
+call rmdir /s /q $(win_path $QTC_INSTALL_ROOT)
 
 if exist $binary_artifacts (
-  call 7z x -o$OPT_INSTALL_ROOT $binary_artifacts
+  call 7z x -o$(win_path $QTC_INSTALL_ROOT) $binary_artifacts
 )
 
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
 
-call %QTDIR%\bin\qmake C:\src\sailfish-qtcreator\qtcreator.pro CONFIG+=release -r ^
+call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro CONFIG+=release -r ^
     QTC_SHOW_BUILD_DATE=1 ^
     -after "DEFINES+=IDE_REVISION=$OPT_REVISION" ^
     "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." ^
@@ -452,12 +439,12 @@ call nmake install
 call nmake deployqt
 
 rem copy all the necessary libraries to the install directory
-copy $OPT_QTDIR\qtbase\bin\libEGL.dll %INSTALL_ROOT%\bin
-copy $OPT_QTDIR\qtbase\bin\libGLESv2*.dll %INSTALL_ROOT%\bin
+copy %QTDIR%\bin\libEGL.dll %INSTALL_ROOT%\bin
+copy %QTDIR%\bin\libGLESv2*.dll %INSTALL_ROOT%\bin
 copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin
 copy "%_programs%\microsoft visual studio 12.0\vc\redist\x86\microsoft.vc120.crt\*.dll" %INSTALL_ROOT%\bin
 copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin
-copy $OPT_ICU_PATH\bin\*.dll %INSTALL_ROOT%\bin
+copy $(win_path $OPT_ICU_PATH)\bin\*.dll %INSTALL_ROOT%\bin
 
 call nmake bindist_installer
 EOF

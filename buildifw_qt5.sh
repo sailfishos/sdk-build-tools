@@ -31,23 +31,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-UNAME_SYSTEM=$(uname -s)
-UNAME_ARCH=$(uname -m)
+. $(dirname $0)/defaults.sh
 
-# some default values
-OPT_UPLOAD_HOST=10.0.0.20
-OPT_UPLOAD_USER=sdkinstaller
-OPT_UPLOAD_PATH=/var/www/sailfishos
+OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
+OPT_UPLOAD_USER=$DEF_UPLOAD_USER
+OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
 
-IFW_BUILD_DIR=ifw-build-2.0.1
-
-if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.5.0-static-build
-    OPT_IFW_SRC=$HOME/invariant/installer-framework-2.0.1
-else
-    OPT_QTDIR="c:\invariant\qt-everywhere-opensource-src-5.5.0-static-build-msvc2012"
-    OPT_IFW_SRC="c:\invariant\installer-framework-2.0.1"
-fi
+OPT_QTDIR=$DEF_QT_STATIC_BUILD_DIR
+OPT_IFW_SRC_DIR=$DEF_IFW_SRC_DIR
+IFW_BUILD_DIR=$DEF_IFW_BUILD_DIR
 
 fail() {
     echo "FAIL: $@"
@@ -65,7 +57,7 @@ Usage:
 Current values are displayed in [ ]s.
 
 Options:
-   -ifw | --ifw-src <DIR>      Installer FW source directory [$OPT_IFW_SRC]
+   -ifw | --ifw-src <DIR>      Installer FW source directory [$OPT_IFW_SRC_DIR]
    -qt  | --qt-dir <DIR>       Static Qt (install) directory [$OPT_QTDIR]
    -u   | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
                                the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
@@ -86,7 +78,8 @@ EOF
 while [[ ${1:-} ]]; do
     case "$1" in
 	-ifw | --ifw-src ) shift
-	    OPT_IFW_SRC=$1; shift
+	    OPT_IFW_SRC_DIR=$1; shift
+        IFW_BUILD_DIR=$OPT_IFW_SRC_DIR$DEF_IFW_BUILD_SUFFIX
 	    ;;
 	-qt | --qt-dir ) shift
 	    OPT_QTDIR=$1; shift
@@ -123,16 +116,16 @@ if [[ ! -d $OPT_QTDIR ]]; then
     fail "Qt directory [$OPT_QTDIR] not found"
 fi
 
-if [[ ! -d $OPT_IFW_SRC ]]; then
-    fail "Installer framework source directory [$OPT_IFW_SRC] not found"
+if [[ ! -d $OPT_IFW_SRC_DIR ]]; then
+    fail "Installer framework source directory [$OPT_IFW_SRC_DIR] not found"
 fi
 
 # summary
 cat <<EOF
 Summary of chosen actions:
  1) Build Installer Framework
-    - Use [$PWD] as the build directory
-    - Installer Framework source directory [$OPT_IFW_SRC]
+    - Installer Framework source directory [$OPT_IFW_SRC_DIR]
+    - Installer Framework build directory [$IFW_BUILD_DIR]
     - Static Qt directory [$OPT_QTDIR]
 EOF
 
@@ -168,7 +161,7 @@ build_unix() {
     mkdir -p $IFW_BUILD_DIR
     pushd    $IFW_BUILD_DIR
 
-    $QTDIR/qtbase/bin/qmake -r $OPT_IFW_SRC/installerfw.pro
+    $QTDIR/qtbase/bin/qmake -r $OPT_IFW_SRC_DIR/installerfw.pro
 
     make -j$(getconf _NPROCESSORS_ONLN)
     popd
@@ -187,12 +180,12 @@ build_windows() {
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-set QTDIR=$OPT_QTDIR
-set QMAKESPEC=win32-msvc2012
-set PATH=%PATH%;c:\invariant\bin
+set QTDIR=$(win_path $OPT_QTDIR)
+set QMAKESPEC=win32-msvc$DEF_MSVC_VER
+set PATH=%PATH%;$(win_path $DEF_PREFIX)\invariant\bin
 
 call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
-call %QTDIR%\qtbase\bin\qmake -r $OPT_IFW_SRC\installerfw.pro
+call %QTDIR%\qtbase\bin\qmake -r $(win_path $OPT_IFW_SRC_DIR)\installerfw.pro
 call jom
 EOF
 
@@ -214,8 +207,6 @@ else
     build_windows
 fi
 
-IFW_PACKAGE_NAME="InstallerFW.7z"
-
 if [[ $UNAME_SYSTEM == "Linux" ]]; then
     if [[ $UNAME_ARCH == "x86_64" ]]; then
 	BUILD_ARCH="linux-64"
@@ -233,7 +224,7 @@ pushd $IFW_BUILD_DIR
 # install results
 mkdir -p ifw
 cp -a bin ifw
-7z a -mx=9 $IFW_PACKAGE_NAME ifw
+7z a -mx=9 $DEF_IFW_PACKAGE_NAME ifw
 
 # record end time
 BUILD_END=$(date +%s)
@@ -249,7 +240,7 @@ if  [[ -n "$OPT_UPLOAD" ]]; then
     echo "Uploading $IFW_PACKAGE_NAME ..."
     # create upload dir
     ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/$BUILD_ARCH
-    scp $IFW_PACKAGE_NAME $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$BUILD_ARCH/
+    scp $DEF_IFW_PACKAGE_NAME $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$BUILD_ARCH/
 fi
 
 popd
