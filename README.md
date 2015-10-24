@@ -8,18 +8,18 @@ environment, but may offer command line options for changing the
 default values. The scripts can act as a starting point for adapting
 them for personal use if so desired.
 
-Building Qt4 and Qt5 is only necessary once and whenever patches are
+Building Qt is only necessary once and whenever patches are
 applied, otherwise they can be left in the built state and utilized in
 subsequent Qt Creator builds.
 
-Qt4 is required for Installer Framework, Qt5 is required for Qt Creator.
+Static Qt build is required for Installer Framework, dynamic Qt build is
+required for Qt Creator.
 
 ### Scripts
 
 Most of the scripts offer a `--help` option.
 
-* `buildqt.sh` - builds Qt4
-* `buildqt5.sh` - builds Qt5
+* `buildqt5.sh` - builds Qt
 * `buildqtc.sh` - builds Qt Creator and cross-gdb for *i486* and *armv7hl* architectures
 * `buildicu.sh` - builds the ICU library for Linux and Windows (required for Webkit)
 * `buildifw.sh` - builds the Qt Installer Framework binaries
@@ -40,11 +40,8 @@ The SDK builds are made in the following host environments:
 
 ### Qt versions required for build
 
-* Qt4 from `git://gitorious.org/qt/qt.git` tag `v4.8.5` and fix for [QTBUG-26844][6]
-* also https://qt.gitorious.org/qt/qtscript/commit/24d678ce9c3996f46d1069c2b1193e7ec1083fc8
-
-* Qt5 from `http://download.qt-project.org/archive/qt/5.2/5.2.1/single/`
-* Qt Installer FW from `git://gitorious.org/installer-framework/installer-framework.git` branch `1.6`
+* Qt5 from `http://download.qt.io/archive/qt/5.5/5.5.0/single/`
+* Qt Installer FW from `git://gitorious.org/installer-framework/installer-framework.git` tag `2.0.1`
 
 ### ICU version
 
@@ -90,7 +87,7 @@ the Command Line with Xcode FAQ", available in the Apple Mac Developer Library.
 
 [11]: https://developer.apple.com/library/mac/technotes/tn2339/_index.html#//apple_ref/doc/uid/DTS40014588
 
-By default, the build scripts use Qt 5.2.1. To build a different version of Qt,
+By default, the build scripts use Qt 5.5.0. To build a different version of Qt,
 set the `QT_SOURCE_PACKAGE` variable in the `buildqt5.sh` script to the name of
 the directory containing the Qt source code, e.g.:
 

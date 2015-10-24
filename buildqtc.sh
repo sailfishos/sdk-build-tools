@@ -40,12 +40,12 @@ OPT_UPLOAD_USER=sdkinstaller
 OPT_UPLOAD_PATH=/var/www/sailfishos
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.2.1-build
+    OPT_QTDIR=$HOME/invariant/qt-everywhere-opensource-src-5.5.0-build
     OPT_QTC_SRC=$HOME/src/sailfish-qtcreator
     OPT_INSTALL_ROOT=$HOME/build/qtc-install
     OPT_ICU_PATH=$HOME/invariant/icu-install
 else
-    OPT_QTDIR="c:\invariant\build-qt5-dynamic-msvc2012"
+    OPT_QTDIR="c:\invariant\qt-everywhere-opensource-src-5.5.0-build-msvc2012"
     OPT_QTC_SRC="c:\src\sailfish-qtcreator"
     OPT_INSTALL_ROOT="c:\build\qtc-install"
     OPT_ICU_PATH="c:\invariant\icu"
@@ -298,7 +298,6 @@ build_unix_qtc() {
     if [[ -z $OPT_GDB_ONLY ]]; then
 	export INSTALL_ROOT=$OPT_INSTALL_ROOT
 	export QTDIR=$OPT_QTDIR/qtbase
-	export QT_PRIVATE_HEADERS=$QTDIR/include
 	export PATH=$QTDIR/bin:$PATH
 	export INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPT_ICU_PATH/lib
@@ -317,9 +316,9 @@ build_unix_qtc() {
 	rm -rf $OPT_INSTALL_ROOT/*
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
 	    make install
-	    make deployqt
 	fi
 
+	make deployqt
 	make bindist_installer
 
 	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
@@ -424,7 +423,6 @@ if Not DEFINED ProgramFiles(x86) (
 set INSTALL_ROOT=$OPT_INSTALL_ROOT
 set QTDIR=$OPT_QTDIR\qtbase
 set QMAKESPEC=win32-msvc2012
-set QT_PRIVATE_HEADERS=%QTDIR%\include
 set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;C:\invariant\bin;c:\python27;$OPT_ICU_PATH\bin
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 

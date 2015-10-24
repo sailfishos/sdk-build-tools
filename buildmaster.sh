@@ -52,7 +52,7 @@ INSTALLER_SRC=sailfish-sdk-installer
 
 # keep these following two in sync
 REQUIRED_SRC_DIRS=($BUILD_TOOLS_SRC $CREATOR_SRC $INSTALLER_SRC)
-REQUIRED_GIT_DEVEL_BRANCHES=(master next jolla-1.6)
+REQUIRED_GIT_DEVEL_BRANCHES=(master next next)
 REQUIRED_GIT_RELEASE_BRANCHES=(master master sdk-release)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
@@ -99,8 +99,8 @@ Options:
    -i   | --installer           Build installer
    -r   | --repogen             Build SDK update repository
    -I   | --ifw                 Build Installer Framework
-   -qt4 | --qt4-build           Build Qt4 (required for Installer framework)
-   -qt5 | --qt5-build           Build Qt5 (required for QtC)
+        | --qt-static           Build Qt (static - required for Installer framework)
+        | --qt-dynamic          Build Qt (dynamic - required for QtC)
    -icu | --icu-build           Build ICU library (Linux and Windows)
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
@@ -128,6 +128,12 @@ EOF
 
 # handle commandline options
 while [[ ${1:-} ]]; do
+    # Keep it during the transition to not break Jenkins config
+    case "$1" in
+        -qt4 ) echo "The switch '-qt4' is deprecated. Use '--qt-static' instead";;
+        -qt5 ) echo "The switch '-qt5' is deprecated. Use '--qt-dynamic' instead";;
+    esac
+
     case "$1" in
         -q | --qtc ) shift
             OPT_BUILD_QTC=1
@@ -161,12 +167,12 @@ while [[ ${1:-} ]]; do
             OPT_BUILD_ICU=1
             let numtasks++
             ;;
-        -qt4 | --qt4-build ) shift
-            OPT_BUILD_QT4=1
+        -qt4 | --qt-static ) shift
+            OPT_BUILD_QT_STATIC=1
             let numtasks++
             ;;
-        -qt5 | --qt5-build ) shift
-            OPT_BUILD_QT5=1
+        -qt5 | --qt-dynamic ) shift
+            OPT_BUILD_QT_DYNAMIC=1
             let numtasks++
             ;;
         -p | --git-pull ) shift
@@ -275,8 +281,8 @@ Summary of chosen actions:
  Build GDB ......... [$(get_option $OPT_BUILD_GDB)]
  Build Installer FW  [$(get_option $OPT_BUILD_IFW)]
  Build Installer ... [$(get_option $OPT_BUILD_INSTALLER)]
- Build Qt4 ......... [$(get_option $OPT_BUILD_QT4)]
- Build Qt5 ......... [$(get_option $OPT_BUILD_QT5)]
+ Build Qt (static) . [$(get_option $OPT_BUILD_QT_STATIC)]
+ Build Qt (dynamic)  [$(get_option $OPT_BUILD_QT_DYNAMIC)]
  Build ICU ......... [$(get_option $OPT_BUILD_ICU)]
  Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
@@ -372,22 +378,22 @@ do_create_build_env() {
     fi
 }
 
-do_build_qt4() {
-    [[ -z $OPT_BUILD_QT4 ]] && return;
+do_build_qt_static() {
+    [[ -z $OPT_BUILD_QT_STATIC ]] && return;
 
     echo "---------------------------------"
-    echo "Building Qt4 ..."
+    echo "Building Qt (static) ..."
 
     _ pushd $INVARIANT_DIR
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt.sh -y
+    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt5.sh -y --static
     _ popd
 }
 
-do_build_qt5() {
-    [[ -z $OPT_BUILD_QT5 ]] && return;
+do_build_qt_dynamic() {
+    [[ -z $OPT_BUILD_QT_DYNAMIC ]] && return;
 
     echo "---------------------------------"
-    echo "Building Qt5 ..."
+    echo "Building Qt (dynamic) ..."
 
     _ pushd $INVARIANT_DIR
     _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildqt5.sh -y
@@ -401,7 +407,7 @@ do_build_ifw() {
     echo "Building Installer FW ..."
 
     _ pushd $BASE_BUILD_DIR/ifw-build
-    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildifw.sh -y $UPLOAD_OPTIONS
+    _ $BASE_SRC_DIR/$BUILD_TOOLS_SRC/buildifw_qt5.sh -y $UPLOAD_OPTIONS
     _ popd
 }
 
@@ -530,14 +536,14 @@ do_git_pull
 # 2 - create build directories
 do_create_build_env
 
-# 3 - build qt4
-do_build_qt4
+# 3 - build qt static
+do_build_qt_static
 
 # 3.5 - build ICU for linux and windows
 do_build_icu
 
-# 4 - build qt5
-do_build_qt5
+# 4 - build qt dynamic
+do_build_qt_dynamic
 
 # 5 - build IFW
 do_build_ifw
