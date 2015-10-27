@@ -143,7 +143,7 @@ if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;C:\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;c:\invariant\icu\bin;C:\invariant\\$QT_SOURCE_PACKAGE\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;c:\invariant\bin
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
-call c:\invariant\\$QT_SOURCE_PACKAGE\configure.bat $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform win32-msvc2012 -prefix
+call c:\invariant\\$QT_SOURCE_PACKAGE\configure.bat $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform win32-msvc2012 -static-runtime -prefix
 
 call jom /j 1
 EOF
