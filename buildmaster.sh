@@ -43,7 +43,7 @@ OPT_VARIANT="SailfishBetaX"
 OPT_RELEASE="yydd"
 OPT_RELCYCLE="Beta"
 
-OPT_REVISION_EXTRA="+git"
+OPT_VERSION_DESC=""
 
 OPT_REPO_URL=''
 
@@ -111,7 +111,8 @@ Options:
         | --release <STRING>    SDK release version [$OPT_RELEASE]
         | --rel-cycle <STRING>  SDK release cycle [$OPT_RELCYCLE]
         | --repourl <STRING>    Update repo location, if set overrides the public repo URL
-   -re  | --revextra <STRING>   Use <STRING> as the Qt Creator revision suffix
+   -vd  | --version-desc <STRING>  Use <STRING> as a version description (appears
+                                in braces after Qt Creator version in About dialog)
    -gd  | --gdb-default         Use default download URLs for gdb build deps
    -d   | --download <URL>      Use <URL> to download artifacts
    -D   | --dload-def <DIR>     Create download URL using <DIR> as the source dir
@@ -197,8 +198,8 @@ while [[ ${1:-} ]]; do
         --repourl ) shift
             OPT_REPO_URL=$1; shift
             ;;
-        -re | --revextra ) shift
-            OPT_REVISION_EXTRA=$1; shift
+        -vd | --version-desc ) shift
+            OPT_VERSION_DESC=$1; shift
             ;;
         -e | --extra ) shift
             OPT_VERSION_EXTRA=$1; shift
@@ -299,7 +300,7 @@ Summary of chosen actions:
 EOF
 
 if [[ -n $OPT_BUILD_QTC ]]; then
-    echo " QtC revision suffx  [${OPT_REVISION_EXTRA:- }]"
+    echo " QtC version desc. . [${OPT_VERSION_DESC:- }]"
 fi
 
 if [[ -n $OPT_VERSION_EXTRA ]]; then
@@ -456,8 +457,8 @@ do_build_qtc() {
         options=$options" --variant $OPT_VARIANT"
     fi
 
-    if [[ -n $OPT_REVISION_EXTRA ]]; then
-        options=$options" --revextra $OPT_REVISION_EXTRA"
+    if [[ -n $OPT_VERSION_DESC ]]; then
+        options=$options" --version-desc $OPT_VERSION_DESC"
     fi
 
     if [[ -z $OPT_GDB_DEFAULT ]]; then
