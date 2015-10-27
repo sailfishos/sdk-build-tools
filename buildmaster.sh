@@ -500,11 +500,9 @@ do_build_installer() {
 }
 
 do_override_repo_url() {
-    if [[ "x$OPT_REPO_URL" -neq "x" ]]; then
-       _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-linux-32.xml
-       _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-linux-64.xml
-       _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-mac.xml
-       _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-windows.xml
+    if [[ -n $OPT_REPO_URL ]]; then
+        _ sed -e s^http://releases.sailfishos.org/sdk/repository^${OPT_REPO_URL}^g \
+            -i~ $BASE_SRC_DIR/$INSTALLER_SRC/config/config-*.xml
     fi
 
 }
