@@ -308,6 +308,7 @@ build_unix_qtc() {
 
     if ! [[ $OPT_QUICK ]]; then
         $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro CONFIG+=release -r \
+            QTC_SHOW_BUILD_DATE=1 \
             -after "DEFINES+=IDE_REVISION=$OPT_REVISION" \
             ${OPT_VERSION_DESC:+"DEFINES+=IDE_VERSION_DESCRIPTION=$OPT_VERSION_DESC"} \
             "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." \
@@ -441,6 +442,7 @@ if exist $binary_artifacts (
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
 
 call %QTDIR%\bin\qmake C:\src\sailfish-qtcreator\qtcreator.pro CONFIG+=release -r ^
+    QTC_SHOW_BUILD_DATE=1 ^
     -after "DEFINES+=IDE_REVISION=$OPT_REVISION" ^
     "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." ^
     "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" ^
