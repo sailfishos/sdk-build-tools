@@ -182,7 +182,9 @@ if [[ ! -d $OPT_INSTALL_ROOT ]]; then
 fi
 
 # the default revision is the git hash of Qt Creator src directory
-OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD 2>/dev/null)
+if [[ -z $OPT_REVISION ]]; then
+    OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD 2>/dev/null)
+fi
 
 if [[ -z $OPT_REVISION ]]; then
     OPT_REVISION="unknown"
