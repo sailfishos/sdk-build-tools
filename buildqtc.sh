@@ -326,6 +326,12 @@ build_unix_qtc() {
 	fi
 
 	make deployqt
+
+    # Add icu library
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        cp $HOME/invariant/icu-build/lib/* $OPT_INSTALL_ROOT/lib/qtcreator
+    fi
+
 	make bindist_installer
 
 	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
@@ -345,14 +351,6 @@ build_unix_qtc() {
         7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/bb-*
     fi
 
-    # Add icu library
-    if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        qtcdir=$PWD
-        pushd $HOME/invariant/icu-build
-        7z a $qtcdir/$SAILFISH_QTC_BASENAME$(build_arch).7z lib/*
-        popd
-    fi
-    
 	if [[ -n $OPT_DOCUMENTATION ]]; then
 	    make docs
 	    make install_docs
