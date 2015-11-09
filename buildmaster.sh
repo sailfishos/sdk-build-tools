@@ -47,6 +47,8 @@ OPT_REVISION_EXTRA="+git"
 
 OPT_REPO_URL=''
 
+INSTALLER_BUILD_OPTIONS=''
+
 DEFAULT_URL_PREFIX=http://$OPT_UPLOAD_HOST/sailfishos
 CREATOR_SRC=sailfish-qtcreator
 BUILD_TOOLS_SRC=sdk-build-tools
@@ -476,7 +478,7 @@ do_build_installer() {
     echo "---------------------------------"
     echo "Building Installer ..."
 
-    local options=
+    local options=$INSTALLER_BUILD_OPTIONS
 
     if [[ -n $OPT_VARIANT ]]; then
         options=$options" --variant $OPT_VARIANT"
@@ -500,13 +502,19 @@ do_build_installer() {
 }
 
 do_override_repo_url() {
-    if [[ "x$OPT_REPO_URL" -neq "x" ]]; then
+    if [[ "x$OPT_REPO_URL" -ne "x" ]]; then
        _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-linux-32.xml
        _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-linux-64.xml
        _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-mac.xml
        _ sed -e s%http://releases.sailfishos.org/sdk/repository%${OPT_REPO_URL}%g --in-place $BASE_SRC_DIR/$INSTALLER_SRC/config/config-windows.xml
-    fi
 
+       # Daily builds need custom version strings.
+       base=`expr substr $OPT_REPO_URL 1 33`
+       if [[ $base == "http://10.0.0.20/sailfishos/daily" ]]; then
+           INSTALLER_BUILD_OPTIONS="$INSTALLER_BUILD_OPTIONS --version-file package-versions-daily.conf"
+           _ $BASE_SRC_DIR/$INSTALLER_SRC/create-daily-version-file.py
+       fi
+    fi
 }
 
 do_build_repo() {
