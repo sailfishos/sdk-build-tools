@@ -76,7 +76,8 @@ Options:
    -i   | --install <DIR>      Qt Creator install directory [$OPT_INSTALL_ROOT]
    -v   | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
    -r   | --revision <STRING>  Use <STRING> as the build revision [git sha]
-   -re  | --revextra <STRING>  Use <STRING> as a revision suffix
+   -vd  | --version-desc <STRING>  Use <STRING> as a version description (appears
+                               in braces after Qt Creator version in About dialog)
    -d   | --docs               Build Qt Creator documentation
    -g   | --gdb                Build also gdb
    -go  | --gdb-only           Build only gdb
@@ -107,8 +108,8 @@ while [[ ${1:-} ]]; do
 	-r | --revision ) shift
 	    OPT_REVISION=$1; shift
 	    ;;
-	-re | --revextra ) shift
-	    OPT_REV_EXTRA=$1; shift
+	-vd | --version-desc ) shift
+	    OPT_VERSION_DESC=$1; shift
 	    ;;
 	-qtc | --qtc-src ) shift
 	    OPT_QTC_SRC=$1; shift
@@ -182,14 +183,12 @@ if [[ ! -d $OPT_INSTALL_ROOT ]]; then
 fi
 
 # the default revision is the git hash of Qt Creator src directory
-OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD 2>/dev/null)
+if [[ -z $OPT_REVISION ]]; then
+    OPT_REVISION=$(git --git-dir=$OPT_QTC_SRC/.git rev-parse --short HEAD 2>/dev/null)
+fi
 
 if [[ -z $OPT_REVISION ]]; then
     OPT_REVISION="unknown"
-fi
-
-if [[ -n $OPT_REV_EXTRA ]]; then
-    OPT_REVISION=$OPT_REVISION$OPT_REV_EXTRA
 fi
 
 # summary
@@ -307,7 +306,15 @@ build_unix_qtc() {
 	mkdir -p $QTC_BUILD_DIR
 	pushd    $QTC_BUILD_DIR
 
-	[[ $OPT_QUICK ]] || $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
+    if ! [[ $OPT_QUICK ]]; then
+        $QTDIR/bin/qmake $OPT_QTC_SRC/qtcreator.pro CONFIG+=release -r \
+            QTC_SHOW_BUILD_DATE=1 \
+            -after "DEFINES+=IDE_REVISION=$OPT_REVISION" \
+            ${OPT_VERSION_DESC:+"DEFINES+=IDE_VERSION_DESCRIPTION=$OPT_VERSION_DESC"} \
+            "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." \
+            "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" \
+            QTC_PREFIX=
+    fi
 
 	setup_unix_qtc_ccache
 
@@ -319,6 +326,12 @@ build_unix_qtc() {
 	fi
 
 	make deployqt
+
+    # Add icu library
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        cp $HOME/invariant/icu-build/lib/* $OPT_INSTALL_ROOT/lib/qtcreator
+    fi
+
 	make bindist_installer
 
 	if [[ -z $OPT_KEEP_TEMPLATE ]]; then
@@ -338,14 +351,6 @@ build_unix_qtc() {
         7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/bb-*
     fi
 
-    # Add icu library
-    if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        qtcdir=$PWD
-        pushd $HOME/invariant/icu-build
-        7z a $qtcdir/$SAILFISH_QTC_BASENAME$(build_arch).7z lib/*
-        popd
-    fi
-    
 	if [[ -n $OPT_DOCUMENTATION ]]; then
 	    make docs
 	    make install_docs
@@ -433,7 +438,14 @@ if exist $binary_artifacts (
 )
 
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
-call %QTDIR%\bin\qmake C:\src\sailfish-qtcreator\qtcreator.pro CONFIG+=release -r -after "DEFINES+=IDE_REVISION=$OPT_REVISION IDE_COPY_SETTINGS_FROM_VARIANT=. IDE_SETTINGSVARIANT=$OPT_VARIANT" QTC_PREFIX=
+
+call %QTDIR%\bin\qmake C:\src\sailfish-qtcreator\qtcreator.pro CONFIG+=release -r ^
+    QTC_SHOW_BUILD_DATE=1 ^
+    -after "DEFINES+=IDE_REVISION=$OPT_REVISION" ^
+    "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." ^
+    "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" ^
+    "DEFINES+=IDE_VERSION_DESCRIPTION=$OPT_VERSION_DESC" ^
+    QTC_PREFIX=
 
 call jom
 call nmake install
