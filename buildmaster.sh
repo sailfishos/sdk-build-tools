@@ -47,6 +47,8 @@ OPT_VERSION_DESC=""
 
 OPT_REPO_URL=''
 
+INSTALLER_BUILD_OPTIONS=''
+
 DEFAULT_URL_PREFIX=http://$OPT_UPLOAD_HOST/sailfishos
 CREATOR_SRC=sailfish-qtcreator
 BUILD_TOOLS_SRC=sdk-build-tools
@@ -496,7 +498,7 @@ do_build_installer() {
     fi
 
     _ pushd $BASE_SRC_DIR/$INSTALLER_SRC
-    _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL
+    _ $BASE_SRC_DIR/$INSTALLER_SRC/build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL $INSTALLER_BUILD_OPTIONS
     _ popd
 }
 
@@ -504,8 +506,13 @@ do_override_repo_url() {
     if [[ -n $OPT_REPO_URL ]]; then
         _ sed -e s^http://releases.sailfishos.org/sdk/repository^${OPT_REPO_URL}^g \
             -i~ $BASE_SRC_DIR/$INSTALLER_SRC/config/config-*.xml
-    fi
 
+       # Daily builds need custom version strings.
+       if [[ $OPT_REPO_URL =~ ^"http://10.0.0.20/sailfishos/daily" ]]; then
+           INSTALLER_BUILD_OPTIONS="$INSTALLER_BUILD_OPTIONS --version-file package-versions-daily.conf"
+           _ $BASE_SRC_DIR/$INSTALLER_SRC/create-daily-version-file.py
+       fi
+    fi
 }
 
 do_build_repo() {
