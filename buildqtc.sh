@@ -416,7 +416,7 @@ build_windows_qtc() {
 @echo off
 
 if DEFINED ProgramFiles(x86) (
-    set _programs=%ProgramFiles(x86)%
+    set "_programs=%ProgramFiles(x86)%"
     set _systemdir=%windir%\system
 )
 if Not DEFINED ProgramFiles(x86) (
