@@ -31,12 +31,11 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-MYDIR=$(dirname $0)
+. $(dirname $0)/defaults.sh
 
-# some default values
-OPT_UPLOAD_HOST=10.0.0.20
-OPT_UPLOAD_USER=sdkinstaller
-OPT_UPLOAD_PATH=/var/www/sailfishos
+OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
+OPT_UPLOAD_USER=$DEF_UPLOAD_USER
+OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
 
 # ultra compression by default
 OPT_COMPRESSION=9
@@ -179,7 +178,7 @@ initPaths() {
     mkdir -p $INSTALL_PATH
     # copy refresh script to an accessible path, this needs to be
     # removed later
-    cp -a $MYDIR/refresh-sdk-repos.sh $INSTALL_PATH
+    cp -a $BUILD_TOOLS_SRC/refresh-sdk-repos.sh $INSTALL_PATH
 
     # this is not going to end up inside the package
     SSHCONFIG_PATH=$PWD/sshconfig

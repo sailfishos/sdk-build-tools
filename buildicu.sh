@@ -39,39 +39,29 @@
 
 export LC_ALL=C
 
-UNAME_SYSTEM=$(uname -s)
-UNAME_ARCH=$(uname -m)
-
-if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
-    BASEDIR=$HOME/invariant
-else
-    BASEDIR="c:\invariant"
-fi
-SRCDIR_ICU=$BASEDIR/icu
-BUILD_DIR=$BASEDIR/icu-build
-INSTALL_DIR=$BASEDIR/icu-install
-WIN_ICU_DOWNLOAD_URL="http://10.0.0.20/sailfishos/win32-binary-artifacts/icu/icu4c-4_8_1_1-Win32-msvc10.zip"
-WIN_ICU_BINARY_ZIP=$(echo $WIN_ICU_DOWNLOAD_URL |sed 's/.*\///')
+. $(dirname $0)/defaults.sh
 
 configure_icu() {
-    $SRCDIR_ICU/source/runConfigureICU Linux --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$INSTALL_DIR
+    $DEF_ICU_SRC_DIR/source/runConfigureICU Linux --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$DEF_ICU_INSTALL_DIR
 }
 
 build_icu() {
-    rm -rf   $BUILD_DIR
-    mkdir -p $BUILD_DIR
-    pushd    $BUILD_DIR
+    rm -rf   $DEF_ICU_BUILD_DIR
+    mkdir -p $DEF_ICU_BUILD_DIR
+    pushd    $DEF_ICU_BUILD_DIR
     configure_icu
     make -j$(getconf _NPROCESSORS_ONLN)
-    rm -rf $INSTALL_DIR
+    rm -rf $DEF_ICU_INSTALL_DIR
     make install
     popd
 }
 
 download_icu_win() {
-    rm -rf icu
-    curl -O $WIN_ICU_DOWNLOAD_URL
-    7z -y x $WIN_ICU_BINARY_ZIP
+    local download_dest=$DEF_ICU_DOWNLOAD_DIR/${DEF_WIN_ICU_DOWNLOAD_URL##*/}
+    curl -o $download_dest $DEF_WIN_ICU_DOWNLOAD_URL
+    rm -rf $DEF_ICU_INSTALL_DIR
+    7z -y -o$(dirname $DEF_ICU_INSTALL_DIR) x $download_dest
+    [[ -d $DEF_ICU_INSTALL_DIR ]] || fail "Fixme: Name of the ICU archive root directory has changed"
 }
 
 build_arch() {
@@ -94,9 +84,13 @@ usage() {
         cat <<EOF
 Build ICU library
 
-Required directories:
- $BASEDIR
- $SRCDIR_ICU
+Prerequisites:
+ - ICU sources
+   [$DEF_ICU_SRC_DIR]
+ - ICU build directory (will be created)
+   [$DEF_ICU_BUILD_DIR]
+ - ICU installation directory (will be created)
+   [$DEF_ICU_INSTALL_DIR]
 
 EOF
 
@@ -104,8 +98,11 @@ EOF
         cat <<EOF
 Download ICU library
 
-Required directories
- $BASEDIR
+Prerequisites:
+ - Download directory for ICU binaries (must exist)
+   [$DEF_ICU_DOWNLOAD_DIR]
+ - ICU installation directory (will be created)
+   [$DEF_ICU_INSTALL_DIR]
 
 EOF
     fi
@@ -141,9 +138,9 @@ while [[ ${1:-} ]]; do
 done
 
 if [[ $(build_arch) == "linux" ]]; then
-    echo "Using sources from [$SRCDIR_ICU]"
+    echo "Using sources from [$DEF_ICU_SRC_DIR]"
 elif [[ $(build_arch) == "windows" ]]; then
-    echo "Downloading ICU from [$WIN_ICU_DOWNLOAD_URL]"
+    echo "Downloading ICU from [$DEF_WIN_ICU_DOWNLOAD_URL]"
 fi
 
 # confirm
@@ -164,15 +161,13 @@ if [[ -z $OPT_YES ]]; then
     done
 fi
 
-if [[ ! -d $BASEDIR ]]; then
-    fail "directory [$BASEDIR] does not exist"
+if [[ $(build_arch) == "windows" && ! -d $DEF_ICU_DOWNLOAD_DIR ]]; then
+    fail "directory [$DEF_ICU_DOWNLOAD_DIR] does not exist"
 fi
 
-if [[ $(build_arch) == "linux" && ! -d $SRCDIR_ICU ]]; then
-    fail "directory [$SRCDIR_ICU] does not exist"
+if [[ $(build_arch) == "linux" && ! -d $DEF_ICU_SRC_DIR ]]; then
+    fail "directory [$DEF_ICU_SRC_DIR] does not exist"
 fi
-
-pushd $BASEDIR || exit 1
 
 # stop in case of errors
 set -e
@@ -189,8 +184,6 @@ else
 fi
 # record end time
 BUILD_END=$(date +%s)
-
-popd
 
 time=$(( BUILD_END - BUILD_START ))
 hour=$(( $time / 3600 ))
