@@ -331,13 +331,6 @@ build_unix_qtc() {
 		fi
 	fi
 
-    # Remove blackberry templates
-    if [[ $UNAME_SYSTEM == "Darwin" ]]; then
-        7z d $SAILFISH_QTC_BASENAME$(build_arch).7z "bin/Qt Creator.app/Contents/Resources/templates/wizards/bb-*"
-    else
-        7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/bb-*
-    fi
-
 	if [[ -n $OPT_DOCUMENTATION ]]; then
 	    make docs
 	    make install_docs
@@ -457,9 +450,6 @@ EOF
 	    # reinstalled by the installer.
 	    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/sailfishos-qtquick2app
 	fi
-
-    # Remove blackberry templates
-    7z d $SAILFISH_QTC_BASENAME$(build_arch).7z share/qtcreator/templates/wizards/bb-*
 
 	popd
     fi
