@@ -316,7 +316,7 @@ build_unix_qtc() {
 
     # Add icu library
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        cp $OPT_ICU_PATH/lib/* $QTC_INSTALL_ROOT/lib/qtcreator
+        cp $OPT_ICU_PATH/lib/lib*.so* $QTC_INSTALL_ROOT/lib/qtcreator
     fi
 
 	make bindist_installer
