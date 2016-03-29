@@ -337,6 +337,7 @@ do_git_pull() {
         _ git clean -xdf
         _ git reset --hard
         _ git checkout ${REQUIRED_GIT_BRANCHES[i]}
+        _ git fetch --all
         upstream=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD))
         _ git reset --hard $upstream
         _ popd
