@@ -69,9 +69,9 @@ set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows perf
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
 
 set MAKE=jom
-call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -angle -platform win32-msvc$DEF_MSVC_VER -prefix
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -angle -platform win32-msvc$DEF_MSVC_VER -prefix || exit 1
 
-call jom /j 1
+call jom /j 1 || exit 1
 EOF
 
     cmd //c build-dyn.bat
@@ -124,12 +124,12 @@ if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows performance toolkit;%_programs%\7-zip;$(win_path $DEF_PREFIX)\invariant\bin;c:\python27;c:\perl\bin;c:\ruby193\bin;$(win_path $DEF_ICU_INSTALL_DIR)\bin;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;%_programs%\microsoft sdks\typescript\1.0;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;$(win_path $DEF_PREFIX)\invariant\bin
-call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
+call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat" || exit 1
 
 set MAKE=jom
-call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform win32-msvc$DEF_MSVC_VER -static-runtime -prefix
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform win32-msvc$DEF_MSVC_VER -static-runtime -prefix || exit 1
 
-call jom /j 1
+call jom /j 1 || exit 1
 EOF
 
     cmd //c build-dyn.bat

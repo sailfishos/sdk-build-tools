@@ -185,8 +185,8 @@ set QMAKESPEC=win32-msvc$DEF_MSVC_VER
 set PATH=%PATH%;$(win_path $DEF_PREFIX)\invariant\bin
 
 call "%_programs%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
-call %QTDIR%\qtbase\bin\qmake -r $(win_path $OPT_IFW_SRC_DIR)\installerfw.pro
-call jom
+call %QTDIR%\qtbase\bin\qmake -r $(win_path $OPT_IFW_SRC_DIR)\installerfw.pro || exit 1
+call jom || exit 1
 EOF
 
     # execute the bat
