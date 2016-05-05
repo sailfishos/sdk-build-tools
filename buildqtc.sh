@@ -361,7 +361,7 @@ build_windows_gdb() {
 
 	cat <<EOF > build-gdb.bat
 @echo off
-call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads"
+call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads" || exit 1
 EOF
 	cmd //c build-gdb.bat
 
@@ -425,21 +425,21 @@ call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro CONFIG+=releas
     "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." ^
     "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" ^
     "DEFINES+=IDE_VERSION_DESCRIPTION=$OPT_VERSION_DESC" ^
-    QTC_PREFIX=
+    QTC_PREFIX= || exit 1
 
-call jom
-call nmake install
-call nmake deployqt
+call jom || exit 1
+call nmake install || exit 1
+call nmake deployqt || exit 1
 
 rem copy all the necessary libraries to the install directory
-copy %QTDIR%\bin\libEGL.dll %INSTALL_ROOT%\bin
-copy %QTDIR%\bin\libGLESv2*.dll %INSTALL_ROOT%\bin
-copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin
-copy "%_programs%\microsoft visual studio 12.0\vc\redist\x86\microsoft.vc120.crt\*.dll" %INSTALL_ROOT%\bin
-copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin
-copy $(win_path $OPT_ICU_PATH)\bin\*.dll %INSTALL_ROOT%\bin
+copy %QTDIR%\bin\libEGL.dll %INSTALL_ROOT%\bin || exit 1
+copy %QTDIR%\bin\libGLESv2*.dll %INSTALL_ROOT%\bin || exit 1
+copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin || exit 1
+copy "%_programs%\microsoft visual studio 12.0\vc\redist\x86\microsoft.vc120.crt\*.dll" %INSTALL_ROOT%\bin || exit 1
+copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
+copy $(win_path $OPT_ICU_PATH)\bin\*.dll %INSTALL_ROOT%\bin || exit 1
 
-call nmake bindist_installer
+call nmake bindist_installer || exit 1
 EOF
 
         # execute the bat
