@@ -409,7 +409,7 @@ do_build_qtc() {
     fi
 
     if [[ -n $OPT_VERSION_DESC ]]; then
-        options=$options" --version-desc $OPT_VERSION_DESC"
+        options=$options" --version-desc '$OPT_VERSION_DESC'"
     fi
 
     if [[ -z $OPT_GDB_DEFAULT ]]; then
