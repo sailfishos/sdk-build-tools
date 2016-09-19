@@ -2,8 +2,8 @@
 #
 # Default configuration shared between SDK build tools
 #
-# Copyright (C) 2015 Jolla Oy
-# Contact: Jussi Pakkanen <jussi.pakkanen@jolla.com>
+# Copyright (C) 2015-2016 Jolla Ltd.
+# Contact: Martin Kampas <martin.kampas@jolla.com>
 # All rights reserved.
 #
 # You may use this file under the terms of BSD license as follows:
@@ -99,6 +99,15 @@ DEF_QTC_BUILD_SUFFIX=-build
 DEF_QTC_BUILD_DIR=$DEF_QTC_SRC_DIR$DEF_QTC_BUILD_SUFFIX
 DEF_QTC_INSTALL_SUFFIX=-install
 DEF_QTC_INSTALL_ROOT=$DEF_QTC_SRC_DIR$DEF_QTC_INSTALL_SUFFIX
+
+# ---------------------------------------------------------------------
+# Qt QmlLive
+
+DEF_QMLLIVE_SRC_DIR=$DEF_PREFIX/build/qmllive
+DEF_QMLLIVE_BUILD_SUFFIX=-build
+DEF_QMLLIVE_BUILD_DIR=$DEF_QMLLIVE_SRC_DIR$DEF_QMLLIVE_BUILD_SUFFIX
+DEF_QMLLIVE_INSTALL_SUFFIX=-install
+DEF_QMLLIVE_INSTALL_ROOT=$DEF_QMLLIVE_SRC_DIR$DEF_QMLLIVE_INSTALL_SUFFIX
 
 # ---------------------------------------------------------------------
 # Installer Framework

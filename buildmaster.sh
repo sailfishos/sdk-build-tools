@@ -2,8 +2,8 @@
 #
 # Master script to build parts of or all of the SDK installer
 #
-# Copyright (C) 2014 Jolla Oy
-# Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
+# Copyright (C) 2014-2016 Jolla Ltd.
+# Contact: Martin Kampas <martin.kampas@jolla.com>
 # All rights reserved.
 #
 # You may use this file under the terms of BSD license as follows:
@@ -44,9 +44,9 @@ OPT_RELCYCLE=$DEF_RELCYCLE
 OPT_VERSION_DESC=$DEF_VERSION_DESC
 
 # keep these following two in sync
-REQUIRED_SRC_DIRS=($DEF_QTC_SRC_DIR $DEF_INSTALLER_SRC_DIR)
-REQUIRED_GIT_DEVEL_BRANCHES=(next next)
-REQUIRED_GIT_RELEASE_BRANCHES=(master master)
+REQUIRED_SRC_DIRS=($DEF_QTC_SRC_DIR $DEF_QMLLIVE_SRC_DIR $DEF_INSTALLER_SRC_DIR)
+REQUIRED_GIT_DEVEL_BRANCHES=(next next next)
+REQUIRED_GIT_RELEASE_BRANCHES=(master master master)
 
 INSTALLER_BUILD_OPTIONS=''
 
@@ -87,6 +87,7 @@ Options:
         | --qt-static           Build Qt (static - required for Installer framework)
         | --qt-dynamic          Build Qt (dynamic - required for QtC)
    -icu | --icu-build           Build ICU library (Linux and Windows)
+        | --qmllive             Build Qt QmlLive
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
    -v   | --variant <STRING>    Use <STRING> as the build variant [$OPT_VARIANT]
@@ -156,6 +157,10 @@ while [[ ${1:-} ]]; do
         -qt5 | --qt-dynamic ) shift
             OPT_BUILD_QT_DYNAMIC=1
             let numtasks++
+            ;;
+        --qmllive ) shift
+            OPT_BUILD_QMLLIVE=1
+            let numtask++
             ;;
         -p | --git-pull ) shift
             OPT_GIT_PULL=1
@@ -265,6 +270,7 @@ Summary of chosen actions:
  Build Qt (static) . [$(get_option $OPT_BUILD_QT_STATIC)]
  Build Qt (dynamic)  [$(get_option $OPT_BUILD_QT_DYNAMIC)]
  Build ICU ......... [$(get_option $OPT_BUILD_ICU)]
+ Build Qt QmlLive .. [$(get_option $OPT_BUILD_QMLLIVE)]
  Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
  Do a release build  [$(get_option $OPT_RELEASE_BUILD)]
@@ -420,6 +426,26 @@ do_build_qtc() {
     _ $BUILD_TOOLS_SRC/buildqtc.sh -y $options $UPLOAD_OPTIONS
 }
 
+do_build_qmllive() {
+    [[ -z $OPT_BUILD_QMLLIVE ]] && return;
+
+    echo "---------------------------------"
+
+    local options=
+
+    echo "Building Qt QmlLive ..."
+
+    if [[ -n $OPT_VARIANT ]]; then
+        options=$options" --variant $OPT_VARIANT"
+    fi
+
+    if [[ -n $OPT_VERSION_DESC ]]; then
+        options=$options" --version-desc '$OPT_VERSION_DESC'"
+    fi
+
+    _ $BUILD_TOOLS_SRC/buildqmllive.sh -y $options $UPLOAD_OPTIONS
+}
+
 do_build_installer() {
     [[ -z $OPT_BUILD_INSTALLER ]] && return;
 
@@ -520,10 +546,13 @@ do_override_repo_url
 # 7 - build QtC + Docs + GDB
 do_build_qtc
 
-# 8 - build installer
+# 8 - build Qt QmlLive
+do_build_qmllive
+
+# 9 - build installer
 do_build_installer
 
-# 9 - build repository
+# 10 - build repository
 do_build_repo
 
 # record end time
