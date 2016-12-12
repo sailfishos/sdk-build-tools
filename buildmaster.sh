@@ -45,8 +45,6 @@ OPT_VERSION_DESC=$DEF_VERSION_DESC
 
 # keep these following two in sync
 REQUIRED_SRC_DIRS=($DEF_QTC_SRC_DIR $DEF_QMLLIVE_SRC_DIR $DEF_INSTALLER_SRC_DIR)
-REQUIRED_GIT_DEVEL_BRANCHES=(next next next)
-REQUIRED_GIT_RELEASE_BRANCHES=(master master master)
 
 INSTALLER_BUILD_OPTIONS=''
 
@@ -91,7 +89,7 @@ Options:
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
    -v   | --variant <STRING>    Use <STRING> as the build variant [$OPT_VARIANT]
-        | --release-build       Do a release build
+        | --branch <STRING>     Build the given branch instead of "master" if it exists
         | --release <STRING>    SDK release version [$OPT_RELEASE]
         | --rel-cycle <STRING>  SDK release cycle [$OPT_RELCYCLE]
         | --repourl <STRING>    Update repo location, if set overrides the public repo URL
@@ -169,8 +167,8 @@ while [[ ${1:-} ]]; do
         -v | --variant ) shift
             OPT_VARIANT=$1; shift
             ;;
-        --release-build ) shift
-            OPT_RELEASE_BUILD=1
+        --branch ) shift
+            OPT_BRANCH=$1; shift
             ;;
         --release ) shift
             OPT_RELEASE=$1; shift
@@ -273,7 +271,7 @@ Summary of chosen actions:
  Build Qt QmlLive .. [$(get_option $OPT_BUILD_QMLLIVE)]
  Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
- Do a release build  [$(get_option $OPT_RELEASE_BUILD)]
+ Use alt. branch ... [$OPT_BRANCH]
  SDK Config Variant  [$OPT_VARIANT]
  SDK Release Version [$OPT_RELEASE]
  SDK Release Cycle   [$OPT_RELCYCLE]
@@ -325,13 +323,6 @@ if [[ -n $OPT_UPLOAD ]]; then
     [[ -n $OPT_UPLOAD_USER ]] && UPLOAD_OPTIONS=$UPLOAD_OPTIONS" -uu $OPT_UPLOAD_USER"
 fi
 
-# use the correct branches for release/devel build of the sdk
-if [[ -n $OPT_RELEASE_BUILD ]]; then
-    REQUIRED_GIT_BRANCHES=(${REQUIRED_GIT_RELEASE_BRANCHES[@]})
-else
-    REQUIRED_GIT_BRANCHES=(${REQUIRED_GIT_DEVEL_BRANCHES[@]})
-fi
-
 do_git_pull() {
     [[ -z $OPT_GIT_PULL ]] && return;
 
@@ -342,7 +333,10 @@ do_git_pull() {
         _ pushd ${REQUIRED_SRC_DIRS[i]}
         _ git clean -xdf
         _ git reset --hard
-        _ git checkout ${REQUIRED_GIT_BRANCHES[i]}
+        _ git checkout master
+        if [[ -n $OPT_BRANCH ]]; then
+            _ git checkout $OPT_BRANCH -- || true
+        fi
         _ git fetch --all
         upstream=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD))
         _ git reset --hard $upstream
