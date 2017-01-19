@@ -260,6 +260,14 @@ build_unix_qmllive() {
         install_name_tool -delete_rpath "$OPT_QTDIR/qtbase/lib" \
                           -add_rpath '@executable_path/../../bin/Qt Creator.app/Contents/Frameworks' \
                           $QMLLIVE_INSTALL_ROOT/libexec/qmllive/previewGenerator
+        cat > $QMLLIVE_INSTALL_ROOT/bin/qt.conf <<EOF
+# Based on Qt\ Creator.app/Contents/Resources/qt.conf
+[Paths]
+Prefix = Qt Creator.app/Contents
+Imports = Imports/qtquick1
+Qml2Imports = Imports/qtquick2
+Plugins = PlugIns
+EOF
     else
         RPATH='INSTALL_ROOT/lib:INSTALL_ROOT/lib/Qt/lib:INSTALL_ROOT/lib/qtcreator'
         chrpath --replace "${RPATH//INSTALL_ROOT/\$ORIGIN/..}" $QMLLIVE_INSTALL_ROOT/bin/*
