@@ -391,6 +391,10 @@ build_windows_qtc() {
 
 	# no more errors allowed
 	set -e
+
+	local opengl32sw_lib="opengl32sw-32.7z"
+	curl -s -f -o $opengl32sw_lib http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/opengl/$opengl32sw_lib
+
         # create the build script for windows
 	cat <<EOF > build-windows.bat
 @echo off
@@ -434,6 +438,7 @@ call nmake deployqt || exit 1
 rem copy all the necessary libraries to the install directory
 copy %QTDIR%\bin\libEGL.dll %INSTALL_ROOT%\bin || exit 1
 copy %QTDIR%\bin\libGLESv2*.dll %INSTALL_ROOT%\bin || exit 1
+call 7z x -o%INSTALL_ROOT%\bin $opengl32sw_lib
 copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin || exit 1
 copy "%_programs%\microsoft visual studio 12.0\vc\redist\x86\microsoft.vc120.crt\*.dll" %INSTALL_ROOT%\bin || exit 1
 copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1

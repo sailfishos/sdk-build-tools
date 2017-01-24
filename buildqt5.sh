@@ -69,7 +69,7 @@ set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows perf
 call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
 
 set MAKE=jom
-call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -angle -platform win32-msvc$DEF_MSVC_VER -prefix || exit 1
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -opengl dynamic -platform win32-msvc$DEF_MSVC_VER -prefix || exit 1
 
 call jom /j 1 || exit 1
 EOF
