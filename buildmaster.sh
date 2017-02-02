@@ -334,10 +334,10 @@ do_git_pull() {
         _ git clean -xdf
         _ git reset --hard
         _ git checkout master
+        _ git fetch --all
         if [[ -n $OPT_BRANCH ]]; then
             _ git checkout $OPT_BRANCH -- || true
         fi
-        _ git fetch --all
         upstream=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD))
         _ git reset --hard $upstream
         _ popd
