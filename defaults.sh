@@ -43,7 +43,7 @@ DEF_IFW_VER=2.0.1
 
 DEF_RELEASE="yydd"
 DEF_RELCYCLE="Beta"
-DEF_VARIANT="SailfishBeta6"
+DEF_VARIANT="SailfishOS-SDK"
 DEF_VERSION_DESC="git"
 
 # ---------------------------------------------------------------------
