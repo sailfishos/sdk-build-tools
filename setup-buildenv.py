@@ -42,7 +42,7 @@ import tarfile, zipfile
 # unpacker. (Python 3 has it.)
 
 downloads = [
-    ('https://download.qt.io/archive/qt/5.5/5.5.0/single/qt-everywhere-opensource-src-5.5.0.tar.gz', 'qt-everywhere-opensource-src-5.5.0.tar.gz', 'qt-everywhere-opensource-src-5.5.0'),
+    ('https://download.qt.io/archive/qt/5.6/5.6.2/single/qt-everywhere-opensource-src-5.6.2.tar.gz', 'qt-everywhere-opensource-src-5.6.2.tar.gz', 'qt-everywhere-opensource-src-5.6.2'),
     ('https://download.qt.io/official_releases/qt-installer-framework/2.0.1/qt-installer-framework-opensource-2.0.1-src.tar.gz', 'qt-installer-framework-opensource-2.0.1-src.tar.gz', 'qt-installer-framework-opensource-2.0.1-src'),
     ]
 
