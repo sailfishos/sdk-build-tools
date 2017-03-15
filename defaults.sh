@@ -37,7 +37,7 @@
 : ${DEF_URL_PREFIX:=http://$DEF_UPLOAD_HOST/sailfishos}
 
 DEF_WIN_ICU_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/icu/icu4c-4_8_1_1-Win32-msvc10.zip"
-DEF_QT_VER=5.5.0
+DEF_QT_VER=5.6.2
 DEF_MSVC_VER=2012
 DEF_IFW_VER=2.0.1
 

@@ -40,7 +40,7 @@ The SDK builds are made in the following host environments:
 
 ### Qt versions required for build
 
-* Qt5 from `http://download.qt.io/archive/qt/5.5/5.5.0/single/`
+* Qt5 from `http://download.qt.io/archive/qt/5.6/5.6.2/single/`
 * Qt Installer FW from `git://gitorious.org/installer-framework/installer-framework.git` tag `2.0.1`
 
 ### ICU version
@@ -87,19 +87,11 @@ the Command Line with Xcode FAQ", available in the Apple Mac Developer Library.
 
 [11]: https://developer.apple.com/library/mac/technotes/tn2339/_index.html#//apple_ref/doc/uid/DTS40014588
 
-By default, the build scripts use Qt 5.5.0. To build a different version of Qt,
-set the `QT_SOURCE_PACKAGE` variable in the `buildqt5.sh` script to the name of
-the directory containing the Qt source code, e.g.:
+By default, the build scripts use Qt 5.6.2. To build a different version of Qt,
+set the `DEF_QT_VER` variable in the `defaults.sh` script to another version, e.g.:
 
 ```
-QT_SOURCE_PACKAGE=qt-everywhere-opensource-src-5.4.0
-```
-
-Similarly, when building Qt Creator you need to supply the non-default Qt build
-directory to the `buildqtc.sh` script, e.g.
-
-```
-$ ./buildqtc.sh --qt-dir ~/invariant/qt-everywhere-opensource-src-5.4.0-build
+DEF_QT_VER=5.8.0
 ```
 
 When building p7zip, follow the BUILD instructions in the accompanying README

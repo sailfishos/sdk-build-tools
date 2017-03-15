@@ -3,12 +3,8 @@
 # This script builds dynamic and static versions of Qt5 into
 # subdirectories in the parent directory of the Qt source directory.
 #
-# Qt5 sources must be found from the current user's home directory
-# $HOME/invariant/qt-everywhere-opensource-src-5.5.0 or in in case of
-# Windows in C:\invariant\qt-everywhere-opensource-src-5.5.0.
-#
-# To build a version of Qt other than 5.5.0, change the value of the
-# QT_SOURCE_PACKAGE variable.
+# Qt5 sources must be found from the current user's home directory. Pass
+# --help to display the exact path.
 #
 # Copyright (C) 2014 Jolla Oy
 # Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
@@ -51,7 +47,7 @@ LINUX_CONFIG_OPTIONS="-no-eglfs -no-linuxfb -no-kms"
 
 # add these to the COMMON_CONFIG_OPTIONS for static build
 # the static build is required to build Qt Installer Framework
-COMMON_STATIC_OPTIONS="-static -skip qtwebkit -skip qtxmlpatterns -no-dbus -skip qt3d"
+COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d"
 
 build_dynamic_qt_windows() {
     [[ -z $OPT_DYNAMIC ]] && return
@@ -87,10 +83,6 @@ configure_static_qt5() {
 }
 
 configure_dynamic_qt5() {
-    # The argument to '-i' is mandatory for compatibility with mac
-    sed -i~ '/^[[:space:]]*WEBKIT_CONFIG[[:space:]]*+=.*\<video\>/s/^/#/' \
-        $DEF_QT_SRC_DIR/qtwebkit/Tools/qmake/mkspecs/features/features.prf
-
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
         $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -no-gstreamer -I $DEF_ICU_INSTALL_DIR/include -L $DEF_ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
     else
