@@ -41,7 +41,7 @@ The SDK builds are made in the following host environments:
 ### Qt versions required for build
 
 * Qt5 from `http://download.qt.io/archive/qt/5.6/5.6.2/single/`
-* Qt Installer FW from `git://gitorious.org/installer-framework/installer-framework.git` tag `2.0.1`
+* Qt Installer FW from `git://gitorious.org/installer-framework/installer-framework.git` tag `2.0.5`
 
 ### ICU version
 
