@@ -2,8 +2,8 @@
 #
 # Create file information page for SDK release
 #
-# Copyright (C) 2014 Jolla Oy
-# Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
+# Copyright (C) 2017 Jolla Oy
+# Contact: Jarkko Lehtoranta <jarkko.lehtoranta@jolla.com>
 # All rights reserved.
 #
 # You may use this file under the terms of BSD license as follows:
@@ -31,7 +31,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-RELEASE="1406"
+RELEASE="1701"
 RELEASE_CYCLE="Beta"
 CHECK="md5"
 PLATFORMS="linux-32 linux-64 mac windows"
@@ -98,10 +98,10 @@ fi
 cat <<EOF
 ###### CUT HERE ######
 
-See also [https://sailfishos.org/wiki/ReleaseNote_SDK_$RELEASE '''Release notes for SDK release $RELEASE'''].
-
-==File information==
-
+=== File information ===
+{| class="wikitable"
+|-
+! Filename !! Size !! MD5 Hash
 EOF
 
 for ARCH in $PLATFORMS; do
@@ -119,21 +119,23 @@ for ARCH in $PLATFORMS; do
     FSIZE=$(stat -c %s $FNAME)
     FSIZE_MIB=$(ls -lh $FNAME | cut -f 5 -d ' ')
     MD5=$(cut -f 1 -d ' ' $FNAME.$CHECK)
-    
-    cat <<EOF
-* [http://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME Filename]: $FNAME
-* Size: $FSIZE_MIB ($FSIZE bytes)
-* [http://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME.$CHECK MD5 Hash]: $MD5
 
+    cat <<EOF
+|-
+| [http://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME '''$FNAME''']
+|| $FSIZE_MIB ($FSIZE bytes)
+|| [http://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME.$CHECK '''$MD5''']
 EOF
 
 done
 
 cat <<EOF
+|}
+
 ##### CUT HERE #####
 
-Cut between the lines and copy paste a new page here:
+Cut between the lines and copy paste here:
 
-https://sailfishos.org/wiki/FileInformation_SDK_$RELEASE
+https://sailfishos.org/wiki/Application_SDK#File_Information
 
 EOF
