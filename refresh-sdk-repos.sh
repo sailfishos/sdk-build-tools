@@ -51,6 +51,8 @@ SSU_INIFILE=/usr/share/ssu/repos.ini
 # list here files that are to be removed after refresh has been run
 CLEANUP_FILES=/var/log/zypper.log
 
+TOOLINGS_DIR=/srv/mer/toolings
+
 sdk_user=mersdk
 
 if [[ $(hostname) != "SailfishSDK" ]]; then
@@ -188,78 +190,81 @@ get_targets() {
     done
 }
 
-refresh_target_repos() {
-    [[ -z ${1:-} ]] && return
+print_object() {
+    local type=${1%:*} object=${1#*:}
 
-    local tgt=$1
-    local sb2session="sb2 -t $tgt -m sdk-install -R"
-    local reposbackup=/home/$sdk_user/t_repos.ini.$$
-    echo "#### Refresh $tgt repos"
+    case $type in
+        sdk) echo -n "SDK";;
+        *) echo -n "$type '$object'";;
+    esac
+}
+
+enter() {
+    local type=${1%:*} object=${1#*:}
+    shift
+
+    case $type in
+        sdk)
+            "$@"
+            ;;
+        tooling)
+            $TOOLINGS_DIR/$object/mer-tooling-chroot "$@"
+            ;;
+        target)
+            sudo -i -u $sdk_user sb2 -t $object -m sdk-install -R "$@"
+            ;;
+    esac
+}
+
+refresh() {
+    local object=$1
+
+    local reposbackup=$SSU_INIFILE~
+
+    echo "#### Refresh $(print_object $object) repos"
 
     if [[ $OPT_PUBLIC_REPOS -eq 1 ]]; then
         # refresh repos
-        sudo -i -u $sdk_user bash -c "$sb2session zypper --non-interactive ref"
+        enter $object zypper --non-interactive ref
     else
         # save the original ini file
-        sudo -i -u $sdk_user bash -c "$sb2session cp -a $SSU_INIFILE $reposbackup"
+        enter $object cp -a $SSU_INIFILE $reposbackup
 
-        # use sed to append contents of $repoini file to ssu repos.ini
-        sudo -i -u $sdk_user bash -c "$sb2session sed -i '$ r $repoini' $SSU_INIFILE"
-        sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN"
-        sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE"
+        # append contents of $repoini file to ssu repos.ini
+        enter $object tee --append $SSU_INIFILE <$repoini >/dev/null
+        enter $object ssu domain $SSU_DOMAIN
+        enter $object ssu release $SSU_RELEASE
 
         # refresh repos
-        sudo -i -u $sdk_user bash -c "$sb2session zypper --non-interactive ref"
+        enter $object zypper --non-interactive ref
 
         if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
             # restore the original ssu status
-            sudo -i -u $sdk_user bash -c "$sb2session mv $reposbackup $SSU_INIFILE"
-            sudo -i -u $sdk_user bash -c "$sb2session ssu domain $SSU_DOMAIN_ORIG_TARGET"
-            sudo -i -u $sdk_user bash -c "$sb2session ssu release $SSU_RELEASE_ORIG"
+            enter $object mv $reposbackup $SSU_INIFILE
+            enter $object ssu domain $SSU_DOMAIN_ORIG_TARGET
+            enter $object ssu release $SSU_RELEASE_ORIG
         else
-            rm -f $reposbackup
+            enter $object rm -f $reposbackup
         fi
     fi
 
     # clean up remaining stuff here
-    sudo -i -u $sdk_user bash -c "$sb2session rm -f $CLEANUP_FILES"
+    enter $object rm -f $CLEANUP_FILES
 }
 
 ######
 #
-# Build engine
-echo "#### Refresh MerSDK repos"
-if [[ $OPT_PUBLIC_REPOS -eq 1 ]]; then
-    zypper --non-interactive ref
-else
-    repoinibackup=/home/$sdk_user/repos.ini.$$
-    cp -a $SSU_INIFILE $repoinibackup
+# Do it
+refresh sdk
 
-    cat $repoini >> $SSU_INIFILE
-    ssu domain $SSU_DOMAIN
-    ssu release $SSU_RELEASE
+toolings=$(sdk-manage --tooling --list)
+for tooling in $toolings; do
+    refresh tooling:$tooling
+done
 
-    zypper --non-interactive ref
-
-    if [[ -z $OPT_KEEP_TEST_DOMAIN ]]; then
-        # restore the original ssu status
-        mv $repoinibackup $SSU_INIFILE
-        ssu domain $SSU_DOMAIN_ORIG
-        ssu release $SSU_RELEASE_ORIG
-    else
-        rm -f $repoinibackup
-    fi
-fi
-
-# cleanup remaining stuff
-rm -f $CLEANUP_FILES
-
-######
-#
-# Targets
 targets=$(get_targets)
 for target in $targets; do
-    refresh_target_repos $target
+    refresh target:$target
 done
 
 echo "#### Done"
