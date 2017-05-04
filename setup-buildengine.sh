@@ -57,6 +57,12 @@ fatal() {
     exit 1
 }
 
+# silent 7z a bit
+7z() {
+    stdbuf -o0 7z "$@" |gawk '/^Compressing / { printf "Compressing...\r"; next } { print $0 }'
+    return ${PIPESTATUS[0]}
+}
+
 vboxmanage_wrapper() {
     echo "VBoxManage $@"
     VBoxManage "$@"
