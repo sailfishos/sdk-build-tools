@@ -1,0 +1,15 @@
+#!/bin/bash
+# replace eventual -mx{N} argument with -mx0 to disable compression
+
+args=("$@")
+
+for ((i=0; i<${#args[@]}; i++)); do
+    if [[ ${args[i]} == -mx[0-9] ]]; then
+        args[i]=-mx0
+        break
+    fi
+done
+
+export PATH=${PATH//"$(dirname "$0")":/}
+
+exec "$(basename "$0")" "${args[@]}"

@@ -148,6 +148,15 @@ while [[ ${1:-} ]]; do
 	--quick ) shift
 	    OPT_QUICK=1
 	    ;;
+	--no-install ) shift
+	    OPT_NO_INSTALL=1
+	    ;;
+	--no-installer ) shift
+	    OPT_NO_INSTALLER=1
+	    ;;
+	--debug-build ) shift
+	    OPT_DEBUG_BUILD=1
+	    ;;
 	-h | --help ) shift
 	    usage quit
 	    ;;
@@ -299,20 +308,37 @@ build_unix_qtc() {
         EXTRA_QMAKE_LFLAGS="QMAKE_LFLAGS+=-Wl,--disable-new-dtags"
     fi
 
+    if [[ $OPT_DEBUG_BUILD ]]; then
+        CONFIG=debug
+        export PATH="$(dirname "$0")/7z-no-compress:$PATH"
+        if [[ $UNAME_SYSTEM == "Linux" ]]; then
+            CXXFLAGS_DEBUG=-Og
+        else
+            # https://bugs.llvm.org/show_bug.cgi?id=20765
+            CXXFLAGS_DEBUG=-O1
+        fi
+    else
+        CONFIG=release
+    fi
+
     if ! [[ $OPT_QUICK ]]; then
-        $QTDIR/bin/qmake $OPT_QTC_SRC_DIR/qtcreator.pro CONFIG+=release -r \
+        $QTDIR/bin/qmake $OPT_QTC_SRC_DIR/qtcreator.pro CONFIG+=$CONFIG -r \
             QTC_SHOW_BUILD_DATE=1 \
             -after "DEFINES+=IDE_REVISION=$OPT_REVISION" \
             ${OPT_VARIANT_PRETTY:+"QTCREATOR_DISPLAY_VERSION='$OPT_VARIANT_PRETTY'"} \
             "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." \
             "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" \
             $EXTRA_QMAKE_LFLAGS \
-            QTC_PREFIX=
+            QTC_PREFIX= ${OPT_DEBUG_BUILD:+QMAKE_CXXFLAGS_DEBUG+="$CXXFLAGS_DEBUG"}
     fi
 
 	setup_unix_qtc_ccache
 
 	make -j$(getconf _NPROCESSORS_ONLN)
+
+    if [[ $OPT_NO_INSTALL ]]; then
+        return
+    fi
 
 	rm -rf $QTC_INSTALL_ROOT/*
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
@@ -330,6 +356,10 @@ build_unix_qtc() {
     # Add icu library
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
         cp $OPT_ICU_PATH/lib/lib*.so* $QTC_INSTALL_ROOT/lib/qtcreator
+    fi
+
+    if [[ $OPT_NO_INSTALLER ]]; then
+        return
     fi
 
 	make bindist_installer
