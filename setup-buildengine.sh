@@ -127,10 +127,10 @@ installTarget() {
     echo "Installing $tgt to $OPT_VM"
     if [[ -n $(grep i486 <<< $tgt) ]]; then
         TARGET_FILENAME=$OPT_TARGET_I486
-        TOOLCHAIN="Mer-SB2-i486"
+        TOOLCHAIN="patterns-sailfish-sb2-i486"
     else
         TARGET_FILENAME=$OPT_TARGET_ARM
-        TOOLCHAIN="Mer-SB2-armv7hl"
+        TOOLCHAIN="patterns-sailfish-sb2-armv7hl"
     fi
 
     if [[ ! -f $TARGET_FILENAME ]]; then
