@@ -33,6 +33,8 @@
 
 . $(dirname $0)/defaults.sh
 
+SELF=$(basename "$0")
+
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
 OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
@@ -54,7 +56,7 @@ usage() {
 Create SDK documentation packages and optionally them to a server.
 
 Usage:
-   $(basename $0) [OPTION]
+   $SELF [OPTION]
 
 Options:
    -v  | --version <STRING>   set documentation version [$OPT_DOCVERSION]
@@ -75,6 +77,46 @@ EOF
     [[ -n "$1" ]] && exit 1
 }
 
+add_filter() (
+    set -o nounset
+
+    QCH=$1
+    FILTER_ATTRIBUTE=$2
+    FILTER_NAME=$3
+
+    sql() {
+        local query=$1
+        sqlite3 "$QCH" "$query"
+    }
+
+    existing_filter_id=$(sql "SELECT Id FROM FilterNameTable WHERE Name = '$FILTER_NAME';") || exit
+    if [[ $existing_filter_id ]]; then
+        echo "$SELF: '$QCH' already contains required filter. Nothing to do." >&2
+        exit 0
+    else
+        echo "$SELF: Adding filter to '$QCH'" >&2
+    fi
+
+    sql "INSERT INTO FilterAttributeTable VALUES(NULL, '$FILTER_ATTRIBUTE');" || exit
+    attribute_id=$(sql "SELECT MAX(Id) FROM FilterAttributeTable;") || exit
+
+    sql "INSERT INTO FilterNameTable VALUES(NULL, '$FILTER_NAME');" || exit
+    filter_id=$(sql "SELECT MAX(Id) FROM FilterNameTable;") || exit
+
+    sql "INSERT INTO FilterTable VALUES($filter_id, $attribute_id);" || exit
+
+    sql "INSERT INTO IndexFilterTable (FilterAttributeId, IndexId) \
+        SELECT $attribute_id, Id FROM IndexTable;" || exit
+
+    sql "INSERT INTO ContentsFilterTable (FilterAttributeId, ContentsId) \
+        SELECT $attribute_id, Id FROM ContentsTable;" || exit
+
+    sql "INSERT INTO FileAttributeSetTable \
+        SELECT MAX(Id), $attribute_id FROM FileAttributeSetTable;" || exit
+
+    sql "INSERT INTO FileFilterTable \
+        SELECT $attribute_id, Id FROM FileDataTable;" || exit
+)
 
 # handle commandline options
 while [[ ${1:-} ]]; do
@@ -166,6 +208,9 @@ rm -f $INSTALL_PATH/*
 
 # create Sailfish documentation package
 for NAME in $(ls $OPT_DOCDIR/sail*.qch $OPT_DOCDIR/lipstick*.qch $OPT_DOCDIR/nemo*.qch); do
+    if ! add_filter "$NAME" "$DEF_DOCS_FILTER_ATTRIBUTE" "$DEF_DOCS_FILTER_NAME"; then
+        failure "Failed to add filter to '$NAME'"
+    fi
     newname=$(basename $NAME)
     ln $NAME $INSTALL_PATH/${newname%.qch}$OPT_DOCVERSION.qch
 done
