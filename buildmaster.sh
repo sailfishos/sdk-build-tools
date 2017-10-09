@@ -338,8 +338,11 @@ do_git_pull() {
         if [[ -n $OPT_BRANCH ]]; then
             _ git checkout $OPT_BRANCH -- || true
         fi
-        upstream=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD))
-        _ git reset --hard $upstream
+        # If OPT_BRANCH matched a tag name, we are now in a detached HEAD state
+        if git symbolic-ref HEAD &>/dev/null; then
+            upstream=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD))
+            _ git reset --hard $upstream
+        fi
         _ popd
     done
 }
