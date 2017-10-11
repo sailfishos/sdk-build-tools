@@ -334,7 +334,8 @@ do_git_pull() {
         _ git clean -xdf
         _ git reset --hard
         _ git checkout master
-        _ git fetch --all
+        # Without --tags it would not update existing tags
+        _ git fetch --tags --all
         if [[ -n $OPT_BRANCH ]]; then
             _ git checkout $OPT_BRANCH -- || true
         fi
