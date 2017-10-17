@@ -119,7 +119,7 @@ CC=/usr/bin/llvm-gcc
 
 ### Windows
 
-Windows build uses [Visual Studio Express 2013 for Windows Desktop][2] and [MinGW][4] compilers in a bash
+Windows build uses [Visual Studio Express 2015 for Windows Desktop][2] and [MinGW][4] compilers in a bash
 shell provided by a combination of [msysgit][3] and MinGW environments. Also [7-Zip][5] is required on the command line.
 
 Other build requirements include `perl`, `python` and `ruby` and they are documented [here][7].

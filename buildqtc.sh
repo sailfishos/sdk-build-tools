@@ -421,7 +421,7 @@ if exist $binary_artifacts (
   call 7z x -o$(win_path $QTC_INSTALL_ROOT) $binary_artifacts
 )
 
-call "%_programs%\microsoft visual studio 12.0\vc\vcvarsall.bat"
+call "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\vcvarsall.bat"
 
 call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro CONFIG+=release -r ^
     QTC_SHOW_BUILD_DATE=1 ^
@@ -439,8 +439,10 @@ rem copy all the necessary libraries to the install directory
 copy %QTDIR%\bin\libEGL.dll %INSTALL_ROOT%\bin || exit 1
 copy %QTDIR%\bin\libGLESv2*.dll %INSTALL_ROOT%\bin || exit 1
 call 7z x -o%INSTALL_ROOT%\bin $opengl32sw_lib
-copy "%_programs%\microsoft visual studio 12.0\vc\bin\D3Dcompiler_47.dll" %INSTALL_ROOT%\bin || exit 1
-copy "%_programs%\microsoft visual studio 12.0\vc\redist\x86\microsoft.vc120.crt\*.dll" %INSTALL_ROOT%\bin || exit 1
+copy "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\bin\D3Dcompiler_*.dll" %INSTALL_ROOT%\bin || exit 1
+pushd "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\redist\x86\microsoft.vc*.crt" ^
+    && copy "*.dll" %INSTALL_ROOT%\bin ^
+    && popd || exit 1
 copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
 copy $(win_path $OPT_ICU_PATH)\bin\*.dll %INSTALL_ROOT%\bin || exit 1
 
