@@ -65,7 +65,7 @@ set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows perf
 call "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\vcvarsall.bat"
 
 set MAKE=jom
-call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -no-dbus -skip qtwebengine -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -opengl dynamic -platform win32-msvc$DEF_MSVC_VER -prefix || exit 1
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -no-dbus -skip qtwebengine -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -opengl dynamic -platform $DEF_MSVC_SPEC -prefix "%PWD%/qtbase" || exit 1
 
 call jom /j 1 || exit 1
 EOF
@@ -76,7 +76,7 @@ EOF
 
 configure_static_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
     else
         $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -no-gstreamer -no-warnings-are-errors
     fi
@@ -84,7 +84,7 @@ configure_static_qt5() {
 
 configure_dynamic_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -gtkstyle -no-gstreamer -I $DEF_ICU_INSTALL_DIR/include -L $DEF_ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -no-gstreamer -I $DEF_ICU_INSTALL_DIR/include -L $DEF_ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
     else
         $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -no-gstreamer
     fi
@@ -119,7 +119,7 @@ set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows perf
 call "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\vcvarsall.bat" || exit 1
 
 set MAKE=jom
-call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform win32-msvc$DEF_MSVC_VER -static-runtime -prefix || exit 1
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform $DEF_MSVC_SPEC -static-runtime -prefix "%PWD%/qtbase" || exit 1
 
 call jom /j 1 || exit 1
 EOF
