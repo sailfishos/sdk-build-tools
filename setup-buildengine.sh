@@ -39,6 +39,8 @@ OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
 
 # ultra compression by default
 OPT_COMPRESSION=9
+OPT_RELEASE="latest"
+OPT_TOOLING="Jolla-latest-Sailfish_SDK_Tooling-i486.tar.bz2"
 OPT_TARGET_ARM="Jolla-latest-Sailfish_SDK_Target-armv7hl.tar.bz2"
 OPT_TARGET_I486="Jolla-latest-Sailfish_SDK_Target-i486.tar.bz2"
 OPT_VM="MerSDK.build"
@@ -47,7 +49,8 @@ OPT_VDI=
 # some static settings for the VM
 SSH_PORT=2222
 HTTP_PORT=8080
-SAILFISH_DEFAULT_TARGETS="SailfishOS-i486 SailfishOS-armv7hl"
+SAILFISH_DEFAULT_TOOLING="SailfishOS-RELEASE"
+SAILFISH_DEFAULT_TARGETS="SailfishOS-RELEASE-i486 SailfishOS-RELEASE-armv7hl"
 
 # wrap it all up into this file
 PACKAGE_NAME=mersdk.7z
@@ -55,6 +58,12 @@ PACKAGE_NAME=mersdk.7z
 fatal() {
     echo "FAIL: $@"
     exit 1
+}
+
+# silent 7z a bit
+7z() {
+    stdbuf -o0 7z "$@" |gawk '/^Compressing / { printf "Compressing...\r"; next } { print $0 }'
+    return ${PIPESTATUS[0]}
 }
 
 vboxmanage_wrapper() {
@@ -118,19 +127,37 @@ startVM() {
     sleep 2
 }
 
+installTooling() {
+    local tooling=${SAILFISH_DEFAULT_TOOLING/RELEASE/$OPT_RELEASE}
+
+    echo "Installing tooling $tooling to $OPT_VM"
+
+    if [[ ! -f $OPT_TOOLING ]]; then
+        fatal "$OPT_TOOLING does not exist!"
+    fi
+
+    ln $OPT_TOOLING $INSTALL_PATH/
+
+    echo "Creating tooling ..."
+    ssh -o UserKnownHostsFile=/dev/null \
+        -o StrictHostKeyChecking=no \
+        -p $SSH_PORT \
+        -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+        mersdk@localhost "sdk-manage --tooling --install $tooling file:///home/mersdk/share/$OPT_TOOLING"
+}
+
 installTarget() {
     # the dumps directory is created outside the VM
     mkdir -p $INSTALL_PATH/dumps
 
     local tgt=$1
+    tgt=${tgt/RELEASE/$OPT_RELEASE}
 
-    echo "Installing $tgt to $OPT_VM"
+    echo "Installing target $tgt to $OPT_VM"
     if [[ -n $(grep i486 <<< $tgt) ]]; then
         TARGET_FILENAME=$OPT_TARGET_I486
-        TOOLCHAIN="patterns-sailfish-sb2-i486"
     else
         TARGET_FILENAME=$OPT_TARGET_ARM
-        TOOLCHAIN="patterns-sailfish-sb2-armv7hl"
     fi
 
     if [[ ! -f $TARGET_FILENAME ]]; then
@@ -144,7 +171,7 @@ installTarget() {
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sdk-manage --target --install --jfdi $tgt $TOOLCHAIN file:///home/mersdk/share/$TARGET_FILENAME"
+        mersdk@localhost "sdk-manage --target --install --jfdi $tgt file:///home/mersdk/share/$TARGET_FILENAME"
 
     echo "Saving target dumps ..."
     ssh -o UserKnownHostsFile=/dev/null \
@@ -200,6 +227,10 @@ checkIfVMexists() {
 checkForRequiredFiles() {
     if [[ ! -f $OPT_VDI ]]; then
         fatal "VDI file [$OPT_VDI] not found in the current directory."
+    fi
+
+    if [[ ! -f $OPT_TOOLING ]]; then
+        fatal "Tooling file [$OPT_TOOLING] not found in the current directory."
     fi
 
     if [[ ! -f $OPT_TARGET_ARM ]]; then
@@ -274,8 +305,10 @@ Options:
    -p   | --private            use private rpm repository in 10.0.0.20
    -td  | --test-domain        keep test domain after refreshing the repos
    -o   | --orig-release <REL> turn ssu release to this instead of latest after refreshing repos
+   -rel | --release <REL>      release number to mention in tooling/target names
    -c   | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
    -nc  | --no-compression     do not create the 7z
+   -t   | --tooling <FILE>     tooling tarball <FILE>, must be in current directory
    -ta  | --target-arm <FILE>  arm target rootstrap <FILE>, must be in current directory
    -ti  | --target-i486 <FILE> i486 target rootstrap <FILE>, must be in current directory
    -un  | --unregister         unregister the created VM at the end of script run
@@ -306,6 +339,9 @@ while [[ ${1:-} ]]; do
         -f | --vdi-file ) shift
             OPT_VDI=$1; shift
             ;;
+        -t | --tooling ) shift
+            OPT_TOOLING=$(basename $1); shift
+            ;;
         -ta | --target-arm ) shift
             OPT_TARGET_ARM=$(basename $1); shift
             ;;
@@ -331,6 +367,10 @@ while [[ ${1:-} ]]; do
 	    OPT_ORIGINAL_RELEASE=$1; shift
 	    [[ -z $OPT_ORIGINAL_RELEASE ]] && fatal "empty original release option given"
 	    ;;
+        -rel | --release ) shift
+            OPT_RELEASE=$1; shift
+            [[ -z $OPT_RELEASE ]] && fatal "empty release option given"
+            ;;
         -u | --upload ) shift
             OPT_UPLOAD=1
             OPT_UL_DIR=$1; shift
@@ -410,7 +450,9 @@ checkIfVMexists
 # all go, let's do it:
 cat <<EOF
 Creating $OPT_VM, compression=$OPT_COMPRESSION
+ Release:     $OPT_RELEASE
  MerSDK VDI:  $OPT_VDI
+ Tooling:     $OPT_TOOLING
  ARM target:  $OPT_TARGET_ARM
  i486 target: $OPT_TARGET_I486
 EOF
@@ -467,6 +509,9 @@ createShares
 # start the VM
 startVM
 
+# install tooling to the VM
+installTooling
+
 # install targets to the VM
 for targetname in $SAILFISH_DEFAULT_TARGETS; do
     installTarget $targetname
@@ -487,7 +532,7 @@ if [[ -n $OPT_REFRESH ]]; then
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "share/refresh-sdk-repos.sh -y ${OPT_PRIVATE_REPO:-} ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
+        mersdk@localhost "sudo bash share/refresh-sdk-repos.sh -y ${OPT_PRIVATE_REPO:-} ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
 fi
 
 # shut the VM down cleanly so that it has time to flush its disk
