@@ -46,6 +46,7 @@ OPT_VERSION_DESC=$DEF_VERSION_DESC
 # keep these following two in sync
 REQUIRED_SRC_DIRS=($DEF_QTC_SRC_DIR $DEF_QMLLIVE_SRC_DIR $DEF_INSTALLER_SRC_DIR)
 
+DEFAULT_REMOTE='origin'
 INSTALLER_BUILD_OPTIONS=''
 
 build_arch() {
@@ -89,7 +90,9 @@ Options:
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
    -v   | --variant <STRING>    Use <STRING> as the build variant [$OPT_VARIANT]
-        | --branch <STRING>     Build the given branch instead of "master" if it exists
+        | --branch <STRING>     Build the given branch instead of "master" if it exists.
+                                Multiple branches can be given, separated with spaces.
+                                Tags and remote tracking branches are also accepted.
         | --release <STRING>    SDK release version [$OPT_RELEASE]
         | --rel-cycle <STRING>  SDK release cycle [$OPT_RELCYCLE]
         | --repourl <STRING>    Update repo location, if set overrides the public repo URL
@@ -331,19 +334,35 @@ do_git_pull() {
 
     for ((i=0; i < ${#REQUIRED_SRC_DIRS[@]}; ++i)); do
         _ pushd ${REQUIRED_SRC_DIRS[i]}
-        _ git clean -xdf
-        _ git reset --hard
-        _ git checkout master
-        # Without --tags it would not update existing tags
-        _ git fetch --tags --all
+        _ git clean -xdf --quiet
+        _ git reset --hard --quiet
+
+        # With detached HEAD it is easier to reset
+        _ git checkout --detach --quiet $DEFAULT_REMOTE/master --
+
+        # Ensure we do not have any tag that was removed remotely
+        _ git fetch --prune $DEFAULT_REMOTE "+refs/tags/*:refs/tags/*"
+
+        _ git fetch --tags --prune --all
+
         if [[ -n $OPT_BRANCH ]]; then
-            _ git checkout $OPT_BRANCH -- || true
+            local ref=
+            for ref in $OPT_BRANCH; do
+                if git show-ref --quiet --tags $ref; then
+                    _ git checkout --detach $ref --
+                    break
+                elif git show-ref --quiet --verify refs/remotes/$ref; then
+                    _ git checkout --detach refs/remotes/$ref --
+                    break
+                elif git show-ref --quiet --verify refs/remotes/$DEFAULT_REMOTE/$ref; then
+                    _ git checkout --detach refs/remotes/$DEFAULT_REMOTE/$ref --
+                    break
+                fi
+            done
+        else
+            _ git checkout --detach $DEFAULT_REMOTE/master --
         fi
-        # If OPT_BRANCH matched a tag name, we are now in a detached HEAD state
-        if git symbolic-ref HEAD &>/dev/null; then
-            upstream=$(git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD))
-            _ git reset --hard $upstream
-        fi
+
         _ popd
     done
 }
