@@ -128,3 +128,8 @@ DEF_INSTALLER_SRC_DIR=$DEF_PREFIX/build/sailfish-sdk-installer
 
 DEF_DOCS_FILTER_ATTRIBUTE="sailfishos"
 DEF_DOCS_FILTER_NAME="Sailfish OS"
+
+# ---------------------------------------------------------------------
+# Build Engine
+
+DEF_TARGET_BASENAME="SailfishOS"
