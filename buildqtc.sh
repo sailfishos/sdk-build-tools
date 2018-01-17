@@ -299,7 +299,7 @@ build_unix_qtc() {
         $QTDIR/bin/qmake $OPT_QTC_SRC_DIR/qtcreator.pro CONFIG+=release -r \
             QTC_SHOW_BUILD_DATE=1 \
             -after "DEFINES+=IDE_REVISION=$OPT_REVISION" \
-            ${OPT_VERSION_DESC:+"DEFINES+=IDE_VERSION_DESCRIPTION='\\\"$OPT_VERSION_DESC\\\"'"} \
+            ${OPT_VERSION_DESC:+"QTCREATOR_DISPLAY_VERSION='$OPT_VERSION_DESC'"} \
             "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." \
             "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" \
             QTC_PREFIX=
