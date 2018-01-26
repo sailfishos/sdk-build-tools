@@ -261,7 +261,9 @@ build_unix_gdb() {
 	    downloads="DOWNLOAD_URL=$OPT_GDB_URL"
 	fi
 
+        # Explicitly use bash to prevent built failure e.g. on Ubuntu where /bin/sh defaults to dash
 	make -f $OPT_QTC_SRC_DIR/dist/gdb/$GDB_MAKEFILE \
+            SHELL=/bin/bash \
 	    PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads
 
         # move the completed package to the parent dir
