@@ -345,21 +345,26 @@ do_git_pull() {
 
         _ git fetch --tags --prune --all
 
+        local other_checked_out=
         if [[ -n $OPT_BRANCH ]]; then
             local ref=
             for ref in $OPT_BRANCH; do
                 if git show-ref --quiet --tags $ref; then
                     _ git checkout --detach $ref --
+                    other_checked_out=1
                     break
                 elif git show-ref --quiet --verify refs/remotes/$ref; then
                     _ git checkout --detach refs/remotes/$ref --
+                    other_checked_out=1
                     break
                 elif git show-ref --quiet --verify refs/remotes/$DEFAULT_REMOTE/$ref; then
                     _ git checkout --detach refs/remotes/$DEFAULT_REMOTE/$ref --
+                    other_checked_out=1
                     break
                 fi
             done
-        else
+        fi
+        if [[ -z $other_checked_out ]]; then
             _ git checkout --detach $DEFAULT_REMOTE/master --
         fi
 
