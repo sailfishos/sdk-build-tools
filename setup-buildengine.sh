@@ -536,6 +536,13 @@ if [[ -n $OPT_REFRESH ]]; then
         mersdk@localhost "sudo bash share/refresh-sdk-repos.sh -y ${OPT_PRIVATE_REPO:-} ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
 fi
 
+# prepare the build engine for first boot by an end user
+ssh -o UserKnownHostsFile=/dev/null \
+    -o StrictHostKeyChecking=no \
+    -p $SSH_PORT \
+    -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+    mersdk@localhost "sudo sdk-prepare-first-boot.sh"
+
 # shut the VM down cleanly so that it has time to flush its disk
 ssh -o UserKnownHostsFile=/dev/null \
     -o StrictHostKeyChecking=no \
