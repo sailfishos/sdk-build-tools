@@ -250,9 +250,9 @@ build_unix_qmllive() {
     # Adjust rpath
     if [[ $UNAME_SYSTEM == "Darwin" ]]; then
         install_name_tool -delete_rpath "$QMLLIVE_BUILD_DIR/lib" \
-                          -add_rpath '@executable_path/../lib' \
-                          -add_rpath '@executable_path/Qt Creator.app/Contents/Frameworks' \
-                          $QMLLIVE_INSTALL_ROOT/bin/qmllivebench
+                          -add_rpath '@executable_path/../../../../lib' \
+                          -add_rpath '@executable_path/../../../Qt Creator.app/Contents/Frameworks' \
+                          "$QMLLIVE_INSTALL_ROOT/bin/QmlLive Bench.app/Contents/MacOS/QmlLive Bench"
         install_name_tool -delete_rpath "$QMLLIVE_BUILD_DIR/lib" \
                           -add_rpath '@executable_path/../lib' \
                           -add_rpath '@executable_path/Qt Creator.app/Contents/Frameworks' \
