@@ -185,6 +185,11 @@ set QMAKESPEC=win32-msvc$DEF_MSVC_VER
 set PATH=%PATH%;$(win_path $DEF_PREFIX)\invariant\bin
 
 call "%_programs%\Microsoft Visual Studio $DEF_MSVC_VER_ALT\VC\vcvarsall.bat"
+
+set INCLUDE=C:\OpenSSL-Win32\include;%INCLUDE%
+set LIB=C:\OpenSSL-Win32\lib;%LIB%
+set PATH=C:\OpenSSL-Win32\bin;%PATH%
+
 call %QTDIR%\qtbase\bin\qmake -r $(win_path $OPT_IFW_SRC_DIR)\installerfw.pro || exit 1
 call jom || exit 1
 EOF
