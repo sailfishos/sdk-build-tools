@@ -47,7 +47,7 @@ LINUX_CONFIG_OPTIONS="-no-eglfs -no-linuxfb -no-kms"
 
 # add these to the COMMON_CONFIG_OPTIONS for static build
 # the static build is required to build Qt Installer Framework
-COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d"
+COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d -skip qtwebengine -skip qtwebkit"
 
 build_dynamic_qt_windows() {
     [[ -z $OPT_DYNAMIC ]] && return
