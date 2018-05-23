@@ -272,6 +272,7 @@ Plugins = PlugIns
 EOF
         printf "$QT_CONF_TEMPLATE" '../../' > "$QMLLIVE_INSTALL_ROOT/bin/QmlLive Bench.app/Contents/Resources/qt.conf"
         printf "$QT_CONF_TEMPLATE" '' > "$QMLLIVE_INSTALL_ROOT/bin/qt.conf"
+        printf "$QT_CONF_TEMPLATE" '../../bin/' > "$QMLLIVE_INSTALL_ROOT/libexec/qmllive/qt.conf"
     else
         RPATH='INSTALL_ROOT/lib:INSTALL_ROOT/lib/Qt/lib:INSTALL_ROOT/lib/qtcreator'
         chrpath --replace "${RPATH//INSTALL_ROOT/\$ORIGIN/..}" $QMLLIVE_INSTALL_ROOT/bin/*
