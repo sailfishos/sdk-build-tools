@@ -250,24 +250,29 @@ build_unix_qmllive() {
     # Adjust rpath
     if [[ $UNAME_SYSTEM == "Darwin" ]]; then
         install_name_tool -delete_rpath "$QMLLIVE_BUILD_DIR/lib" \
+                          -delete_rpath "$QTDIR/lib" \
                           -add_rpath '@executable_path/../../../../lib' \
                           -add_rpath '@executable_path/../../../Qt Creator.app/Contents/Frameworks' \
                           "$QMLLIVE_INSTALL_ROOT/bin/QmlLive Bench.app/Contents/MacOS/QmlLive Bench"
         install_name_tool -delete_rpath "$QMLLIVE_BUILD_DIR/lib" \
+                          -delete_rpath "$QTDIR/lib" \
                           -add_rpath '@executable_path/../lib' \
                           -add_rpath '@executable_path/Qt Creator.app/Contents/Frameworks' \
                           $QMLLIVE_INSTALL_ROOT/bin/qmlliveruntime
-        install_name_tool -delete_rpath "$OPT_QTDIR/qtbase/lib" \
+        install_name_tool -delete_rpath "$QTDIR/lib" \
                           -add_rpath '@executable_path/../../bin/Qt Creator.app/Contents/Frameworks' \
                           $QMLLIVE_INSTALL_ROOT/libexec/qmllive/previewGenerator
-        cat > $QMLLIVE_INSTALL_ROOT/bin/qt.conf <<EOF
+        read -d '' -r QT_CONF_TEMPLATE <<'EOF' || true
 # Based on Qt\ Creator.app/Contents/Resources/qt.conf
 [Paths]
-Prefix = Qt Creator.app/Contents
+Prefix = %sQt Creator.app/Contents
 Imports = Imports/qtquick1
 Qml2Imports = Imports/qtquick2
 Plugins = PlugIns
 EOF
+        printf "$QT_CONF_TEMPLATE" '../../' > "$QMLLIVE_INSTALL_ROOT/bin/QmlLive Bench.app/Contents/Resources/qt.conf"
+        printf "$QT_CONF_TEMPLATE" '' > "$QMLLIVE_INSTALL_ROOT/bin/qt.conf"
+        printf "$QT_CONF_TEMPLATE" '../../bin/' > "$QMLLIVE_INSTALL_ROOT/libexec/qmllive/qt.conf"
     else
         RPATH='INSTALL_ROOT/lib:INSTALL_ROOT/lib/Qt/lib:INSTALL_ROOT/lib/qtcreator'
         chrpath --replace "${RPATH//INSTALL_ROOT/\$ORIGIN/..}" $QMLLIVE_INSTALL_ROOT/bin/*
