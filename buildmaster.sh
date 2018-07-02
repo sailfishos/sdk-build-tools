@@ -42,6 +42,7 @@ OPT_VARIANT=$DEF_VARIANT
 OPT_RELEASE=$DEF_RELEASE
 OPT_RELCYCLE=$DEF_RELCYCLE
 OPT_VERSION_DESC=$DEF_VERSION_DESC
+OPT_INSTALLER_PROFILE=offline
 
 # keep these following two in sync
 REQUIRED_SRC_DIRS=($DEF_QTC_SRC_DIR $DEF_QMLLIVE_SRC_DIR $DEF_INSTALLER_SRC_DIR)
@@ -99,6 +100,9 @@ Options:
    -vd  | --version-desc <STRING>  Use <STRING> as a version description (appears
                                 in braces after Qt Creator version in About dialog)
    -gd  | --gdb-default         Use default download URLs for gdb build deps
+   -P   | --installer-profile <STRING>  Choose a profile when building installer.
+                                <STRING> can be one of "online", "offline" or "full"
+                                [$OPT_INSTALLER_PROFILE]
    -d   | --download <URL>      Use <URL> to download artifacts
    -D   | --dload-def <DIR>     Create download URL using <DIR> as the source dir
    -u   | --upload <DIR>        upload build results
@@ -203,6 +207,12 @@ while [[ ${1:-} ]]; do
         -gd | --gdb-default ) shift
             OPT_GDB_DEFAULT=1
             ;;
+        -P | --installer-profile ) shift
+            OPT_INSTALLER_PROFILE=$1; shift
+            if [[ -z $OPT_UL_DIR ]]; then
+                fail "installer profile option requires a profile name"
+            fi
+            ;;
         -u | --upload ) shift
             OPT_UPLOAD=1
             OPT_UL_DIR=$1; shift
@@ -286,6 +296,10 @@ fi
 
 if [[ -n $OPT_VERSION_EXTRA ]]; then
     echo " Inst/Repo suffix .. [${OPT_VERSION_EXTRA:- }]"
+fi
+
+if [[ -n $OPT_BUILD_INSTALLER ]]; then
+    echo " Installer Profile . [$OPT_INSTALLER_PROFILE]"
 fi
 
 echo " Build architecture  [$(build_arch)]"
@@ -493,7 +507,8 @@ do_build_installer() {
     fi
 
     _ pushd $DEF_INSTALLER_SRC_DIR
-    _ ./build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL $INSTALLER_BUILD_OPTIONS
+    _ ./build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL \
+        --profile $OPT_INSTALLER_PROFILE $INSTALLER_BUILD_OPTIONS
     _ popd
 }
 
@@ -502,10 +517,10 @@ do_override_repo_url() {
         _ sed -e s^http://releases.sailfishos.org/sdk/repository^${OPT_REPO_URL}^g \
             -i~ $BASE_SRC_DIR/$INSTALLER_SRC/config/config-*.xml
 
-       # Daily builds need custom version strings.
+       # Daily builds need custom packages.conf strings.
        if [[ $OPT_REPO_URL =~ ^"http://10.0.0.20/sailfishos/daily" ]]; then
-           INSTALLER_BUILD_OPTIONS="$INSTALLER_BUILD_OPTIONS --version-file package-versions-daily.conf"
-           _ $BASE_SRC_DIR/$INSTALLER_SRC/create-daily-version-file.py
+           INSTALLER_BUILD_OPTIONS="$INSTALLER_BUILD_OPTIONS --packages-conf packages-daily.conf"
+           _ $BASE_SRC_DIR/$INSTALLER_SRC/create-daily-packages-conf.py
        fi
     fi
 }
