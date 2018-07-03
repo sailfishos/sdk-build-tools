@@ -57,7 +57,7 @@ DEF_MSVC_VER=2015
 DEF_MSVC_VER_ALT=14.0
 
 # The Qt Installer Framework version to use
-DEF_IFW_VER=2.0.5
+DEF_IFW_VER=3.0.4
 
 # The default release version
 # Note: This can also be configured dynamically by using the --release

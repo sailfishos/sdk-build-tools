@@ -1,0 +1,45 @@
+From af39c67233b0d752c677ec2ec3a4f24196315321 Mon Sep 17 00:00:00 2001
+From: Martin Kampas <martin.kampas@jolla.com>
+Date: Wed, 18 Jul 2018 09:34:10 +0200
+Subject: [PATCH] Fix build with older macOS SDK
+
+Broken since commit dee4f4f447f3f20c2a0850ce56112d0edf6d30be
+(binarycreator: Write a proper LSMinimumSystemVersion value)
+
+Patch mentioned here[1]. According to the comments there the API was not
+present until macOS 10.12 SDK (Darwin 16).
+
+[1] https://codereview.qt-project.org/#/c/199633/6/tools/binarycreator/binarycreator.cpp,unified
+
+Change-Id: I2863012db3c2c6faea7e583e951f743cc4adcb35
+---
+ tools/binarycreator/binarycreator.cpp | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/tools/binarycreator/binarycreator.cpp b/tools/binarycreator/binarycreator.cpp
+index 1d2faeac..da6610b4 100644
+--- a/tools/binarycreator/binarycreator.cpp
++++ b/tools/binarycreator/binarycreator.cpp
+@@ -57,6 +57,19 @@
+ 
+ #include <mach-o/fat.h>
+ #include <mach-o/loader.h>
++
++# if __MAC_OS_X_VERSION_MAX_ALLOWED < 101200
++# define FAT_MAGIC_64 0xcafebabf
++# define FAT_CIGAM_64 0xbfbafeca
++struct fat_arch_64 {
++    cpu_type_t cputype;
++    cpu_subtype_t cpusubtype;
++    uint64_t offset;
++    uint64_t size;
++    uint32_t align;
++    uint32_t reserved;
++};
++# endif
+ #endif
+ 
+ using namespace QInstaller;
+-- 
+2.17.1
+
