@@ -1,0 +1,39 @@
+From 0d1d12524cb1f204cda5b40e42c1a9a1ec7f0025 Mon Sep 17 00:00:00 2001
+From: Martin Kampas <martin.kampas@jolla.com>
+Date: Fri, 29 Jun 2018 08:13:16 +0200
+Subject: [PATCH] Prioritize bundled data over data from repositories
+
+With the original priorities the bundled data would never be used,
+all packages would be always downloaded from online repositories.
+
+Task-number: QTIFW-718
+Change-Id: I442ef3f4658d588eccc47eaf7b0605d648df13cf
+---
+ src/libs/installer/packagemanagercore_p.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/libs/installer/packagemanagercore_p.cpp b/src/libs/installer/packagemanagercore_p.cpp
+index b21b3283..6bfd73cf 100644
+--- a/src/libs/installer/packagemanagercore_p.cpp
++++ b/src/libs/installer/packagemanagercore_p.cpp
+@@ -582,7 +582,7 @@ void PackageManagerCorePrivate::initialize(const QHash<QString, QString> &params
+         m_localPackageHub->setApplicationVersion(QLatin1String(QUOTE(IFW_REPOSITORY_FORMAT_VERSION)));
+ 
+     if (isInstaller())
+-        m_packageSources.insert(PackageSource(QUrl(QLatin1String("resource://metadata/")), 0));
++        m_packageSources.insert(PackageSource(QUrl(QLatin1String("resource://metadata/")), 99));
+ 
+     m_metadataJob.disconnect();
+     m_metadataJob.setAutoDelete(false);
+@@ -2285,7 +2285,7 @@ bool PackageManagerCorePrivate::addUpdateResourcesFromRepositories(bool parseChe
+         m_updates = false;
+         m_updateSourcesAdded = false;
+         if (isInstaller())
+-            m_packageSources.insert(PackageSource(QUrl(QLatin1String("resource://metadata/")), 0));
++            m_packageSources.insert(PackageSource(QUrl(QLatin1String("resource://metadata/")), 99));
+     }
+ 
+     foreach (const Metadata &data, metadata) {
+-- 
+2.17.1
+
