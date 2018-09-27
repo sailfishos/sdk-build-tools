@@ -146,6 +146,12 @@ DEF_QTC_INSTALL_SUFFIX=-install
 DEF_QTC_INSTALL_ROOT=$DEF_QTC_SRC_DIR$DEF_QTC_INSTALL_SUFFIX
 
 # ---------------------------------------------------------------------
+# Qt Linguist
+
+# Install directory
+DEF_LINGUIST_INSTALL_ROOT=$DEF_PREFIX/build/linguist-install
+
+# ---------------------------------------------------------------------
 # Qt QmlLive
 
 # Source directory

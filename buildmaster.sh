@@ -2,7 +2,7 @@
 #
 # Master script to build parts of or all of the SDK installer
 #
-# Copyright (C) 2014-2016 Jolla Ltd.
+# Copyright (C) 2014-2018 Jolla Ltd.
 # Contact: Martin Kampas <martin.kampas@jolla.com>
 # All rights reserved.
 #
@@ -87,6 +87,7 @@ Options:
         | --qt-static           Build Qt (static - required for Installer framework)
         | --qt-dynamic          Build Qt (dynamic - required for QtC)
    -icu | --icu-build           Build ICU library (Linux and Windows)
+        | --linguist            Build Qt Linguist
         | --qmllive             Build Qt QmlLive
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
@@ -161,6 +162,10 @@ while [[ ${1:-} ]]; do
             ;;
         -qt5 | --qt-dynamic ) shift
             OPT_BUILD_QT_DYNAMIC=1
+            let numtasks++
+            ;;
+        --linguist ) shift
+            OPT_BUILD_LINGUIST=1
             let numtasks++
             ;;
         --qmllive ) shift
@@ -281,6 +286,7 @@ Summary of chosen actions:
  Build Qt (static) . [$(get_option $OPT_BUILD_QT_STATIC)]
  Build Qt (dynamic)  [$(get_option $OPT_BUILD_QT_DYNAMIC)]
  Build ICU ......... [$(get_option $OPT_BUILD_ICU)]
+ Build Qt Linguist . [$(get_option $OPT_BUILD_LINGUIST)]
  Build Qt QmlLive .. [$(get_option $OPT_BUILD_QMLLIVE)]
  Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
@@ -462,6 +468,16 @@ do_build_qtc() {
     _ $BUILD_TOOLS_SRC/buildqtc.sh -y $options $UPLOAD_OPTIONS
 }
 
+do_build_linguist() {
+    [[ -z $OPT_BUILD_LINGUIST ]] && return;
+
+    echo "---------------------------------"
+
+    echo "Building Qt Linguist ..."
+
+    _ $BUILD_TOOLS_SRC/buildlinguist.sh -y $UPLOAD_OPTIONS
+}
+
 do_build_qmllive() {
     [[ -z $OPT_BUILD_QMLLIVE ]] && return;
 
@@ -583,13 +599,16 @@ do_override_repo_url
 # 7 - build QtC + Docs + GDB
 do_build_qtc
 
-# 8 - build Qt QmlLive
+# 8 - build Qt Linguist
+do_build_linguist
+
+# 9 - build Qt QmlLive
 do_build_qmllive
 
-# 9 - build installer
+# 10 - build installer
 do_build_installer
 
-# 10 - build repository
+# 11 - build repository
 do_build_repo
 
 # record end time
