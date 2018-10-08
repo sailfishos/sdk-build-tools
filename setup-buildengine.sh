@@ -144,7 +144,7 @@ installTooling() {
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sdk-manage --tooling --install $tooling file:///home/mersdk/share/$OPT_TOOLING"
+        mersdk@localhost "sdk-manage --mode installer --tooling --install $tooling file:///home/mersdk/share/$OPT_TOOLING"
 }
 
 installTarget() {
@@ -172,7 +172,7 @@ installTarget() {
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sdk-manage --target --install --jfdi $tgt file:///home/mersdk/share/$TARGET_FILENAME"
+        mersdk@localhost "sdk-manage --mode installer --target --install --jfdi $tgt file:///home/mersdk/share/$TARGET_FILENAME"
 
     echo "Saving target dumps ..."
     ssh -o UserKnownHostsFile=/dev/null \
