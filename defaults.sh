@@ -56,9 +56,6 @@ DEF_QT_VER=5.6.2
 DEF_MSVC_VER=2015
 DEF_MSVC_VER_ALT=14.0
 
-# The Qt Installer Framework version to use
-DEF_IFW_VER=3.0.4
-
 # The default release version
 # Note: This can also be configured dynamically by using the --release
 # option in buildmaster.sh
@@ -167,7 +164,7 @@ DEF_QMLLIVE_INSTALL_ROOT=$DEF_QMLLIVE_SRC_DIR$DEF_QMLLIVE_INSTALL_SUFFIX
 # Installer Framework
 
 # Source directory
-DEF_IFW_SRC_DIR=$DEF_PREFIX/invariant/installer-framework-$DEF_IFW_VER
+DEF_IFW_SRC_DIR=$DEF_PREFIX/invariant/qt-installer-framework
 # Build directory
 DEF_IFW_BUILD_SUFFIX=-build
 DEF_IFW_BUILD_DIR=$DEF_IFW_SRC_DIR$DEF_IFW_BUILD_SUFFIX
