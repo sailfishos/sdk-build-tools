@@ -95,7 +95,8 @@ win_path() {
     sed -e 's,^/c$,c:,' -e 's,^/c/,c:\\,' -e 's,/,\\,g' <<<"$1"
 }
 
-BUILD_TOOLS_SRC=$(dirname $0)
+# no `readlink -f` on macOS
+BUILD_TOOLS_SRC=$(cd "$(dirname "$0")" && pwd)
 
 # ---------------------------------------------------------------------
 # Qt
