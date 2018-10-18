@@ -201,8 +201,8 @@ EOF
         printf "$QT_CONF_TEMPLATE" '../../' > "$LINGUIST_INSTALL_ROOT/bin/Linguist.app/Contents/Resources/qt.conf"
     else
         RPATH='INSTALL_ROOT/lib:INSTALL_ROOT/lib/Qt/lib:INSTALL_ROOT/lib/qtcreator'
-        find $LINGUIST_INSTALL_ROOT/bin/* -type f -maxdepth 0 | xargs -n1 patchelf --remove-rpath
-        find $LINGUIST_INSTALL_ROOT/bin/* -type f -maxdepth 0 | xargs -n1 patchelf --force-rpath --set-rpath "${RPATH//INSTALL_ROOT/\$ORIGIN/..}"
+        find $LINGUIST_INSTALL_ROOT/bin/* -maxdepth 0 -type f | xargs -n1 patchelf --remove-rpath
+        find $LINGUIST_INSTALL_ROOT/bin/* -maxdepth 0 -type f | xargs -n1 patchelf --force-rpath --set-rpath "${RPATH//INSTALL_ROOT/\$ORIGIN/..}"
     fi
 
     popd
