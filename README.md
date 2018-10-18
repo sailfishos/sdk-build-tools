@@ -13,7 +13,7 @@ applied, otherwise they can be left in the built state and utilized in
 subsequent Qt Creator builds.
 
 Static Qt build is required for Installer Framework, dynamic Qt build is
-required for Qt Creator.
+required for Qt Creator and other tools coming with the SDK.
 
 ### Scripts
 
@@ -32,8 +32,8 @@ into a format suitable for the Installer FW.
 
 The SDK builds are made in the following host environments:
 
-* Mac:     OS X 10.8.5
-* Linux:   Ubuntu 10.04 32/64 bit
+* Mac:     OS X 10.10
+* Linux:   Ubuntu 16.04 32/64 bit
 * Windows: Windows 7 32 bit
 
 `These are also the oldest host operating system versions the SDK is supported in.`
@@ -41,7 +41,7 @@ The SDK builds are made in the following host environments:
 ### Qt versions required for build
 
 * Qt5 from `http://download.qt.io/archive/qt/5.6/5.6.2/single/`
-* Qt Installer FW from `git://gitorious.org/installer-framework/installer-framework.git` tag `2.0.5`
+* Qt Installer FW from `https://github.com/sailfishos/qt-installer-framework` branch `master`
 
 ### ICU version
 
@@ -57,29 +57,21 @@ For Windows use a pre-built package:
 
 ### Linux
 
-The following additional packages are required in Ubuntu 10.04
+The following additional packages are required in Ubuntu 16.04
 
-* `build-essential` `pkg-config` `git` `libgtk2.0-dev` `chrpath` `p7zip-full` `libncurses5-dev` `libdbus-1-dev` `ruby` `libgl1-mesa-dev`
-  `"^libxcb.*"` `libx11-xcb-dev` `libxrender-dev` `libxi-dev` `flex` `bison` `gperf` `libxslt-dev`
+* `build-essential` `p7zip-full` `git` `libgtk2.0-dev` `chrpath` `libncurses5-dev` `libdbus-1-dev`
+  `ruby` `libgl1-mesa-dev` `"^libxcb.*"` `libx11-xcb-dev` `libxrender-dev` `libxi-dev` `flex`
+  `bison` `gperf` `patchelf`
 
 ### Mac
 
 The following additional software is required in the build Mac:
 
-* Xcode 5
-* [p7zip][1] (required for packaging Qt Creator)
-* [wget][8]
-
-[1]: http://sourceforge.net/projects/p7zip/
-[8]: https://www.gnu.org/software/wget/
-
-To build on OS X 10.10 the following versions of Xcode and Qt are required:
-
-* [Xcode 6.1][9] or later, available on the Mac App Store
-* [Qt 5.4.0][10] or later
+* [Xcode 6 or 7][9], available on the Mac App Store
+* `p7zip` and `wget` installed via [MacPorts][1]
 
 [9]: https://itunes.apple.com/fi/app/xcode/id497799835?mt=12
-[10]: http://download.qt.io/archive/qt/5.4/5.4.0/single/
+[1]: https://www.macports.org/
 
 The build Mac should be prepared for command line development. To make sure
 this is the case, please refer to [Technical Note TN2339][11] "Building from
