@@ -61,12 +61,13 @@ usage()
 $(synopsis)
 
 Convert the given sb2 tooling/target images in tar.bz2 format to a format
-suitable for use with the SDK installer. Unless the '--no-meta' option is
-used, create the corresponding .meta files with 'make-archive-meta.sh' as
-well. The resulting files will be placed next to the original files and
-optionally uploaded to the build host. When uploaded, the targets.json in the
-destination directory will be updated, listing all images found in that
-directory, i.e., including those uploaded before.
+suitable for use with both SDK Control Centre and SDK installer. Create
+.md5sum files and unless the '--no-meta' option is used, create the
+corresponding .meta files with 'make-archive-meta.sh' as well. The resulting
+files will be placed next to the original files and optionally uploaded to the
+build host. When uploaded, the targets.json in the destination directory will
+be updated, listing all images found in that directory, i.e., including those
+uploaded before.
 
 OPTIONS
     -c, --compression <num>
@@ -170,6 +171,9 @@ recompress()
             echo "Creating meta data file for '$dirname/$basename.7z" >&2
             _ $build_tools_src/make-archive-meta.sh "$basename.7z" || return
         fi
+
+        md5sum() { command md5sum "$1" > "$2"; }
+        _ md5sum "$basename.7z"{,.md5sum}
 
         _ popd >/dev/null || return
 
@@ -430,9 +434,9 @@ main()
     recompress "${OPT_IMAGES[@]}" || return
 
     if [[ $OPT_UPLOAD ]]; then
-        local results=("${decompressed_images[@]/%/.7z}")
+        local results=("${decompressed_images[@]/%/.7z}" "${decompressed_images[@]/%/.7z.md5sum}")
         if [[ ! $OPT_NO_META ]]; then
-            results+=("${results[@]/%/.meta}")
+            results+=("${decompressed_images[@]/%/.7z.meta}")
         fi
         echo "Uploading..." >&2
         _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" mkdir -p "$OPT_TARGETS_UPLOAD_PATH" || return
