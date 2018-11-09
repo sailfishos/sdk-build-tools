@@ -40,7 +40,8 @@ synopsis()
 {
     cat <<END
 usage: setup-sb2-images.sh [-c|--compression <num>] [-n|--dry-run]
-           [-P|--max-procs <limit>] [--no-meta] [-u|--upload <dir>]
+           [-P|--max-procs <limit>] [--no-meta] [--no-shared]
+           [--shared-path <path>] [-u|--upload <dir>]
            [--uhost <hostname>] [--uuser <username>] [--upath <path>]
            <image.tar.bz2>...
 END
@@ -83,9 +84,20 @@ OPTIONS
     --no-meta
         Suppress creating meta data files with 'make-archive-meta.sh'
 
+    --no-shared
+        See '--upload'.
+
+    --shared-path <path>
+        See '--upload'. Defaults to [$DEF_SHARED_SB2_IMAGES_PATH]
+
     -u, --upload <dir>
         Upload results. <dir> is the root directory for this SDK build,
-        relative to the global upload path
+        relative to the global upload path. Files will be uploaded under the
+        '<dir>/targets' path. If this path does not exists, a symbolic link
+        will be created using this name, pointing to the shared location for
+        sb2 images. This can be overriden by '--no-shared', in which case a
+        directory will be created instead of the symbolic link. The default
+        shared location can be overriden with '--shared-path'.
 
     --uhost <hostname>
         Override the default upload host [$DEF_UPLOAD_HOST]
@@ -282,6 +294,8 @@ set_defaults()
         DEF_MAX_PROCS=1
     fi
 
+    DEF_SHARED_SB2_IMAGES_PATH=../targets
+
     OPT_H=
     OPT_HELP=
     OPT_DRY_RUN=
@@ -289,6 +303,8 @@ set_defaults()
     OPT_LEVEL=
     OPT_MAX_PROCS=$DEF_MAX_PROCS
     OPT_NO_META=
+    OPT_NO_SHARED=
+    OPT_SHARED_PATH=$DEF_SHARED_SB2_IMAGES_PATH
     OPT_UPLOAD=
     OPT_UPLOAD_DIR=
     OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
@@ -332,6 +348,17 @@ parse_opts()
                 ;;
             --no-meta)
                 OPT_NO_META=1
+                ;;
+            --no-shared)
+                OPT_NO_SHARED=1
+                ;;
+            --shared-path)
+                if [[ ! ${2:-} ]]; then
+                    bad_usage "Argument expected: $1"
+                    return 1
+                fi
+                OPT_SHARED_PATH=$2
+                shift
                 ;;
             -u|--upload)
                 if [[ ! ${2:-} ]]; then
@@ -439,7 +466,12 @@ main()
             results+=("${decompressed_images[@]/%/.7z.meta}")
         fi
         echo "Uploading..." >&2
-        _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" mkdir -p "$OPT_TARGETS_UPLOAD_PATH" || return
+        if [[ $OPT_NO_SHARED ]]; then
+            _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" mkdir -p "$OPT_TARGETS_UPLOAD_PATH" || return
+        else
+            _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" test -e "$OPT_TARGETS_UPLOAD_PATH" \
+                "||" ln -s "$OPT_SHARED_PATH" "$OPT_TARGETS_UPLOAD_PATH" || return
+        fi
         _ scp "${results[@]}" "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_TARGETS_UPLOAD_PATH/" || return
         if [[ ! $OPT_DRY_RUN ]]; then
             echo "Updating targets.json..." >&2
