@@ -194,3 +194,10 @@ DEF_DOCS_FILTER_NAME="Sailfish OS"
 # The default base name for the SDK targets
 # Note: This will result to targets and kits named as e.g. SailfishOS-<version>-<arch>
 DEF_TARGET_BASENAME="SailfishOS"
+
+# ---------------------------------------------------------------------
+# Scratchbox2 Images
+
+# The default path to shared location for sb2 images. The '--shared-path' option to
+# setup-sb2-images.sh overrides this.
+DEF_SHARED_SB2_IMAGES_PATH="../targets"
