@@ -295,6 +295,10 @@ build_unix_qtc() {
 	mkdir -p $QTC_BUILD_DIR
 	pushd    $QTC_BUILD_DIR
 
+    if ! [[ $UNAME_SYSTEM == "Darwin" ]]; then
+        EXTRA_QMAKE_LFLAGS="QMAKE_LFLAGS+=-Wl,--disable-new-dtags"
+    fi
+
     if ! [[ $OPT_QUICK ]]; then
         $QTDIR/bin/qmake $OPT_QTC_SRC_DIR/qtcreator.pro CONFIG+=release -r \
             QTC_SHOW_BUILD_DATE=1 \
@@ -302,6 +306,7 @@ build_unix_qtc() {
             ${OPT_VERSION_DESC:+"QTCREATOR_DISPLAY_VERSION='$OPT_VERSION_DESC'"} \
             "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." \
             "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" \
+            $EXTRA_QMAKE_LFLAGS \
             QTC_PREFIX=
     fi
 
