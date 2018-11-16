@@ -219,6 +219,10 @@ build_unix_qmllive() {
     export INSTALLER_ARCHIVE=$SAILFISH_QMLLIVE_BASENAME$(build_arch).7z
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPT_ICU_PATH/lib
 
+    if ! [[ $UNAME_SYSTEM == "Darwin" ]]; then
+        EXTRA_QMAKE_LFLAGS="QMAKE_LFLAGS+=-Wl,--disable-new-dtags"
+    fi
+
     # clear build workspace
     [[ $OPT_QUICK ]] || rm -rf $QMLLIVE_BUILD_DIR
     mkdir -p $QMLLIVE_BUILD_DIR
@@ -228,6 +232,7 @@ build_unix_qmllive() {
         $QTDIR/bin/qmake $OPT_QMLLIVE_SRC_DIR/qmllive.pro -r CONFIG+=release \
                          QMLLIVE_SETTINGS_VARIANT="$OPT_VARIANT" QMLLIVE_REVISION="$OPT_REVISION" \
                          QMLLIVE_VERSION_EXTRA="$OPT_VERSION_DESC" \
+                         $EXTRA_QMAKE_LFLAGS \
                          PREFIX=/ EXAMPLES_PREFIX=/qmllive-examples CONFIG+=no_testcase_installs
     fi
 
