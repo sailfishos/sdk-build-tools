@@ -181,7 +181,7 @@ if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set QTDIR=$(win_path $OPT_QTDIR)
-set QMAKESPEC=win32-msvc$DEF_MSVC_VER
+set QMAKESPEC=$DEF_MSVC_SPEC
 set PATH=%PATH%;$(win_path $DEF_PREFIX)\invariant\bin
 
 call "%_programs%\Microsoft Visual Studio $DEF_MSVC_VER_ALT\VC\vcvarsall.bat"

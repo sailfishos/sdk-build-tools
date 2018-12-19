@@ -418,7 +418,7 @@ if Not DEFINED ProgramFiles(x86) (
 
 set INSTALL_ROOT=$(win_path $QTC_INSTALL_ROOT)
 set QTDIR=$(win_path $OPT_QTDIR)\qtbase
-set QMAKESPEC=win32-msvc$DEF_MSVC_VER
+set QMAKESPEC=$DEF_MSVC_SPEC
 set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;$(win_path $DEF_PREFIX)\invariant\bin;c:\python27;$(win_path $OPT_ICU_PATH)\bin
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 

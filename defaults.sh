@@ -50,11 +50,12 @@
 DEF_WIN_ICU_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/icu/icu4c-4_8_1_1-Win32-msvc10.zip"
 
 # The Qt version to use
-DEF_QT_VER=5.6.2
+DEF_QT_VER=5.9.7
 
 # The Microsoft Visual C++ version to use
 DEF_MSVC_VER=2015
 DEF_MSVC_VER_ALT=14.0
+DEF_MSVC_SPEC=win32-msvc
 
 # The default release version
 # Note: This can also be configured dynamically by using the --release
