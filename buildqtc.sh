@@ -385,20 +385,6 @@ build_windows_qtc() {
 	mkdir -p $QTC_BUILD_DIR
 	pushd    $QTC_BUILD_DIR
 
-	# fetch the binary artifacts if they can be found
-	#
-	# https://git.gitorious.org/qt-creator/binary-artifacts.git
-	#
-	local binary_artifacts="qtc-win32-binary-artifacts.7z"
-	echo "Downloading binary artifacts ..."
-	# Allow error code from curl
-	set +e
-	curl -s -f -o $binary_artifacts http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/$binary_artifacts
-	[[ $? -ne 0 ]] && echo "NOTE! Downloading binary artifacts failed [ignoring]"
-
-	# no more errors allowed
-	set -e
-
 	local opengl32sw_lib="opengl32sw-32.7z"
 	curl -s -f -o $opengl32sw_lib http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/opengl/$opengl32sw_lib
 
@@ -419,14 +405,10 @@ if Not DEFINED ProgramFiles(x86) (
 set INSTALL_ROOT=$(win_path $QTC_INSTALL_ROOT)
 set QTDIR=$(win_path $OPT_QTDIR)\qtbase
 set QMAKESPEC=$DEF_MSVC_SPEC
-set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;$(win_path $DEF_PREFIX)\invariant\bin;c:\python27;$(win_path $OPT_ICU_PATH)\bin
+set PATH=%PATH%;c:\invariant\jom;%_programs%\7-zip;%QTDIR%\bin;$(win_path $DEF_PREFIX)\invariant\bin;c:\python27;$(win_path $OPT_ICU_PATH)\bin
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
 call rmdir /s /q $(win_path $QTC_INSTALL_ROOT)
-
-if exist $binary_artifacts (
-  call 7z x -o$(win_path $QTC_INSTALL_ROOT) $binary_artifacts
-)
 
 call "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\vcvarsall.bat"
 

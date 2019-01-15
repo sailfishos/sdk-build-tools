@@ -182,7 +182,7 @@ if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set QTDIR=$(win_path $OPT_QTDIR)
 set QMAKESPEC=$DEF_MSVC_SPEC
-set PATH=%PATH%;$(win_path $DEF_PREFIX)\invariant\bin
+set PATH=%PATH%;c:\invariant\jom;$(win_path $DEF_PREFIX)\invariant\bin
 
 call "%_programs%\Microsoft Visual Studio $DEF_MSVC_VER_ALT\VC\vcvarsall.bat"
 call %QTDIR%\qtbase\bin\qmake -r $(win_path $OPT_IFW_SRC_DIR)\installerfw.pro || exit 1
