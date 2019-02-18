@@ -36,6 +36,8 @@
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
 OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
+OPT_BASENAME=$DEF_EMULATOR_BASENAME
+OPT_SHARED_PATH=$DEF_SHARED_EMULATORS_PATH
 
 OPT_COMPRESSION=9
 
@@ -59,14 +61,28 @@ Usage:
 
 Options:
    -u  | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
-                              the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
-                              the upload directory will be created if it is not there
+                              <DIR> is the root directory for this SDK build,
+                              relative to the global upload path
+                              [$OPT_UPLOAD_PATH]. Files will be uploaded under
+                              the '<DIR>/emulators' path. If this path does not
+                              exist, a symbolic link will be created using this
+                              name, pointing to the shared location for emulator
+                              images. This can be overriden by '--no-shared', in
+                              which case a a directory will be created instead
+                              of the symbolic link. The default shared location
+                              can be overriden with '--shared-path'.
+   --no-shared                see '--upload'
+   --shared-path <PATH>       see '--upload' [$DEF_SHARED_EMULATORS_PATH]
    -uh | --uhost <HOST>       override default upload host
    -up | --upath <PATH>       override default upload path
    -uu | --uuser <USER>       override default upload user
    -y  | --non-interactive    answer yes to all questions presented by the script
+   --basename <BASENAME>      basename for the resulting archive [$DEF_EMULATOR_BASENAME]
+   -rel | --release <REL>     release number [required]
    -f  | --vdi-file <vdi>     use this vdi file [required]
    -c  | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
+   --no-meta                  suppress creating meta data files with
+                              'make-archive-meta.sh'
    -h  | --help               this help
 
 EOF
@@ -107,6 +123,30 @@ while [[ ${1:-} ]]; do
         -f | --vdi-file ) shift
             OPT_VDI=$1; shift
             ;;
+        --basename ) shift
+            OPT_BASENAME=$1; shift
+            if [[ -z $OPT_BASENAME ]]; then
+                fatal "the --basename option requires an argument"
+            fi
+            ;;
+        -rel | --release ) shift
+            OPT_RELEASE=$1; shift
+            if [[ -z $OPT_RELEASE ]]; then
+                fatal "the --release option requires an argument"
+            fi
+            ;;
+        --no-shared ) shift
+            OPT_NO_SHARED=1
+            ;;
+        --shared-path ) shift
+            OPT_SHARED_PATH=$1; shift
+            if [[ -z $OPT_SHARED_PATH ]]; then
+                fatal "the --shared-path option requires an argument"
+            fi
+            ;;
+        --no-meta ) shift
+            OPT_NO_META=1
+            ;;
         -h | --help ) shift
             usage quit
             ;;
@@ -115,6 +155,13 @@ while [[ ${1:-} ]]; do
             ;;
     esac
 done
+
+if [[ -z $OPT_RELEASE ]]; then
+    echo "The --release option is required"
+    exit 1
+fi
+
+ARCHIVE_NAME=$OPT_BASENAME-$OPT_RELEASE-Sailfish_SDK_Emulator.7z
 
 if [[ -n $OPT_VDI ]]; then
     VDIFILE=$OPT_VDI
@@ -142,7 +189,7 @@ checkForVDI
 
 # all go, let's do it:
 cat <<EOF
-Creating emulator.7z, compression=$OPT_COMPRESSION
+Creating $ARCHIVE_NAME, compression=$OPT_COMPRESSION
  Emulator: $OPT_VDI
 EOF
 if [[ -n $OPT_UPLOAD ]]; then
@@ -169,16 +216,26 @@ if [[ -z $OPT_YES ]]; then
     done
 fi
 
-INSTALL_PATH=$PWD/emulator
-mkdir -p $INSTALL_PATH
-echo "Hard linking $PWD/$VDI => $INSTALL_PATH/sailfishos.vdi"
-ln $PWD/$VDI $INSTALL_PATH/sailfishos.vdi
-7z a -mx=$OPT_COMPRESSION emulator.7z $INSTALL_PATH/
+echo "Hard linking $PWD/$VDI => sailfishos.vdi"
+ln $PWD/$VDI sailfishos.vdi
+7z a -mx=$OPT_COMPRESSION $ARCHIVE_NAME sailfishos.vdi
+results=($ARCHIVE_NAME)
+
+if [[ -z $OPT_NO_META ]]; then
+    $BUILD_TOOLS_SRC/make-archive-meta.sh $ARCHIVE_NAME
+    results+=($ARCHIVE_NAME.meta)
+fi
 
 if [[ -n "$OPT_UPLOAD" ]]; then
-    echo "Uploading emulator.7z"
+    echo "Uploading $ARCHIVE_NAME"
 
     # create upload dir
     ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/
-    scp emulator.7z $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/
+    if [[ -n $OPT_NO_SHARED ]]; then
+        ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators
+    else
+        ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST test -e $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators \
+            "||" ln -s $OPT_SHARED_PATH $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators || return
+    fi
+    scp ${results[*]} $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators/
 fi
