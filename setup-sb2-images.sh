@@ -294,8 +294,6 @@ set_defaults()
         DEF_MAX_PROCS=1
     fi
 
-    DEF_SHARED_SB2_IMAGES_PATH=../targets
-
     OPT_H=
     OPT_HELP=
     OPT_DRY_RUN=

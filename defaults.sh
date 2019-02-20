@@ -202,3 +202,14 @@ DEF_TARGET_BASENAME="SailfishOS"
 # The default path to shared location for sb2 images. The '--shared-path' option to
 # setup-sb2-images.sh overrides this.
 DEF_SHARED_SB2_IMAGES_PATH="../targets"
+
+# ---------------------------------------------------------------------
+# Emulator
+
+# The default path to shared location for emulator images. The '--shared-path' option to
+# setup-emulator.sh overides this.
+DEF_SHARED_EMULATORS_PATH="../emulators"
+
+# The default base name for emulator images. The '--basename' option to setup-emulator.sh
+# overrides this.
+DEF_EMULATOR_BASENAME="Sailfish_OS"
