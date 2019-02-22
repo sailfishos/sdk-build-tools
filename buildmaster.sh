@@ -2,7 +2,7 @@
 #
 # Master script to build parts of or all of the SDK installer
 #
-# Copyright (C) 2014-2018 Jolla Ltd.
+# Copyright (C) 2014-2019 Jolla Ltd.
 # Contact: Martin Kampas <martin.kampas@jolla.com>
 # All rights reserved.
 #
@@ -39,9 +39,9 @@ OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
 OPT_REPO_URL=''
 
 OPT_VARIANT=$DEF_VARIANT
+OPT_VARIANT_PRETTY=$DEF_VARIANT_PRETTY
 OPT_RELEASE=$DEF_RELEASE
 OPT_RELCYCLE=$DEF_RELCYCLE
-OPT_VERSION_DESC=$DEF_VERSION_DESC
 OPT_INSTALLER_PROFILE=offline
 
 REQUIRED_SRC_DIRS=($DEF_QTC_SRC_DIR $DEF_QMLLIVE_SRC_DIR $DEF_INSTALLER_SRC_DIR $DEF_IFW_SRC_DIR)
@@ -91,14 +91,15 @@ Options:
    -e   | --extra               Extra suffix to installer/repo version
    -p   | --git-pull            Do git pull in every src repo before building
    -v   | --variant <STRING>    Use <STRING> as the build variant [$OPT_VARIANT]
+   -vp  | --variant-pretty <STRING>  SDK pretty variant [$OPT_VARIANT_PRETTY] (appears
+                                in the installer name and in braces after Qt Creator
+                                or QmlLive version in Qt Creator/QmlLive About dialog)
         | --branch <STRING>     Build the given branch instead of "master" if it exists.
                                 Multiple branches can be given, separated with spaces.
                                 Tags and remote tracking branches are also accepted.
         | --release <STRING>    SDK release version [$OPT_RELEASE]
         | --rel-cycle <STRING>  SDK release cycle [$OPT_RELCYCLE]
         | --repourl <STRING>    Update repo location, if set overrides the public repo URL
-   -vd  | --version-desc <STRING>  Use <STRING> as a version description (appears
-                                in braces after Qt Creator version in About dialog)
    -gd  | --gdb-default         Use default download URLs for gdb build deps
    -P   | --installer-profile <STRING>  Choose a profile when building installer.
                                 <STRING> can be one of "online", "offline" or "full"
@@ -190,8 +191,8 @@ while [[ ${1:-} ]]; do
         --repourl ) shift
             OPT_REPO_URL=$1; shift
             ;;
-        -vd | --version-desc ) shift
-            OPT_VERSION_DESC=$1; shift
+        -vp | --variant-pretty ) shift
+            OPT_VARIANT_PRETTY=$1; shift
             ;;
         -e | --extra ) shift
             OPT_VERSION_EXTRA=$1; shift
@@ -291,13 +292,10 @@ Summary of chosen actions:
  Do Git pull on src  [$(get_option $OPT_GIT_PULL)]
  Use alt. branch ... [$OPT_BRANCH]
  SDK Config Variant  [$OPT_VARIANT]
+ SDK Pretty Variant  [$OPT_VARIANT_PRETTY]
  SDK Release Version [$OPT_RELEASE]
  SDK Release Cycle   [$OPT_RELCYCLE]
 EOF
-
-if [[ -n $OPT_BUILD_QTC ]]; then
-    echo " QtC version desc. . [${OPT_VERSION_DESC:- }]"
-fi
 
 if [[ -n $OPT_VERSION_EXTRA ]]; then
     echo " Inst/Repo suffix .. [${OPT_VERSION_EXTRA:- }]"
@@ -455,8 +453,8 @@ do_build_qtc() {
         options=$options" --variant $OPT_VARIANT"
     fi
 
-    if [[ -n $OPT_VERSION_DESC ]]; then
-        options=$options" --version-desc '$OPT_VERSION_DESC'"
+    if [[ -n $OPT_VARIANT_PRETTY ]]; then
+        options=$options" --variant-pretty '$OPT_VARIANT_PRETTY'"
     fi
 
     if [[ -z $OPT_GDB_DEFAULT ]]; then
@@ -490,8 +488,8 @@ do_build_qmllive() {
         options=$options" --variant $OPT_VARIANT"
     fi
 
-    if [[ -n $OPT_VERSION_DESC ]]; then
-        options=$options" --version-desc '$OPT_VERSION_DESC'"
+    if [[ -n $OPT_VARIANT_PRETTY ]]; then
+        options=$options" --variant-pretty '$OPT_VARIANT_PRETTY'"
     fi
 
     _ $BUILD_TOOLS_SRC/buildqmllive.sh -y $options $UPLOAD_OPTIONS
@@ -507,6 +505,10 @@ do_build_installer() {
 
     if [[ -n $OPT_VARIANT ]]; then
         options=$options" --variant $OPT_VARIANT"
+    fi
+
+    if [[ -n $OPT_VARIANT_PRETTY ]]; then
+        options=$options" --variant-pretty $OPT_VARIANT_PRETTY"
     fi
 
     if [[ -n $OPT_RELEASE ]]; then
