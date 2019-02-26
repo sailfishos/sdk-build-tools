@@ -63,9 +63,9 @@ Options:
    -qtc | --qtc-src <DIR>      Qt Creator source directory [$OPT_QTC_SRC_DIR]
    -qt  | --qt-dir <DIR>       Qt (install) directory [$OPT_QTDIR]
    -v   | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
+   -vp  | --variant-pretty <STRING>  Use <STRING> as the pretty variant (appears in braces
+                               after Qt Creator version in About dialog)
    -r   | --revision <STRING>  Use <STRING> as the build revision [git sha]
-   -vd  | --version-desc <STRING>  Use <STRING> as a version description (appears
-                               in braces after Qt Creator version in About dialog)
    -d   | --docs               Build Qt Creator documentation
    -g   | --gdb                Build also gdb
    -go  | --gdb-only           Build only gdb
@@ -96,8 +96,8 @@ while [[ ${1:-} ]]; do
 	-r | --revision ) shift
 	    OPT_REVISION=$1; shift
 	    ;;
-	-vd | --version-desc ) shift
-	    OPT_VERSION_DESC=$1; shift
+	-vp | --variant-pretty ) shift
+	    OPT_VARIANT_PRETTY=$1; shift
 	    ;;
 	-qtc | --qtc-src ) shift
 	    OPT_QTC_SRC_DIR=$1; shift
@@ -303,7 +303,7 @@ build_unix_qtc() {
         $QTDIR/bin/qmake $OPT_QTC_SRC_DIR/qtcreator.pro CONFIG+=release -r \
             QTC_SHOW_BUILD_DATE=1 \
             -after "DEFINES+=IDE_REVISION=$OPT_REVISION" \
-            ${OPT_VERSION_DESC:+"QTCREATOR_DISPLAY_VERSION='$OPT_VERSION_DESC'"} \
+            ${OPT_VARIANT_PRETTY:+"QTCREATOR_DISPLAY_VERSION='$OPT_VARIANT_PRETTY'"} \
             "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." \
             "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" \
             $EXTRA_QMAKE_LFLAGS \
@@ -435,7 +435,7 @@ call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro CONFIG+=releas
     -after "DEFINES+=IDE_REVISION=$OPT_REVISION" ^
     "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." ^
     "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" ^
-    "QTCREATOR_DISPLAY_VERSION='$OPT_VERSION_DESC'" ^
+    "QTCREATOR_DISPLAY_VERSION='$OPT_VARIANT_PRETTY'" ^
     QTC_PREFIX= || exit 1
 
 call jom || exit 1

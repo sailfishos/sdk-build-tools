@@ -63,9 +63,9 @@ Options:
    -qmllive | --qmllive-src <DIR>  Qt QmlLive source directory [$OPT_QMLLIVE_SRC_DIR]
    -qt      | --qt-dir <DIR>       Qt (install) directory [$OPT_QTDIR]
    -v       | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
+   -vp      | --variant-pretty <STRING>  Use <STRING> as the pretty variant (appears in braces
+                                   after Qt QmlLive version in About dialog)
    -r       | --revision <STRING>  Use <STRING> as the build revision [git sha]
-   -vd      | --version-desc <STRING>  Use <STRING> as a version description (appears
-                                   in braces after Qt QmlLive version in About dialog)
             | --quick              Do not run configure or clean build dir
    -u       | --upload <DIR>       upload local build result to [$OPT_UPLOAD_HOST] as user [$OPT_UPLOAD_USER]
                                    the uploaded build will be copied to [$OPT_UPLOAD_PATH/<DIR>]
@@ -91,8 +91,8 @@ while [[ ${1:-} ]]; do
     -r | --revision ) shift
         OPT_REVISION=$1; shift
         ;;
-    -vd | --version-desc ) shift
-        OPT_VERSION_DESC=$1; shift
+    -vp | --variant-pretty ) shift
+        OPT_VARIANT_PRETTY=$1; shift
         ;;
     -qmllive | --qmllive-src ) shift
         OPT_QMLLIVE_SRC_DIR=$1; shift
@@ -231,7 +231,7 @@ build_unix_qmllive() {
     if ! [[ $OPT_QUICK ]]; then
         $QTDIR/bin/qmake $OPT_QMLLIVE_SRC_DIR/qmllive.pro -r CONFIG+=release \
                          QMLLIVE_SETTINGS_VARIANT="$OPT_VARIANT" QMLLIVE_REVISION="$OPT_REVISION" \
-                         QMLLIVE_VERSION_EXTRA="$OPT_VERSION_DESC" \
+                         QMLLIVE_VERSION_EXTRA="$OPT_VARIANT_PRETTY" \
                          $EXTRA_QMAKE_LFLAGS \
                          PREFIX=/ EXAMPLES_PREFIX=/qmllive-examples CONFIG+=no_testcase_installs
     fi
@@ -320,7 +320,7 @@ call "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\vcvarsall.bat"
 
 call %QTDIR%\bin\qmake $(win_path $OPT_QMLLIVE_SRC_DIR)\qmllive.pro -r CONFIG+=release ^
                        QMLLIVE_SETTINGS_VARIANT="$OPT_VARIANT" QMLLIVE_REVISION="$OPT_REVISION" ^
-                       QMLLIVE_VERSION_EXTRA="$OPT_VERSION_DESC" ^
+                       QMLLIVE_VERSION_EXTRA="$OPT_VARIANT_PRETTY" ^
                        PREFIX=\. EXAMPLES_PREFIX=\qmllive-examples CONFIG+=no_testcase_installs || exit 1
 
 call jom || exit 1

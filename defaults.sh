@@ -60,25 +60,25 @@ DEF_MSVC_SPEC=win32-msvc
 # The default release version
 # Note: This can also be configured dynamically by using the --release
 # option in buildmaster.sh
-DEF_RELEASE="yydd"
+DEF_RELEASE="x.y"
 
 # SDK release cycle
 # Note: This can also be configured dynamically by using the --rel-cycle
 # option in buildmaster.sh
-DEF_RELCYCLE="Beta"
+DEF_RELCYCLE="Stable"
 
 # SDK variant
-# Sets the default base name for the installers and the settings folder name
-# for the Qt Creator and Qt QmlLive
+# Sets the default settings folder name for the Qt Creator and Qt QmlLive
 # Note: This can also be configured dynamically by using the -v/--variant
 # option in buildmaster.sh
 DEF_VARIANT="SailfishOS-SDK"
 
-# The default version description
-# Appears in braces after Qt Creator version in the Qt Creator About dialog
-# Note: This can also be configured dynamically by using the -vd/--version-desc
+# SDK pretty variant
+# Sets the default base name for the installers and the SDK release name shown
+# in the Qt Creator and QmlLive About dialogs
+# Note: This can also be configured dynamically by using the -vp/--variant-pretty
 # option in buildmaster.sh
-DEF_VERSION_DESC="git"
+DEF_VARIANT_PRETTY="Sailfish 3 SDK"
 
 # ---------------------------------------------------------------------
 # General
