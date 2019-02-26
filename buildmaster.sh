@@ -508,7 +508,7 @@ do_build_installer() {
     fi
 
     if [[ -n $OPT_VARIANT_PRETTY ]]; then
-        options=$options" --variant-pretty $OPT_VARIANT_PRETTY"
+        options=$options" --variant-pretty '$OPT_VARIANT_PRETTY'"
     fi
 
     if [[ -n $OPT_RELEASE ]]; then
