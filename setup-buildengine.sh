@@ -130,7 +130,7 @@ startVM() {
 }
 
 installTooling() {
-    local tooling=${SAILFISH_DEFAULT_TOOLING/RELEASE/$OPT_RELEASE}
+    local tooling=$1
 
     echo "Installing tooling $tooling to $OPT_VM"
 
@@ -150,7 +150,6 @@ installTooling() {
 
 installTarget() {
     local tgt=$1
-    tgt=${tgt/RELEASE/$OPT_RELEASE}
 
     echo "Installing target $tgt to $OPT_VM"
     if [[ -n $(grep i486 <<< $tgt) ]]; then
@@ -399,6 +398,9 @@ while [[ ${1:-} ]]; do
     esac
 done
 
+SAILFISH_DEFAULT_TOOLING=${SAILFISH_DEFAULT_TOOLING/RELEASE/$OPT_RELEASE}
+SAILFISH_DEFAULT_TARGETS=${SAILFISH_DEFAULT_TARGETS//RELEASE/$OPT_RELEASE}
+
 # check if we have VBoxManage
 VBOX_VERSION=$(VBoxManage --version 2>/dev/null | cut -f -2 -d '.')
 if [[ -z $VBOX_VERSION ]]; then
@@ -501,7 +503,7 @@ createShares
 startVM
 
 # install tooling to the VM
-installTooling
+installTooling "$SAILFISH_DEFAULT_TOOLING"
 
 # install targets to the VM
 for targetname in $SAILFISH_DEFAULT_TARGETS; do
@@ -551,7 +553,8 @@ results=($PACKAGE_NAME)
 
 if [[ -z $OPT_NO_META ]]; then
     vdi_capacity=$(vdi_capacity <$INSTALL_PATH/mer.vdi)
-    $BUILD_TOOLS_SRC/make-archive-meta.sh $PACKAGE_NAME "vdi_capacity=$vdi_capacity"
+    $BUILD_TOOLS_SRC/make-archive-meta.sh $PACKAGE_NAME "vdi_capacity=$vdi_capacity" \
+        "targets=$(echo -n $SAILFISH_DEFAULT_TARGETS)"
     results+=($PACKAGE_NAME.meta)
 fi
 
