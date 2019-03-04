@@ -32,6 +32,7 @@
 #
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
@@ -222,7 +223,8 @@ ln $PWD/$VDI sailfishos.vdi
 results=($ARCHIVE_NAME)
 
 if [[ -z $OPT_NO_META ]]; then
-    $BUILD_TOOLS_SRC/make-archive-meta.sh $ARCHIVE_NAME
+    vdi_capacity=$(vdi_capacity <sailfishos.vdi)
+    $BUILD_TOOLS_SRC/make-archive-meta.sh $ARCHIVE_NAME "vdi_capacity=$vdi_capacity"
     results+=($ARCHIVE_NAME.meta)
 fi
 

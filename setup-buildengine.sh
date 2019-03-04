@@ -32,6 +32,7 @@
 #
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
@@ -299,6 +300,8 @@ Options:
    -un  | --unregister         unregister the created VM at the end of script run
    -hax | --horrible-hack      disable jolla-core.check systemCheck file
    -vm  | --vm-name <NAME>     create VM with <NAME> [$OPT_VM]
+   --no-meta                   suppress creating meta data files with
+                               'make-archive-meta.sh'
    -h   | --help               this help
 
 EOF
@@ -374,6 +377,9 @@ while [[ ${1:-} ]]; do
             ;;
         -uu | --uuser ) shift;
             OPT_UPLOAD_USER=$1; shift
+            ;;
+        --no-meta ) shift
+            OPT_NO_META=1
             ;;
         -h | --help ) shift
             usage quit
@@ -541,12 +547,20 @@ done
 # wrap it all up into 7z file for installer:
 packVM
 
+results=($PACKAGE_NAME)
+
+if [[ -z $OPT_NO_META ]]; then
+    vdi_capacity=$(vdi_capacity <$INSTALL_PATH/mer.vdi)
+    $BUILD_TOOLS_SRC/make-archive-meta.sh $PACKAGE_NAME "vdi_capacity=$vdi_capacity"
+    results+=($PACKAGE_NAME.meta)
+fi
+
 if [[ -n "$OPT_UPLOAD" ]]; then
     echo "Uploading $PACKAGE_NAME ..."
 
     # create upload dir
     ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/
-    scp $PACKAGE_NAME $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/
+    scp ${results[*]} $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/
 fi
 
 if [[ -n $OPT_UNREGISTER ]]; then
