@@ -148,9 +148,6 @@ installTooling() {
 }
 
 installTarget() {
-    # the dumps directory is created outside the VM
-    mkdir -p $INSTALL_PATH/dumps
-
     local tgt=$1
     tgt=${tgt/RELEASE/$OPT_RELEASE}
 
@@ -173,19 +170,6 @@ installTarget() {
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
         mersdk@localhost "sdk-manage --mode installer --target --install --jfdi $tgt file:///home/mersdk/share/$TARGET_FILENAME"
-
-    echo "Saving target dumps ..."
-    ssh -o UserKnownHostsFile=/dev/null \
-        -o StrictHostKeyChecking=no \
-        -p $SSH_PORT \
-        -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sb2 -t $tgt qmake -query" > $INSTALL_PATH/dumps/qmake.query.$tgt
-
-    ssh -o UserKnownHostsFile=/dev/null \
-        -o StrictHostKeyChecking=no \
-        -p $SSH_PORT \
-        -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost \
-        "sb2 -t $tgt gcc -dumpmachine" > $INSTALL_PATH/dumps/gcc.dumpmachine.$tgt
 }
 
 checkVBox() {
