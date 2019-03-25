@@ -31,8 +31,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-RELEASE="1701"
-RELEASE_CYCLE="Beta"
+RELEASE="2.0"
 CHECK="md5"
 PLATFORMS="linux-32 linux-64 mac windows"
 
@@ -44,7 +43,7 @@ fatal() {
 rename_installers() {
     echo "Renaming installers ..."
     for installer in SailfishOSSDK*; do
-	mv $installer $(sed -e "s/\(SailfishOSSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE_CYCLE-$RELEASE-Qt5-\2-offline.\4/" <<< $installer) || fatal "error renaming $installer"
+	mv $installer $(sed -e "s/\(SailfishOSSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE-\2-offline.\4/" <<< $installer) || fatal "error renaming $installer"
     done
 }
 
@@ -113,7 +112,7 @@ for ARCH in $PLATFORMS; do
 	SUFFIX="run"
     fi
 
-    FNAME=SailfishOSSDK-$RELEASE_CYCLE-$RELEASE-Qt5-$ARCH-offline.$SUFFIX
+    FNAME=SailfishOSSDK-$RELEASE-$ARCH-offline.$SUFFIX
     [[ ! -f $FNAME ]] && fatal "$FNAME not found."
     md5sum -b $FNAME > $FNAME.$CHECK
     FSIZE=$(stat -c %s $FNAME)
