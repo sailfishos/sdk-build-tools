@@ -42,8 +42,8 @@ fatal() {
 
 rename_installers() {
     echo "Renaming installers ..."
-    for installer in SailfishOSSDK*; do
-	mv $installer $(sed -e "s/\(SailfishOSSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE-\2-offline.\4/" <<< $installer) || fatal "error renaming $installer"
+    for installer in SailfishSDK*; do
+	mv $installer $(sed -e "s/\(SailfishSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE-\2-offline.\4/" <<< $installer) || fatal "error renaming $installer"
     done
 }
 
@@ -112,7 +112,7 @@ for ARCH in $PLATFORMS; do
 	SUFFIX="run"
     fi
 
-    FNAME=SailfishOSSDK-$RELEASE-$ARCH-offline.$SUFFIX
+    FNAME=SailfishSDK-$RELEASE-$ARCH-offline.$SUFFIX
     [[ ! -f $FNAME ]] && fatal "$FNAME not found."
     md5sum -b $FNAME > $FNAME.$CHECK
     FSIZE=$(stat -c %s $FNAME)
