@@ -2,7 +2,7 @@
 #
 # Creates meta data files for the given 7z archive files
 #
-# Copyright (C) 2018 Jolla Ltd.
+# Copyright (C) 2018-2019 Jolla Ltd.
 # Contact: Martin Kampas <martin.kampas@jolla.com>
 # All rights reserved.
 #
@@ -37,7 +37,7 @@ set -o pipefail
 synopsis()
 {
     cat <<END
-usage: make-archive-meta.sh <7z-archive>...
+usage: make-archive-meta.sh <7z-archive> [--] [key=value]...
 END
 }
 
@@ -55,13 +55,17 @@ usage()
     less --quit-if-one-screen <<END
 $(synopsis)
 
-Create meta data files for the given 7z archive files.
+Create meta data file for the given 7z archive file.
 
 These meta data files are required at build time by the sailfish-sdk-installer.
 
-For each passed file a corresponding meta data file will be created in the
+For the <7z-archive> file a corresponding meta data file will be created in the
 current working directory, with the same base name but the ".meta" suffix
 added.
+
+Package-specific meta data can be specified with optional "key=value" arguments
+after the <7z-archive> file name, where "key" must meet the requirements for
+a valid shell variable name.
 END
 }
 
@@ -136,6 +140,7 @@ get_compressed_size()
 get_meta_data()
 {
     local archive=$1
+    local extra_data=("${@:2}")
 
     local basename=
     basename=$(basename "$archive") || return
@@ -149,12 +154,15 @@ get_meta_data()
     local compressed_size=
     compressed_size=$(get_compressed_size "$archive") || return
 
-    printf '%s %s %s %s\n' "$basename" "$sha1" "$uncompressed_size" "$compressed_size"
+    printf '%s %s %s %s' "$basename" "$sha1" "$uncompressed_size" "$compressed_size"
+    printf ' %q' "${extra_data[@]}"
+    printf '\n'
 }
 
 main()
 {
-    local opt_archives=()
+    local opt_archive=
+    local opt_extra_data=()
 
     while (( $# > 0 )); do
         case $1 in
@@ -175,24 +183,33 @@ main()
                 return 1
                 ;;
             *)
-                opt_archives+=("$1")
+                if [[ ! $opt_archive ]]; then
+                    opt_archive=$1
+                else
+                    if ! [[ $1 == *?=* ]]; then
+                        bad_usage "Unexpected argument: $1"
+                        return 1
+                    fi
+                    if ! [[ $1 =~ ^[a-zA-Z_][a-zA-Z0-9_]*= ]]; then
+                        bad_usage "Key must be a valid shell variable identifier: $1"
+                        return 1
+                    fi
+                    opt_extra_data+=("$1")
+                fi
                 ;;
         esac
         shift
     done
 
-    opt_archives+=("$@")
+    opt_extra_data+=("$@")
 
-    if (( ${#opt_archives[@]} == 0 )); then
+    if [[ ! $opt_archive ]]; then
         bad_usage "Argument expected"
         return 1
     fi
 
-    local archive=
-    for archive in "${opt_archives[@]}"; do
-        local meta="$(basename "$archive").meta"
-        with_tmp_file "$meta" get_meta_data "$archive" || return
-    done
+    local meta="$(basename "$opt_archive").meta"
+    with_tmp_file "$meta" get_meta_data "$opt_archive" "${opt_extra_data[@]}" || return
 }
 
 main "$@"
