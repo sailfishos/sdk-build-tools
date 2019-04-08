@@ -319,6 +319,12 @@ build_unix_qtc() {
 	    make install
 	fi
 
+    if [[ $UNAME_SYSTEM == "Darwin" ]]; then
+        echo -e '#!/bin/sh\nexec "$(dirname "$0")/Qt Creator.app/Contents/MacOS/sfdk" "$@"' \
+            > bin/sfdk
+        chmod +x bin/sfdk
+    fi
+
 	make deployqt
 
     # Add icu library
