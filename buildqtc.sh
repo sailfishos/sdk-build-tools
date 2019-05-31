@@ -408,6 +408,13 @@ build_windows_qtc() {
 	local opengl32sw_lib="opengl32sw-32.7z"
 	curl -s -f -o $opengl32sw_lib http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/opengl/$opengl32sw_lib
 
+    local pkg_config_libs="pkg-config_0.26-1_win32.zip \
+        gettext-runtime_0.18.1.1-2_win32.zip \
+        glib_2.28.8-1_win32.zip"
+    for lib in $pkg_config_libs; do
+        curl -s -f -O http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/pkg-config/$lib
+    done
+
         # create the build script for windows
 	cat <<EOF > build-windows.bat
 @echo off
@@ -452,6 +459,9 @@ rem copy all the necessary libraries to the install directory
 copy %QTDIR%\bin\libEGL.dll %INSTALL_ROOT%\bin || exit 1
 copy %QTDIR%\bin\libGLESv2*.dll %INSTALL_ROOT%\bin || exit 1
 call 7z x -o%INSTALL_ROOT%\bin $opengl32sw_lib
+for %%i in ($pkg_config_libs) do (
+    call 7z x -o%INSTALL_ROOT% %%i < NUL || exit 1
+)
 copy "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\bin\D3Dcompiler_*.dll" %INSTALL_ROOT%\bin || exit 1
 pushd "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\redist\x86\microsoft.vc*.crt" ^
     && copy "*.dll" %INSTALL_ROOT%\bin ^

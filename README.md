@@ -116,9 +116,12 @@ shell provided by a combination of [msysgit][3] and MinGW environments. Also [7-
 
 Other build requirements include `perl`, `python` and `ruby` and they are documented [here][7].
 
+pkg-config and its dependencies (check buildqtc.sh) can be downloaded from locations mentioned [here][8].
+
 [2]: http://www.visualstudio.com/en-us/downloads
 [3]: http://code.google.com/p/msysgit/
 [4]: http://sourceforge.net/projects/mingw/files/Installer/
 [5]: http://www.7-zip.org/
 [6]: https://bugreports.qt-project.org/browse/QTBUG-26844
 [7]: http://qt-project.org/doc/qt-5/windows-requirements.html
+[8]: https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in-windows
