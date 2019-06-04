@@ -207,7 +207,7 @@ done
 rm -f $INSTALL_PATH/*
 
 # create Sailfish documentation package
-for NAME in $(ls $OPT_DOCDIR/sail*.qch $OPT_DOCDIR/lipstick*.qch $OPT_DOCDIR/nemo*.qch); do
+for NAME in $(ls $OPT_DOCDIR/{sdk-,*sailfish,lipstick,nemo}*.qch); do
     if ! add_filter "$NAME" "$DEF_DOCS_FILTER_ATTRIBUTE" "$DEF_DOCS_FILTER_NAME"; then
         failure "Failed to add filter to '$NAME'"
     fi
