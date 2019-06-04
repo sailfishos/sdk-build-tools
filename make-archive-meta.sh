@@ -155,7 +155,9 @@ get_meta_data()
     compressed_size=$(get_compressed_size "$archive") || return
 
     printf '%s %s %s %s' "$basename" "$sha1" "$uncompressed_size" "$compressed_size"
-    printf ' %q' "${extra_data[@]}"
+    if [[ ${extra_data[@]+"${extra_data[@]}"} ]]; then
+        printf ' %q' ${extra_data[@]+"${extra_data[@]}"}
+    fi
     printf '\n'
 }
 
@@ -209,7 +211,7 @@ main()
     fi
 
     local meta="$(basename "$opt_archive").meta"
-    with_tmp_file "$meta" get_meta_data "$opt_archive" "${opt_extra_data[@]}" || return
+    with_tmp_file "$meta" get_meta_data "$opt_archive" ${opt_extra_data[@]+"${opt_extra_data[@]}"} || return
 }
 
 main "$@"
