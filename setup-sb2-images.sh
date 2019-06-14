@@ -390,6 +390,11 @@ main()
                 --relative-to="$OPT_UPLOAD_PATH/$OPT_UPLOAD_DIR" "$OPT_SHARED_PATH")
             _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" "test -e $OPT_TARGETS_UPLOAD_PATH \
                 || ln -s $target $OPT_TARGETS_UPLOAD_PATH" || return
+            # Remove possibly existing targets.json to avoid being noisy updating it twice
+            _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" "rm -f $OPT_TARGETS_UPLOAD_PATH/targets.json"
+            echo "Looking for possible unused images on the upload host..." >&2
+            _ "$BUILD_TOOLS_SRC/prune-shared.sh" --uhost "$OPT_UPLOAD_HOST" \
+                --uuser "$OPT_UPLOAD_USER" --upath "$OPT_UPLOAD_PATH" "$OPT_SHARED_PATH"
         fi
         _ scp "${results[@]}" "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_TARGETS_UPLOAD_PATH/" || return
         if [[ ! $OPT_DRY_RUN ]]; then

@@ -245,6 +245,9 @@ if [[ -n "$OPT_UPLOAD" ]]; then
             $OPT_SHARED_PATH)
         ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST test -e $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators \
             "||" ln -s $target $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators || return
+        echo "Looking for possible unused images on the upload host..." >&2
+        $BUILD_TOOLS_SRC/prune-shared.sh --uhost "$OPT_UPLOAD_HOST" \
+            --uuser "$OPT_UPLOAD_USER" --upath "$OPT_UPLOAD_PATH" "$OPT_SHARED_PATH"
     fi
     scp ${results[*]} $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators/
 fi
