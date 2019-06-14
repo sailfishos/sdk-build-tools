@@ -254,10 +254,10 @@ update_targets_json()
 {
     local real_upload_path=
     real_upload_path=$(ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" \
-        readlink --canonicalize "$OPT_UPLOAD_PATH") || return
+        "readlink --canonicalize $OPT_UPLOAD_PATH") || return
     local real_targets_dir=
     real_targets_dir=$(ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" \
-        readlink --canonicalize "$OPT_TARGETS_UPLOAD_PATH") || return
+        "readlink --canonicalize $OPT_TARGETS_UPLOAD_PATH") || return
     local relative_download_path=
     relative_download_path=${real_targets_dir#$real_upload_path/}
 
@@ -269,7 +269,7 @@ update_targets_json()
 
     local target_images=
     target_images=$(ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" \
-        find "$OPT_TARGETS_UPLOAD_PATH/" -name '*-Sailfish_SDK_Target-*.7z' -printf '%f\\n') || return
+        "find $OPT_TARGETS_UPLOAD_PATH/ -name '*-Sailfish_SDK_Target-*.7z' -printf '%f\\n'") || return
 
     if [[ ! $target_images ]]; then
         fatal "No images found in the upload location. Cannot update targets.json"
@@ -465,10 +465,10 @@ main()
         fi
         echo "Uploading..." >&2
         if [[ $OPT_NO_SHARED ]]; then
-            _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" mkdir -p "$OPT_TARGETS_UPLOAD_PATH" || return
+            _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" "mkdir -p $OPT_TARGETS_UPLOAD_PATH" || return
         else
-            _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" test -e "$OPT_TARGETS_UPLOAD_PATH" \
-                "||" ln -s "$OPT_SHARED_PATH" "$OPT_TARGETS_UPLOAD_PATH" || return
+            _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" "test -e $OPT_TARGETS_UPLOAD_PATH \
+                || ln -s $OPT_SHARED_PATH $OPT_TARGETS_UPLOAD_PATH" || return
         fi
         _ scp "${results[@]}" "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_TARGETS_UPLOAD_PATH/" || return
         if [[ ! $OPT_DRY_RUN ]]; then
