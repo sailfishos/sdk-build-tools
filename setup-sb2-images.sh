@@ -89,7 +89,8 @@ OPTIONS
         See '--upload'.
 
     --shared-path <path>
-        See '--upload'. Defaults to [$DEF_SHARED_SB2_IMAGES_PATH]
+        See '--upload'. Relative <path> will be resolved relatively to
+        '--upath'. Defaults to [$DEF_SHARED_SB2_IMAGES_PATH]
 
     -u, --upload <dir>
         Upload results. <dir> is the root directory for this SDK build,
@@ -320,6 +321,10 @@ parse_opts()
         shift
     done
 
+    if [[ $OPT_SHARED_PATH && $OPT_SHARED_PATH != /* ]]; then
+        OPT_SHARED_PATH=$OPT_UPLOAD_PATH/$OPT_SHARED_PATH
+    fi
+
     OPT_TARGETS_UPLOAD_PATH=$OPT_UPLOAD_PATH/$OPT_UPLOAD_DIR/$TARGETS_SUBDIR
 
     OPT_IMAGES+=("$@")
@@ -381,8 +386,10 @@ main()
         if [[ $OPT_NO_SHARED ]]; then
             _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" "mkdir -p $OPT_TARGETS_UPLOAD_PATH" || return
         else
+            local target=$(realpath --canonicalize-missing \
+                --relative-to="$OPT_UPLOAD_PATH/$OPT_UPLOAD_DIR" "$OPT_SHARED_PATH")
             _ ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" "test -e $OPT_TARGETS_UPLOAD_PATH \
-                || ln -s $OPT_SHARED_PATH $OPT_TARGETS_UPLOAD_PATH" || return
+                || ln -s $target $OPT_TARGETS_UPLOAD_PATH" || return
         fi
         _ scp "${results[@]}" "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_TARGETS_UPLOAD_PATH/" || return
         if [[ ! $OPT_DRY_RUN ]]; then
