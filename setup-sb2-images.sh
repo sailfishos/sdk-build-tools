@@ -32,6 +32,7 @@
 #
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 set -o nounset
 set -o pipefail
@@ -195,93 +196,6 @@ recompress()
 
     printf '%s\n' "${files[@]}" \
         |xargs_ -L1 bash -c 'recompress_worker "$@"' bash "${recompress_worker_initial_args[@]}"
-}
-
-target_image_to_target_name()
-{
-    local name=$1
-    name=${name%.tar.7z}
-    name=${name/-Sailfish_SDK_Target-/-}
-    name=${name//_/}
-    printf '%s\n' "$name"
-}
-
-target_image_to_tooling_image()
-{
-    local name=$1
-    name=${name%-Sailfish_SDK_Target-*}-Sailfish_SDK_Tooling-i486.tar.7z
-    printf '%s\n' "$name"
-}
-
-target_name_to_tooling_name()
-{
-    local name=$1
-    name=${name%-*}
-    printf '%s\n' "$name"
-}
-
-make_targets_json()
-{
-    local url_prefix=$1
-    local target_images=$2
-
-    target_images=$(sort -nr <<<"$target_images")
-
-    cat <<END || return
-# This file is used by the SDK webapp to present a list of pre-selected targets for
-# the Mer SDK to offer for installation
-#
-[
-END
-    local target_image=
-    for target_image in $target_images; do
-        local tooling_image=$(target_image_to_tooling_image "$target_image")
-        local target_name=$(target_image_to_target_name "$target_image")
-        local tooling_name=$(target_name_to_tooling_name "$target_name")
-
-        cat <<END || return
-    { "name": "$target_name",
-      "url": "$url_prefix/$target_image",
-      "tooling_name": "$tooling_name",
-      "tooling_url": "$url_prefix/$tooling_image" },
-END
-    done |sed '$s/,$//'
-
-    echo "]"
-}
-
-update_targets_json()
-{
-    local real_upload_path=
-    real_upload_path=$(ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" \
-        "readlink --canonicalize $OPT_UPLOAD_PATH") || return
-    local real_targets_dir=
-    real_targets_dir=$(ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" \
-        "readlink --canonicalize $OPT_TARGETS_UPLOAD_PATH") || return
-    local relative_download_path=
-    relative_download_path=${real_targets_dir#$real_upload_path/}
-
-    # real_targets_dir not under real_upload_path?
-    if [[ $relative_download_path == /* ]]; then
-        fatal "Cannot determine relative download path"
-        return 1
-    fi
-
-    local target_images=
-    target_images=$(ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" \
-        "find $OPT_TARGETS_UPLOAD_PATH/ -name '*-Sailfish_SDK_Target-*.7z' -printf '%f\\n'") || return
-
-    if [[ ! $target_images ]]; then
-        fatal "No images found in the upload location. Cannot update targets.json"
-        return 1
-    fi
-
-    local url_prefix=$DEF_URL_PREFIX/$relative_download_path
-    local targets_json=
-    targets_json=$(make_targets_json "$url_prefix" "$target_images") || return
-
-    ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" "tee $OPT_TARGETS_UPLOAD_PATH/targets.json >/dev/null" \
-        <<<"$targets_json" || return
 }
 
 set_defaults()
@@ -473,7 +387,7 @@ main()
         _ scp "${results[@]}" "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_TARGETS_UPLOAD_PATH/" || return
         if [[ ! $OPT_DRY_RUN ]]; then
             echo "Updating targets.json..." >&2
-            update_targets_json || return
+            update_remote_targets_json "$OPT_TARGETS_UPLOAD_PATH" || return
         else
             echo "Would update targets.json" >&2
         fi
