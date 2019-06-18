@@ -73,7 +73,8 @@ Options:
                               of the symbolic link. The default shared location
                               can be overriden with '--shared-path'.
    --no-shared                see '--upload'
-   --shared-path <PATH>       see '--upload' [$DEF_SHARED_EMULATORS_PATH]
+   --shared-path <PATH>       see '--upload'. Relative <PATH> will be resolved
+                              relatively to '--upath' [$DEF_SHARED_EMULATORS_PATH]
    -uh | --uhost <HOST>       override default upload host
    -up | --upath <PATH>       override default upload path
    -uu | --uuser <USER>       override default upload user
@@ -162,6 +163,10 @@ if [[ -z $OPT_RELEASE ]]; then
     exit 1
 fi
 
+if [[ $OPT_SHARED_PATH && $OPT_SHARED_PATH != /* ]]; then
+    OPT_SHARED_PATH=$OPT_UPLOAD_PATH/$OPT_SHARED_PATH
+fi
+
 ARCHIVE_NAME=$OPT_BASENAME-$OPT_RELEASE-Sailfish_SDK_Emulator.7z
 
 if [[ -n $OPT_VDI ]]; then
@@ -236,8 +241,13 @@ if [[ -n "$OPT_UPLOAD" ]]; then
     if [[ -n $OPT_NO_SHARED ]]; then
         ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators
     else
+        target=$(realpath --canonicalize-missing --relative-to=$OPT_UPLOAD_PATH/$OPT_UL_DIR \
+            $OPT_SHARED_PATH)
         ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST test -e $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators \
-            "||" ln -s $OPT_SHARED_PATH $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators || return
+            "||" ln -s $target $OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators || return
+        echo "Looking for possible unused images on the upload host..." >&2
+        $BUILD_TOOLS_SRC/prune-shared.sh --uhost "$OPT_UPLOAD_HOST" \
+            --uuser "$OPT_UPLOAD_USER" --upath "$OPT_UPLOAD_PATH" "$OPT_SHARED_PATH"
     fi
     scp ${results[*]} $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators/
 fi
