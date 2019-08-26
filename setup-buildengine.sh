@@ -2,8 +2,9 @@
 #
 # SDK build engine creation script
 #
-# Copyright (C) 2014 Jolla Oy
-# Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
+# Copyright (C) 2014-2019 Jolla Oy
+# Copyright (C) 2019 Open Mobile Platform LLC.
+# Contact: Ville Nummela <ville.nummela@jolla.com>
 # All rights reserved.
 #
 # You may use this file under the terms of BSD license as follows:
@@ -54,8 +55,9 @@ SAILFISH_DEFAULT_TOOLING="${DEF_TARGET_BASENAME}-RELEASE"
 SAILFISH_DEFAULT_TARGETS="${DEF_TARGET_BASENAME}-RELEASE-i486
                           ${DEF_TARGET_BASENAME}-RELEASE-armv7hl"
 
-# wrap it all up into this file
-PACKAGE_NAME=mersdk.7z
+# wrap it all up into these files
+PACKAGE_NAME=buildengine-vbox.7z
+DOCKER_PACKAGE_NAME=buildengine-docker.7z
 
 fatal() {
     echo "FAIL: $@"
@@ -172,6 +174,24 @@ installTarget() {
         mersdk@localhost "sdk-manage --mode installer --target --install --jfdi $tgt file:///home/mersdk/share/$TARGET_FILENAME"
 }
 
+createTar() {
+    echo "Mounting vdi ..."
+    sudo modprobe nbd max_part=16
+    sudo qemu-nbd -c /dev/nbd0 mersdk/mer.vdi
+    sleep 1 
+    if [[ ! -e /dev/nbd0p1 ]]; then
+        fatal "/dev/nbd0p1 does not exist!"
+    fi
+    mkdir -p mer.d
+    sudo mount /dev/nbd0p1 mer.d
+    echo "Changing permissions of /srv/mer ..."
+    sudo chmod -R a+rwX mer.d/srv/mer
+    echo "Compressing filesystem ..."
+    sudo tar -C mer.d -cf mersdk/sailfish.tar --one-file-system --numeric-owner .
+    sudo umount mer.d
+    sudo qemu-nbd -d /dev/nbd0
+}
+
 checkVBox() {
     # check that VBox is 4.3 or newer - affects the sataport count.
     VBOX_TOCHECK="4.3"
@@ -185,9 +205,15 @@ checkVBox() {
 
 initPaths() {
     # anything under this directory will end up in the package
-    INSTALL_PATH=$PWD/mersdk
+    RELATIVE_INSTALL_PATH=mersdk
+    INSTALL_PATH=$PWD/$RELATIVE_INSTALL_PATH
     rm -rf $INSTALL_PATH
     mkdir -p $INSTALL_PATH
+    # anything under this directory will end up in the docker package
+    DOCKER_PREFIX=$PWD/docker
+    DOCKER_INSTALL_PATH=$DOCKER_PREFIX/$RELATIVE_INSTALL_PATH
+    rm -rf $DOCKER_INSTALL_PATH
+    mkdir -p $DOCKER_INSTALL_PATH
     # copy refresh script to an accessible path, this needs to be
     # removed later
     cp -a $BUILD_TOOLS_SRC/refresh-sdk-repos.sh $INSTALL_PATH
@@ -235,7 +261,9 @@ packVM() {
     VBoxManage controlvm "$OPT_VM" poweroff 2>/dev/null
 
     # remove target archive files
-    rm -f $INSTALL_PATH/*.tar.bz2
+    rm -f $INSTALL_PATH/$OPT_TOOLING
+    rm -f $INSTALL_PATH/$OPT_TARGET_ARM
+    rm -f $INSTALL_PATH/$OPT_TARGET_I486
 
     # remove stuff that is not meant to end up in the package
     rm -f $INSTALL_PATH/.bash_history $INSTALL_PATH/refresh-sdk-repos.sh
@@ -246,7 +274,25 @@ packVM() {
 
     if [[ ! $OPT_NO_COMPRESSION ]]; then
         # and 7z the mersdk with chosen compression
-	7z a -mx=$OPT_COMPRESSION $PACKAGE_NAME $INSTALL_PATH/
+        7z a -mx=$OPT_COMPRESSION $PACKAGE_NAME $INSTALL_PATH/
+    fi
+}
+
+packDocker() {
+    echo "Creating Docker 7z package..."
+     # move the docker tarball to docker directory
+    mv $INSTALL_PATH/sailfish.tar $DOCKER_INSTALL_PATH/
+    cp Dockerfile $DOCKER_INSTALL_PATH/
+
+    echo "copying $INSTALL_PATH/targets => $DOCKER_INSTALL_PATH/targets"
+    cp -R $INSTALL_PATH/targets $DOCKER_INSTALL_PATH/targets
+
+    if [[ ! $OPT_NO_COMPRESSION ]]; then
+        # and 7z the mersdk with chosen compression
+        pushd $DOCKER_PREFIX
+        7z a -mx=$OPT_COMPRESSION $DOCKER_PACKAGE_NAME $RELATIVE_INSTALL_PATH
+        popd
+        mv $DOCKER_PREFIX/$DOCKER_PACKAGE_NAME .
     fi
 }
 
@@ -549,17 +595,26 @@ done
 # wrap it all up into 7z file for installer:
 packVM
 
+# start the VM
+createTar
+
+packDocker
+
 results=($PACKAGE_NAME)
+results+=($DOCKER_PACKAGE_NAME)
 
 if [[ -z $OPT_NO_META ]]; then
     vdi_capacity=$(vdi_capacity <$INSTALL_PATH/mer.vdi)
     $BUILD_TOOLS_SRC/make-archive-meta.sh $PACKAGE_NAME "vdi_capacity=$vdi_capacity" \
         "targets=$(echo -n $SAILFISH_DEFAULT_TARGETS)"
     results+=($PACKAGE_NAME.meta)
+    $BUILD_TOOLS_SRC/make-archive-meta.sh $DOCKER_PACKAGE_NAME \
+        "targets=$(echo -n $SAILFISH_DEFAULT_TARGETS)"
+    results+=($DOCKER_PACKAGE_NAME.meta)
 fi
 
 if [[ -n "$OPT_UPLOAD" ]]; then
-    echo "Uploading $PACKAGE_NAME ..."
+    echo "Uploading $PACKAGE_NAME and $DOCKER_PACKAGE_NAME ..."
 
     # create upload dir
     ssh $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST mkdir -p $OPT_UPLOAD_PATH/$OPT_UL_DIR/
