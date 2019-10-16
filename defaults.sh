@@ -198,7 +198,8 @@ DEF_DOCS_FILTER_NAME="Sailfish OS"
 # ---------------------------------------------------------------------
 # Build Engine
 
-# The default base name for the SDK targets
+# The default base name for the SDK targets. The '--target-basename' option to setup-buildengine.sh 
+# overrides this.
 # Note: This will result to targets and kits named as e.g. SailfishOS-<version>-<arch>
 DEF_TARGET_BASENAME="SailfishOS"
 

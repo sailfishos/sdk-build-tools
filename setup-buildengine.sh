@@ -46,13 +46,14 @@ OPT_TARGET_ARM="Jolla-latest-Sailfish_SDK_Target-armv7hl.tar.bz2"
 OPT_TARGET_I486="Jolla-latest-Sailfish_SDK_Target-i486.tar.bz2"
 OPT_VM="MerSDK.build"
 OPT_VDI=
+OPT_TARGET_BASENAME=${DEF_TARGET_BASENAME}
 
 # some static settings for the VM
 SSH_PORT=2222
 HTTP_PORT=8080
-SAILFISH_DEFAULT_TOOLING="${DEF_TARGET_BASENAME}-RELEASE"
-SAILFISH_DEFAULT_TARGETS="${DEF_TARGET_BASENAME}-RELEASE-i486
-                          ${DEF_TARGET_BASENAME}-RELEASE-armv7hl"
+SAILFISH_DEFAULT_TOOLING="BASENAME-RELEASE"
+SAILFISH_DEFAULT_TARGETS="BASENAME-RELEASE-i486
+                          BASENAME-RELEASE-armv7hl"
 
 # wrap it all up into this file
 PACKAGE_NAME=mersdk.7z
@@ -301,6 +302,8 @@ Options:
    -vm  | --vm-name <NAME>     create VM with <NAME> [$OPT_VM]
    --no-meta                   suppress creating meta data files with
                                'make-archive-meta.sh'
+   --target-basename <NAME>    base name for tooling and targets, 
+                               must use alphanumeric characters only [$OPT_TARGET_BASENAME]
    -h   | --help               this help
 
 EOF
@@ -392,14 +395,18 @@ while [[ ${1:-} ]]; do
         unregister ) shift
             OPT_DO_UNREGISTER=1
             ;;
+        --target-basename ) shift
+            OPT_TARGET_BASENAME=$1; shift
+            [[ -z $OPT_TARGET_BASENAME ]] && fatal "empty target-basename option given"
+            ;;
         * )
             usage quit
             ;;
     esac
 done
 
-SAILFISH_DEFAULT_TOOLING=${SAILFISH_DEFAULT_TOOLING/RELEASE/$OPT_RELEASE}
-SAILFISH_DEFAULT_TARGETS=${SAILFISH_DEFAULT_TARGETS//RELEASE/$OPT_RELEASE}
+SAILFISH_DEFAULT_TOOLING=${SAILFISH_DEFAULT_TOOLING/BASENAME-RELEASE/$OPT_TARGET_BASENAME-$OPT_RELEASE}
+SAILFISH_DEFAULT_TARGETS=${SAILFISH_DEFAULT_TARGETS//BASENAME-RELEASE/$OPT_TARGET_BASENAME-$OPT_RELEASE}
 
 # check if we have VBoxManage
 VBOX_VERSION=$(VBoxManage --version 2>/dev/null | cut -f -2 -d '.')
