@@ -50,7 +50,7 @@
 DEF_WIN_ICU_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/icu/icu4c-4_8_1_1-Win32-msvc10.zip"
 
 # The Qt version to use
-DEF_QT_VER=5.9.7
+DEF_QT_VER=5.12.5
 
 # The Microsoft Visual C++ version to use
 DEF_MSVC_VER=2015
@@ -103,12 +103,12 @@ BUILD_TOOLS_SRC=$(cd "$(dirname "$0")" && pwd)
 # Qt
 
 # Source directory
-DEF_QT_SOURCE_PACKAGE=qt-everywhere-opensource-src-$DEF_QT_VER
+DEF_QT_SOURCE_PACKAGE=qt-everywhere-src-$DEF_QT_VER
 DEF_QT_SRC_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     # Dynamic Qt build directory on Linux and MacOS
-    DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build
+    DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build-rpathpadrpathpad
     # Static Qt build directory on Linux and MacOS
     DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build
 else

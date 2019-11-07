@@ -41,13 +41,13 @@ export LC_ALL=C
 
 # common options for unix/windows dynamic build
 # the dynamic build is used when building Qt Creator
-COMMON_CONFIG_OPTIONS="-release -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -no-sql-mysql -no-sql-odbc -developer-build -confirm-license -opensource -skip qtandroidextras"
+COMMON_CONFIG_OPTIONS="-release -nomake examples -nomake tests -no-qml-debug -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -no-sql-mysql -no-sql-odbc -developer-build -confirm-license -opensource -skip qtandroidextras -skip qtconnectivity"
 
 LINUX_CONFIG_OPTIONS="-no-eglfs -no-linuxfb -no-kms"
 
 # add these to the COMMON_CONFIG_OPTIONS for static build
 # the static build is required to build Qt Installer Framework
-COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d -skip qtwebengine -skip qtwebkit"
+COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d -skip qtwebengine -skip qtconnectivity"
 
 build_dynamic_qt_windows() {
     [[ -z $OPT_DYNAMIC ]] && return
@@ -76,7 +76,7 @@ EOF
 
 configure_static_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -xcb -xkbcommon -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
     else
         $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -no-gstreamer -no-warnings-are-errors
     fi
@@ -84,7 +84,7 @@ configure_static_qt5() {
 
 configure_dynamic_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -qt-xcb -qt-xkbcommon -no-gstreamer -I $DEF_ICU_INSTALL_DIR/include -L $DEF_ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -xcb -xkbcommon -no-gstreamer -I $DEF_ICU_INSTALL_DIR/include -L $DEF_ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
     else
         $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -no-gstreamer
     fi
