@@ -1,0 +1,91 @@
+From 0f6439532b6d4ef4eff0ba61ba5110cc6ce3ea16 Mon Sep 17 00:00:00 2001
+From: Martin Kampas <martin.kampas@jolla.com>
+Date: Thu, 21 Nov 2019 10:57:32 +0100
+Subject: [PATCH] lupdate: Process .mjs files
+
+---
+ src/linguist/lupdate/lupdate.h        |  1 +
+ src/linguist/lupdate/main.cpp         |  4 +++-
+ src/linguist/lupdate/qdeclarative.cpp | 14 ++++++++++----
+ 3 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/src/linguist/lupdate/lupdate.h b/src/linguist/lupdate/lupdate.h
+index 5dbd0e21..f8eda621 100644
+--- a/src/linguist/lupdate/lupdate.h
++++ b/src/linguist/lupdate/lupdate.h
+@@ -74,6 +74,7 @@ bool loadUI(Translator &translator, const QString &filename, ConversionData &cd)
+ 
+ #ifndef QT_NO_QML
+ bool loadQScript(Translator &translator, const QString &filename, ConversionData &cd);
++bool loadQScriptModule(Translator &translator, const QString &filename, ConversionData &cd);
+ bool loadQml(Translator &translator, const QString &filename, ConversionData &cd);
+ #endif
+ 
+diff --git a/src/linguist/lupdate/main.cpp b/src/linguist/lupdate/main.cpp
+index 6c4e3db9..fd085b69 100644
+--- a/src/linguist/lupdate/main.cpp
++++ b/src/linguist/lupdate/main.cpp
+@@ -510,6 +510,8 @@ static void processSources(Translator &fetchedTor,
+         else if (it->endsWith(QLatin1String(".js"), Qt::CaseInsensitive)
+                  || it->endsWith(QLatin1String(".qs"), Qt::CaseInsensitive))
+             loadQScript(fetchedTor, *it, cd);
++        else if (it->endsWith(QLatin1String(".mjs"), Qt::CaseInsensitive))
++            loadQScriptModule(fetchedTor, *it, cd);
+         else if (it->endsWith(QLatin1String(".qml"), Qt::CaseInsensitive))
+             loadQml(fetchedTor, *it, cd);
+ #else
+@@ -669,7 +671,7 @@ int main(int argc, char **argv)
+ #endif // Q_OS_WIN32
+ #endif
+ 
+-    m_defaultExtensions = QLatin1String("java,jui,ui,c,c++,cc,cpp,cxx,ch,h,h++,hh,hpp,hxx,js,qs,qml,qrc");
++    m_defaultExtensions = QLatin1String("java,jui,ui,c,c++,cc,cpp,cxx,ch,h,h++,hh,hpp,hxx,js,mjs,qs,qml,qrc");
+ 
+     QStringList args = app.arguments();
+     QStringList tsFileNames;
+diff --git a/src/linguist/lupdate/qdeclarative.cpp b/src/linguist/lupdate/qdeclarative.cpp
+index 7a453aa3..90215daa 100644
+--- a/src/linguist/lupdate/qdeclarative.cpp
++++ b/src/linguist/lupdate/qdeclarative.cpp
+@@ -448,7 +448,8 @@ private:
+     int lastOffset;
+ };
+ 
+-static bool load(Translator &translator, const QString &filename, ConversionData &cd, bool qmlMode)
++static bool load(Translator &translator, const QString &filename, ConversionData &cd, bool qmlMode,
++        bool mjsMode)
+ {
+     cd.m_sourceFileName = filename;
+     QFile file(filename);
+@@ -474,7 +475,7 @@ static bool load(Translator &translator, const QString &filename, ConversionData
+     lexer.setCode(code, /*line = */ 1, qmlMode);
+     driver.setLexer(&lexer);
+ 
+-    if (qmlMode ? parser.parse() : parser.parseProgram()) {
++    if (qmlMode ? parser.parse() : mjsMode ? parser.parseModule() : parser.parseProgram()) {
+         FindTrCalls trCalls(&driver, cd);
+ 
+         //find all tr calls in the code
+@@ -489,12 +490,17 @@ static bool load(Translator &translator, const QString &filename, ConversionData
+ 
+ bool loadQml(Translator &translator, const QString &filename, ConversionData &cd)
+ {
+-    return load(translator, filename, cd, /*qmlMode=*/ true);
++    return load(translator, filename, cd, /*qmlMode=*/ true, /*mjsMode=*/ false);
+ }
+ 
+ bool loadQScript(Translator &translator, const QString &filename, ConversionData &cd)
+ {
+-    return load(translator, filename, cd, /*qmlMode=*/ false);
++    return load(translator, filename, cd, /*qmlMode=*/ false, /*mjsMode=*/ false);
++}
++
++bool loadQScriptModule(Translator &translator, const QString &filename, ConversionData &cd)
++{
++    return load(translator, filename, cd, /*qmlMode=*/ false, /*mjsMode=*/ true);
+ }
+ 
+ QT_END_NAMESPACE
+-- 
+2.24.0
+
