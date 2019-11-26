@@ -84,7 +84,7 @@ DEF_COPY_FROM_VARIANT="SailfishOS-SDK"
 # in the Qt Creator and QmlLive About dialogs
 # Note: This can also be configured dynamically by using the -vp/--variant-pretty
 # option in buildmaster.sh
-DEF_VARIANT_PRETTY="Sailfish 3 SDK"
+DEF_VARIANT_PRETTY="Sailfish SDK"
 
 # ---------------------------------------------------------------------
 # General
