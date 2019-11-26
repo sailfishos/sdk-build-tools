@@ -73,6 +73,12 @@ DEF_RELCYCLE="Stable"
 # option in buildmaster.sh
 DEF_VARIANT="SailfishOS-SDK"
 
+# Older SDK variant to copy settings from
+# See also DEF_VARIANT
+# Note: This can also be configured dynamically by using the --copy-from-variant
+# option in buildmaster.sh
+DEF_COPY_FROM_VARIANT=""
+
 # SDK pretty variant
 # Sets the default base name for the installers and the SDK release name shown
 # in the Qt Creator and QmlLive About dialogs

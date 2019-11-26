@@ -40,6 +40,7 @@ OPT_REPO_URL=''
 
 OPT_VARIANT=$DEF_VARIANT
 OPT_VARIANT_PRETTY=$DEF_VARIANT_PRETTY
+OPT_COPY_FROM_VARIANT=$DEF_COPY_FROM_VARIANT
 OPT_RELEASE=$DEF_RELEASE
 OPT_RELCYCLE=$DEF_RELCYCLE
 OPT_INSTALLER_PROFILE=offline
@@ -94,6 +95,8 @@ Options:
    -vp  | --variant-pretty <STRING>  SDK pretty variant [$OPT_VARIANT_PRETTY] (appears
                                 in the installer name and in braces after Qt Creator
                                 or QmlLive version in Qt Creator/QmlLive About dialog)
+          --copy-from-variant <STRING>  Copy settings from the older variant <STRING>
+                                if found [$OPT_COPY_FROM_VARIANT]
         | --branch <STRING>     Build the given branch instead of "master" if it exists.
                                 Multiple branches can be given, separated with spaces.
                                 Tags and remote tracking branches are also accepted.
@@ -178,6 +181,9 @@ while [[ ${1:-} ]]; do
             ;;
         -v | --variant ) shift
             OPT_VARIANT=$1; shift
+            ;;
+        --copy-from-variant ) shift
+            OPT_COPY_FROM_VARIANT=$1; shift
             ;;
         --branch ) shift
             OPT_BRANCH=$1; shift
@@ -293,6 +299,7 @@ Summary of chosen actions:
  Use alt. branch ... [$OPT_BRANCH]
  SDK Config Variant  [$OPT_VARIANT]
  SDK Pretty Variant  [$OPT_VARIANT_PRETTY]
+ SDK Copy Variant .. [$OPT_COPY_FROM_VARIANT]
  SDK Release Version [$OPT_RELEASE]
  SDK Release Cycle   [$OPT_RELCYCLE]
 EOF
@@ -455,6 +462,10 @@ do_build_qtc() {
 
     if [[ -n $OPT_VARIANT_PRETTY ]]; then
         options=$options" --variant-pretty '$OPT_VARIANT_PRETTY'"
+    fi
+
+    if [[ -n $OPT_COPY_FROM_VARIANT ]]; then
+        options=$options" --copy-from-variant $OPT_COPY_FROM_VARIANT"
     fi
 
     if [[ -z $OPT_GDB_DEFAULT ]]; then
