@@ -71,13 +71,13 @@ DEF_RELCYCLE="Stable"
 # Sets the default settings folder name for the Qt Creator and Qt QmlLive
 # Note: This can also be configured dynamically by using the -v/--variant
 # option in buildmaster.sh
-DEF_VARIANT="SailfishOS-SDK"
+DEF_VARIANT="SailfishSDK"
 
 # Older SDK variant to copy settings from
 # See also DEF_VARIANT
 # Note: This can also be configured dynamically by using the --copy-from-variant
 # option in buildmaster.sh
-DEF_COPY_FROM_VARIANT=""
+DEF_COPY_FROM_VARIANT="SailfishOS-SDK"
 
 # SDK pretty variant
 # Sets the default base name for the installers and the SDK release name shown
