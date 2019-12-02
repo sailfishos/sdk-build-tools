@@ -43,7 +43,10 @@ fatal() {
 rename_installers() {
     echo "Renaming installers ..."
     for installer in SailfishSDK*; do
-	mv $installer $(sed -e "s/\(SailfishSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE-\2-offline.\4/" <<< $installer) || fatal "error renaming $installer"
+        local new_name=$(sed \
+                -e "s/\(SailfishSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE-\2-offline.\4/" \
+                -e "s/linux-/linux/" <<< $installer)
+        mv "$installer" "$new_name" || fatal "error renaming $installer"
     done
 }
 
