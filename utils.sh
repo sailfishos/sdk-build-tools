@@ -70,7 +70,7 @@ make_targets_json()
     local url_prefix=$1
     local target_images=$2
 
-    target_images=$(sort -nr <<<"$target_images")
+    target_images=$(sort --version-sort --reverse <<<"$target_images")
 
     cat <<END || return
 # This file is used by the SDK webapp to present a list of pre-selected targets for
