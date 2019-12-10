@@ -43,6 +43,7 @@ QTC_BUILD_DIR=$DEF_QTC_BUILD_DIR
 QTC_INSTALL_ROOT=$DEF_QTC_INSTALL_ROOT
 OPT_ICU_PATH=$DEF_ICU_INSTALL_DIR
 OPT_VARIANT=$DEF_VARIANT
+OPT_COPY_FROM_VARIANT=$DEF_COPY_FROM_VARIANT
 
 fail() {
     echo "FAIL: $@"
@@ -65,6 +66,8 @@ Options:
    -v   | --variant <STRING>   Use <STRING> as the build variant [$OPT_VARIANT]
    -vp  | --variant-pretty <STRING>  Use <STRING> as the pretty variant (appears in braces
                                after Qt Creator version in About dialog)
+          --copy-from-variant <STRING>  Copy settings from the older variant <STRING>
+                                if found [$OPT_COPY_FROM_VARIANT]
    -r   | --revision <STRING>  Use <STRING> as the build revision [git sha]
    -d   | --docs               Build Qt Creator documentation
    -g   | --gdb                Build also gdb
@@ -92,6 +95,9 @@ while [[ ${1:-} ]]; do
     case "$1" in
 	-v | --variant ) shift
 	    OPT_VARIANT=$1; shift
+	    ;;
+	--copy-from-variant ) shift
+	    OPT_COPY_FROM_VARIANT=$1; shift
 	    ;;
 	-r | --revision ) shift
 	    OPT_REVISION=$1; shift
@@ -187,6 +193,11 @@ cat <<EOF
    - Qt Creator installation directory [$QTC_INSTALL_ROOT]
    - Qt directory [$OPT_QTDIR]
 EOF
+
+if [[ -n $OPT_COPY_FROM_VARIANT ]]; then
+    echo "   - Copy settings from older variant [$OPT_COPY_FROM_VARIANT]"
+fi
+
 if [[ -z $OPT_GDB_ONLY ]]; then
     echo " 1) Build Qt Creator"
 else
@@ -304,7 +315,7 @@ build_unix_qtc() {
             QTC_SHOW_BUILD_DATE=1 \
             -after "DEFINES+=IDE_REVISION=$OPT_REVISION" \
             ${OPT_VARIANT_PRETTY:+"QTCREATOR_DISPLAY_VERSION='$OPT_VARIANT_PRETTY'"} \
-            "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." \
+            ${OPT_COPY_FROM_VARIANT:+"DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=$OPT_COPY_FROM_VARIANT"} \
             "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" \
             $EXTRA_QMAKE_LFLAGS \
             QTC_PREFIX=
@@ -446,7 +457,7 @@ call "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\vcvarsall.bat"
 call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro CONFIG+=release -r ^
     QTC_SHOW_BUILD_DATE=1 ^
     -after "DEFINES+=IDE_REVISION=$OPT_REVISION" ^
-    "DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=." ^
+    ${OPT_COPY_FROM_VARIANT:+"'DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=$OPT_COPY_FROM_VARIANT'"} ^
     "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" ^
     "QTCREATOR_DISPLAY_VERSION='$OPT_VARIANT_PRETTY'" ^
     QTC_PREFIX= || exit 1
