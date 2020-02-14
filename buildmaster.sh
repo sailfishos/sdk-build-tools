@@ -87,6 +87,7 @@ Options:
         | --qt-static           Build Qt (static - required for Installer framework)
         | --qt-dynamic          Build Qt (dynamic - required for QtC)
    -icu | --icu-build           Build ICU library (Linux and Windows)
+        | --llvm                Build LLVM/Clang libraries
         | --linguist            Build Qt Linguist
         | --qmllive             Build Qt QmlLive
    -e   | --extra               Extra suffix to installer/repo version
@@ -165,6 +166,10 @@ while [[ ${1:-} ]]; do
             ;;
         -qt5 | --qt-dynamic ) shift
             OPT_BUILD_QT_DYNAMIC=1
+            let numtasks++
+            ;;
+        --llvm ) shift
+            OPT_BUILD_LLVM=1
             let numtasks++
             ;;
         --linguist ) shift
@@ -292,6 +297,7 @@ Summary of chosen actions:
  Build Qt (static) . [$(get_option $OPT_BUILD_QT_STATIC)]
  Build Qt (dynamic)  [$(get_option $OPT_BUILD_QT_DYNAMIC)]
  Build ICU ......... [$(get_option $OPT_BUILD_ICU)]
+ Build LLVM/Clang .. [$(get_option $OPT_BUILD_LLVM)]
  Build Qt Linguist . [$(get_option $OPT_BUILD_LINGUIST)]
  Build Qt QmlLive .. [$(get_option $OPT_BUILD_QMLLIVE)]
  Run repogen ....... [$(get_option $OPT_BUILD_REPO)]
@@ -430,6 +436,15 @@ do_build_icu() {
     echo "Building ICU ..."
 
     _ $BUILD_TOOLS_SRC/buildicu.sh -y
+}
+
+do_build_llvm() {
+    [[ -z $OPT_BUILD_LLVM ]] && return;
+
+    echo "---------------------------------"
+    echo "Building LLVM/Clang ..."
+
+    _ $BUILD_TOOLS_SRC/buildllvm.sh -y
 }
 
 do_build_qtc() {
@@ -589,38 +604,18 @@ BUILD_START=$(date +%s)
 set -e
 
 # these steps have to be done in a specific order
-#
-# 1 - git pull
+
 do_git_pull
-
-# 2 - build qt static
 do_build_qt_static
-
-# 3 - build ICU for linux and windows
 do_build_icu
-
-# 4 - build qt dynamic
 do_build_qt_dynamic
-
-# 5 - build IFW
 do_build_ifw
-
-# 6 override repo url if requested
+do_build_llvm
 do_override_repo_url
-
-# 7 - build QtC + Docs + GDB
 do_build_qtc
-
-# 8 - build Qt Linguist
 do_build_linguist
-
-# 9 - build Qt QmlLive
 do_build_qmllive
-
-# 10 - build installer
 do_build_installer
-
-# 11 - build repository
 do_build_repo
 
 # record end time
