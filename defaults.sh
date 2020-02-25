@@ -49,6 +49,12 @@
 # The download URL for the Windows ICU binaries
 DEF_WIN_ICU_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/icu/icu4c-4_8_1_1-Win32-msvc10.zip"
 
+# The download URL for the Windows LLVM/Clang binaries
+DEF_WIN_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/llvm/libclang-release_70-based-windows-vs2015_32.7z"
+
+# The download URL for the macOS LLVM/Clang binaries
+DEF_MAC_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/mac-binary-artifacts/llvm/libclang-release_70-based-mac.7z"
+
 # The Qt version to use
 DEF_QT_VER=5.12.5
 
@@ -136,6 +142,19 @@ else
     # On Windows upstream ICU binaries are downloaded
     DEF_ICU_DOWNLOAD_DIR=$DEF_PREFIX/invariant
     DEF_ICU_INSTALL_DIR=$DEF_PREFIX/invariant/icu
+fi
+
+# ---------------------------------------------------------------------
+# LLVM/Clang
+
+if [[ $UNAME_SYSTEM == "Linux" ]]; then
+    DEF_LLVM_SRC_DIR=$DEF_PREFIX/invariant/llvm
+    DEF_LLVM_BUILD_DIR=$DEF_PREFIX/invariant/llvm-build
+    DEF_LLVM_INSTALL_DIR=$DEF_PREFIX/invariant/llvm-install
+else
+    # On Windows and macOS prebuilt binaries supplied by Qt project are downloaded
+    DEF_LLVM_DOWNLOAD_DIR=$DEF_PREFIX/invariant
+    DEF_LLVM_INSTALL_DIR=$DEF_PREFIX/invariant/libclang
 fi
 
 # ---------------------------------------------------------------------
