@@ -196,6 +196,10 @@ createTar() {
     sudo rm mer.d/lib/systemd/system/sockets.target.wants/!(dbus.socket)
     sudo rm mer.d/lib/systemd/system/basic.target.wants/!(dbus.service)
 
+    echo "Setting up DNAT to enable access to emulators ..."
+    sudo cp $(dirname $0)/dnat-emulators.service mer.d/etc/systemd/system/
+    sudo ln -s /etc/systemd/system/dnat-emulators.service mer.d/etc/systemd/system/multi-user.target.wants/
+
     echo "Changing permissions of /srv/mer ..."
     sudo chmod -R a+rwX mer.d/srv/mer
 
