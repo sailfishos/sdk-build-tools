@@ -295,7 +295,7 @@ packDocker() {
     echo "Creating Docker 7z package..."
      # move the docker tarball to docker directory
     mv $INSTALL_PATH/sailfish.tar $DOCKER_INSTALL_PATH/
-    cp Dockerfile $DOCKER_INSTALL_PATH/
+    cp $(dirname $0)/Dockerfile $DOCKER_INSTALL_PATH/
 
     echo "copying $INSTALL_PATH/targets => $DOCKER_INSTALL_PATH/targets"
     cp -R $INSTALL_PATH/targets $DOCKER_INSTALL_PATH/targets
