@@ -35,6 +35,8 @@
 . $(dirname $0)/defaults.sh
 . $(dirname $0)/utils.sh
 
+shopt -s extglob
+
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
 OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
@@ -185,8 +187,18 @@ createTar() {
     fi
     mkdir -p mer.d
     sudo mount /dev/nbd0p1 mer.d
+
+    echo "Disabling unneeded systemd services ..."
+    sudo rm mer.d/lib/systemd/system/sysinit.target.wants/*
+    sudo rm mer.d/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket)
+    sudo rm mer.d/etc/systemd/system/basic.target.wants/*
+    sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(sdk-webapp.service)
+    sudo rm mer.d/lib/systemd/system/sockets.target.wants/!(dbus.socket)
+    sudo rm mer.d/lib/systemd/system/basic.target.wants/!(dbus.service)
+
     echo "Changing permissions of /srv/mer ..."
     sudo chmod -R a+rwX mer.d/srv/mer
+
     echo "Compressing filesystem ..."
     sudo tar -C mer.d -cf mersdk/sailfish.tar --one-file-system --numeric-owner .
     sudo umount mer.d
