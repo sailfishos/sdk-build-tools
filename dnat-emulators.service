@@ -1,0 +1,13 @@
+# This file is part of Sailfish SDK
+
+[Unit]
+Description=Set up DNAT to enable access to Sailfish OS Emulators
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# FIXME breaks when the port is later changed by user
+ExecStart=/bin/bash -c "for ((i=0; i<10; i++)); do iptables -t nat -A OUTPUT -p tcp -d 10.220.220.$((1+i)) --dport 22 -j DNAT --to-destination 172.17.0.1:$((2223+i)); done"
+
+[Install]
+WantedBy=multi-user.target

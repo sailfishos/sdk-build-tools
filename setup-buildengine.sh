@@ -35,6 +35,8 @@
 . $(dirname $0)/defaults.sh
 . $(dirname $0)/utils.sh
 
+shopt -s extglob
+
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
 OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
@@ -185,8 +187,22 @@ createTar() {
     fi
     mkdir -p mer.d
     sudo mount /dev/nbd0p1 mer.d
+
+    echo "Disabling unneeded systemd services ..."
+    sudo rm mer.d/lib/systemd/system/sysinit.target.wants/*
+    sudo rm mer.d/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket)
+    sudo rm mer.d/etc/systemd/system/basic.target.wants/*
+    sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(sdk-webapp.service)
+    sudo rm mer.d/lib/systemd/system/sockets.target.wants/!(dbus.socket)
+    sudo rm mer.d/lib/systemd/system/basic.target.wants/!(dbus.service)
+
+    echo "Setting up DNAT to enable access to emulators ..."
+    sudo cp $(dirname $0)/dnat-emulators.service mer.d/etc/systemd/system/
+    sudo ln -s /etc/systemd/system/dnat-emulators.service mer.d/etc/systemd/system/multi-user.target.wants/
+
     echo "Changing permissions of /srv/mer ..."
     sudo chmod -R a+rwX mer.d/srv/mer
+
     echo "Compressing filesystem ..."
     sudo tar -C mer.d -cf mersdk/sailfish.tar --one-file-system --numeric-owner .
     sudo umount mer.d
@@ -283,7 +299,7 @@ packDocker() {
     echo "Creating Docker 7z package..."
      # move the docker tarball to docker directory
     mv $INSTALL_PATH/sailfish.tar $DOCKER_INSTALL_PATH/
-    cp Dockerfile $DOCKER_INSTALL_PATH/
+    cp $(dirname $0)/Dockerfile $DOCKER_INSTALL_PATH/
 
     echo "copying $INSTALL_PATH/targets => $DOCKER_INSTALL_PATH/targets"
     cp -R $INSTALL_PATH/targets $DOCKER_INSTALL_PATH/targets
