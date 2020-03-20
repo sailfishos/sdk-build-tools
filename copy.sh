@@ -23,7 +23,7 @@ for pkg in "$OLD"/*.7z{,.meta}; do
     $CP --target-directory "$NEW" "$pkg" || exit
 done
 
-for platf in linux-{32,64} mac windows; do
+for platf in linux-64 mac windows; do
     mkdir -p "$NEW/$platf" || exit
     for pkg in "$OLD/$platf"/*.7z; do
 	$CP --target-directory "$NEW/$platf" "$pkg" || exit
