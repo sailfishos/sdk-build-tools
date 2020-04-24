@@ -3,7 +3,7 @@
 # SDK build engine creation script
 #
 # Copyright (C) 2014-2019 Jolla Oy
-# Copyright (C) 2019 Open Mobile Platform LLC.
+# Copyright (C) 2019-2020 Open Mobile Platform LLC.
 # Contact: Ville Nummela <ville.nummela@jolla.com>
 # All rights reserved.
 #
@@ -197,6 +197,9 @@ createTar() {
     sudo rm mer.d/lib/systemd/system/basic.target.wants/!(dbus.service)
 
     echo "Setting up DNAT to enable access to emulators ..."
+    mkdir -p mer.d/usr/libexec/sdk-setup
+    sudo cp $(dirname $0)/dnat-emulators mer.d/usr/libexec/sdk-setup/dnat-emulators
+    chmod a+x mer.d/usr/libexec/sdk-setup/dnat-emulators
     sudo cp $(dirname $0)/dnat-emulators.service mer.d/etc/systemd/system/
     sudo ln -s /etc/systemd/system/dnat-emulators.service mer.d/etc/systemd/system/multi-user.target.wants/
 
