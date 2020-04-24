@@ -197,9 +197,9 @@ createTar() {
     sudo rm mer.d/lib/systemd/system/basic.target.wants/!(dbus.service)
 
     echo "Setting up DNAT to enable access to emulators ..."
-    mkdir -p mer.d/usr/libexec/sdk-setup
+    sudo mkdir -p mer.d/usr/libexec/sdk-setup
     sudo cp $(dirname $0)/dnat-emulators mer.d/usr/libexec/sdk-setup/dnat-emulators
-    chmod a+x mer.d/usr/libexec/sdk-setup/dnat-emulators
+    sudo chmod a+x mer.d/usr/libexec/sdk-setup/dnat-emulators
     sudo cp $(dirname $0)/dnat-emulators.service mer.d/etc/systemd/system/
     sudo ln -s /etc/systemd/system/dnat-emulators.service mer.d/etc/systemd/system/multi-user.target.wants/
 
