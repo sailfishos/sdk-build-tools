@@ -125,9 +125,9 @@ for ARCH in $PLATFORMS; do
 
         cat <<EOF
 |-
-| [http://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME '''$FNAME''']
+| [https://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME '''$FNAME''']
 || $FSIZE_MIB ($FSIZE bytes)
-|| [http://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME.$CHECK '''$MD5''']
+|| [https://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME.$CHECK '''$MD5''']
 EOF
     done
 
