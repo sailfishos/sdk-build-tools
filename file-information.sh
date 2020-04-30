@@ -33,7 +33,7 @@
 
 RELEASE="2.0"
 CHECK="md5"
-PLATFORMS="linux-32 linux-64 mac windows"
+PLATFORMS="linux-64 mac windows"
 
 fatal() {
     echo "FAIL: $@"
