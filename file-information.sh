@@ -115,7 +115,7 @@ for ARCH in $PLATFORMS; do
 	SUFFIX="run"
     fi
 
-    for XLINE in offline online; do
+    for XLINE in online offline; do
         FNAME=SailfishSDK-$RELEASE-${ARCH//-/}-$XLINE.$SUFFIX
         [[ ! -f $FNAME ]] && fatal "$FNAME not found."
         md5sum -b $FNAME > $FNAME.$CHECK
