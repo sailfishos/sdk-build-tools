@@ -44,7 +44,7 @@ rename_installers() {
     echo "Renaming installers ..."
     for installer in SailfishSDK*; do
         local new_name=$(sed \
-                -e "s/\(SailfishSDK\)-\(.*\)-offline-\(.*\)\.\(.*$\)/\1-$RELEASE-\2-offline.\4/" \
+                -e "s/\(SailfishSDK\)-\(.*\)-\(offline\|online\)-\(.*\)\.\(.*$\)/\1-$RELEASE-\2-\3.\5/" \
                 -e "s/linux-/linux/" <<< $installer)
         mv "$installer" "$new_name" || fatal "error renaming $installer"
     done
@@ -115,19 +115,21 @@ for ARCH in $PLATFORMS; do
 	SUFFIX="run"
     fi
 
-    FNAME=SailfishSDK-$RELEASE-${ARCH//-/}-$XLINE.$SUFFIX
-    [[ ! -f $FNAME ]] && fatal "$FNAME not found."
-    md5sum -b $FNAME > $FNAME.$CHECK
-    FSIZE=$(stat -c %s $FNAME)
-    FSIZE_MIB=$(ls -lh $FNAME | cut -f 5 -d ' ')
-    MD5=$(cut -f 1 -d ' ' $FNAME.$CHECK)
+    for XLINE in offline online; do
+        FNAME=SailfishSDK-$RELEASE-${ARCH//-/}-$XLINE.$SUFFIX
+        [[ ! -f $FNAME ]] && fatal "$FNAME not found."
+        md5sum -b $FNAME > $FNAME.$CHECK
+        FSIZE=$(stat -c %s $FNAME)
+        FSIZE_MIB=$(ls -lh $FNAME | cut -f 5 -d ' ')
+        MD5=$(cut -f 1 -d ' ' $FNAME.$CHECK)
 
-    cat <<EOF
+        cat <<EOF
 |-
 | [http://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME '''$FNAME''']
 || $FSIZE_MIB ($FSIZE bytes)
 || [http://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME.$CHECK '''$MD5''']
 EOF
+    done
 
 done
 
