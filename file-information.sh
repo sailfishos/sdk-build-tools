@@ -115,7 +115,7 @@ for ARCH in $PLATFORMS; do
 	SUFFIX="run"
     fi
 
-    FNAME=SailfishSDK-$RELEASE-$ARCH-offline.$SUFFIX
+    FNAME=SailfishSDK-$RELEASE-${ARCH//-/}-$XLINE.$SUFFIX
     [[ ! -f $FNAME ]] && fatal "$FNAME not found."
     md5sum -b $FNAME > $FNAME.$CHECK
     FSIZE=$(stat -c %s $FNAME)
