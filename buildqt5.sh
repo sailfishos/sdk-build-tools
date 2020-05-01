@@ -78,7 +78,7 @@ EOF
 
 configure_static_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -xcb -xkbcommon -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
+        OPENSSL_LIBS='-L${DEF_OPENSSL_INSTALL_DIR}/lib -lssl -lcrypto' $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -xcb -xkbcommon -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples -openssl-linked -I $DEF_OPENSSL_INSTALL_DIR/include -L $DEF_OPENSSL_INSTALL_DIR/lib
     else
         $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -no-gstreamer -no-warnings-are-errors
     fi
@@ -121,7 +121,7 @@ set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows perf
 call "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\vcvarsall.bat" || exit 1
 
 set MAKE=jom
-call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform $DEF_MSVC_SPEC -static-runtime -prefix "%CD%/qtbase" || exit 1
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform $DEF_MSVC_SPEC -static-runtime -openssl-linked -I $(win_path $DEF_OPENSSL_INSTALL_DIR)\include -L $(win_path $DEF_OPENSSL_INSTALL_DIR)\lib -prefix "%CD%/qtbase" || exit 1
 
 call jom /j 1 || exit 1
 EOF
@@ -237,7 +237,7 @@ BUILD_START=$(date +%s)
 
 if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        export LD_LIBRARY_PATH=$DEF_ICU_INSTALL_DIR/lib
+        export LD_LIBRARY_PATH=$DEF_ICU_INSTALL_DIR/lib:$DEF_OPENSSL_INSTALL_DIR/lib
     fi
     build_dynamic_qt
     build_static_qt
