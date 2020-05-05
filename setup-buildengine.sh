@@ -190,7 +190,7 @@ createTar() {
 
     echo "Disabling unneeded systemd services ..."
     sudo rm mer.d/lib/systemd/system/sysinit.target.wants/*
-    sudo rm mer.d/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket)
+    sudo rm mer.d/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket|network.target)
     sudo rm mer.d/etc/systemd/system/basic.target.wants/*
     sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(sdk-webapp.service)
     sudo rm mer.d/lib/systemd/system/sockets.target.wants/!(dbus.socket)
@@ -202,6 +202,12 @@ createTar() {
     sudo chmod a+x mer.d/usr/libexec/sdk-setup/dnat-emulators
     sudo cp $(dirname $0)/dnat-emulators.service mer.d/etc/systemd/system/
     sudo ln -s /etc/systemd/system/dnat-emulators.service mer.d/etc/systemd/system/multi-user.target.wants/
+
+    echo "Setting up connman configuration ..."
+    sudo cp $(dirname $0)/connman-config mer.d/usr/libexec/sdk-setup/connman-config
+    sudo chmod a+x mer.d/usr/libexec/sdk-setup/connman-config
+    sudo cp $(dirname $0)/connman-config.service mer.d/etc/systemd/system/
+    sudo ln -s /etc/systemd/system/connman-config.service mer.d/etc/systemd/system/multi-user.target.wants/
 
     echo "Changing permissions of /srv/mer ..."
     sudo chmod -R a+rwX mer.d/srv/mer
