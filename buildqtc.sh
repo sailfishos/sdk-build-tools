@@ -434,11 +434,9 @@ build_windows_qtc() {
 
 if DEFINED ProgramFiles(x86) (
     set "_programs=%ProgramFiles(x86)%"
-    set _systemdir=%windir%\system
 )
 if Not DEFINED ProgramFiles(x86) (
     set _programs=%ProgramFiles%
-    set _systemdir=%windir%\system32
 )
 
 
@@ -480,7 +478,7 @@ copy "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\bin\D3Dcompiler_*
 pushd "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\redist\x86\microsoft.vc*.crt" ^
     && copy "*.dll" %INSTALL_ROOT%\bin ^
     && popd || exit 1
-copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
+copy "%windir%\system32\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
 copy $(win_path $OPT_ICU_PATH)\bin\*.dll %INSTALL_ROOT%\bin || exit 1
 
 call nmake bindist_installer || exit 1
