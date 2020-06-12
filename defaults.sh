@@ -50,10 +50,10 @@
 DEF_WIN_ICU_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/icu/icu4c-4_8_1_1-Win32-msvc10.zip"
 
 # The download URL for the Windows LLVM/Clang binaries
-DEF_WIN_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/llvm/libclang-release_70-based-windows-vs2015_32.7z"
+DEF_WIN_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/llvm/libclang-release_80-based-windows-vs2017_32.7z"
 
 # The download URL for the macOS LLVM/Clang binaries
-DEF_MAC_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/mac-binary-artifacts/llvm/libclang-release_70-based-mac.7z"
+DEF_MAC_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/mac-binary-artifacts/llvm/libclang-release_80-based-mac.7z"
 
 # The Qt version to use
 DEF_QT_VER=5.12.5
