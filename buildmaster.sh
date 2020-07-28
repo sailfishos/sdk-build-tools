@@ -106,7 +106,8 @@ Options:
         | --repourl <STRING>    Update repo location, if set overrides the public repo URL
    -gd  | --gdb-default         Use default download URLs for gdb build deps
    -P   | --installer-profile <STRING>  Choose a profile when building installer.
-                                <STRING> can be one of "online", "offline" or "full"
+                                <STRING> can be one of "online", "offline" or "full".
+                                Multiple values may be passed too, separated with comma.
                                 [$OPT_INSTALLER_PROFILE]
    -d   | --download <URL>      Use <URL> to download artifacts
    -D   | --dload-def <DIR>     Create download URL using <DIR> as the source dir
@@ -550,8 +551,14 @@ do_build_installer() {
     fi
 
     _ pushd $DEF_INSTALLER_SRC_DIR
-    _ ./build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL \
-        --profile $OPT_INSTALLER_PROFILE $INSTALLER_BUILD_OPTIONS
+
+    local profile=
+    for profile in ${OPT_INSTALLER_PROFILE//,/ }; do
+        _ git clean -xdf --quiet
+        _ ./build.sh installer -y $options $UPLOAD_OPTIONS -d $OPT_DOWNLOAD_URL \
+            --profile $profile $INSTALLER_BUILD_OPTIONS
+    done
+
     _ popd
 }
 
