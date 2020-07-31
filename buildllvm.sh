@@ -44,7 +44,12 @@ export LC_ALL=C
 
 configure_llvm() {
     # See Qt Creator's README
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$DEF_LLVM_INSTALL_DIR -DLLVM_ENABLE_RTTI=ON $DEF_LLVM_SRC_DIR
+    cmake \
+        -D CMAKE_BUILD_TYPE=Release \
+        -D LLVM_ENABLE_RTTI=ON \
+        -D LLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+        -D CMAKE_INSTALL_PREFIX=$DEF_LLVM_INSTALL_DIR \
+        $DEF_LLVM_SRC_DIR/llvm
 }
 
 build_llvm() {
