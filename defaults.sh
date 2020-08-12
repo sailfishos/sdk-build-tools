@@ -59,8 +59,8 @@ DEF_MAC_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/mac-binary-artifacts/llvm/libclang-re
 DEF_QT_VER=5.12.5
 
 # The Microsoft Visual C++ version to use
-DEF_MSVC_VER=2015
-DEF_MSVC_VER_ALT=14.0
+DEF_MSVC_VER=2019
+DEF_MSVC_VER_ALT=16.7.1
 DEF_MSVC_SPEC=win32-msvc
 
 # The default release version
