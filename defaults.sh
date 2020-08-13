@@ -59,8 +59,8 @@ DEF_MAC_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/mac-binary-artifacts/llvm/libclang-re
 DEF_QT_VER=5.12.5
 
 # The Microsoft Visual C++ version to use
-DEF_MSVC_VER=2015
-DEF_MSVC_VER_ALT=14.0
+DEF_MSVC_VER=2019
+DEF_MSVC_VER_ALT=16.7.1
 DEF_MSVC_SPEC=win32-msvc
 
 # The default release version
@@ -125,9 +125,11 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build
 else
     # Dynamic Qt build directory on Windows
-    DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build-msvc$DEF_MSVC_VER
+    # DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build-msvc$DEF_MSVC_VER
+    DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build-msvc2015
     # Static Qt build directory on Windows
-    DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build-msvc$DEF_MSVC_VER
+    # DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build-msvc$DEF_MSVC_VER
+    DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build-msvc2015
 fi
 
 # ---------------------------------------------------------------------
