@@ -387,7 +387,7 @@ build_windows_gdb() {
 
 	cat <<EOF > build-gdb.bat
 @echo off
-call C:\mingw\msys\1.0\bin\env -u PATH C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads" || exit 1
+call C:\mingw\msys\1.0\bin\env -u PATH MSYSTEM=MINGW32 C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads" || exit 1
 EOF
 	cmd //c build-gdb.bat
 
