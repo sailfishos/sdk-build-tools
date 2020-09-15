@@ -42,8 +42,14 @@ GATEWAY=$(ip r | awk '/default/{ print $3 }')
 NAMESERVERS=$(awk '/^nameserver/{ printf "%s;",$2 }' /etc/resolv.conf)
 DATE=$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)
 
+# The settings file is written also elsewhere, e.g. when the user modifies proxy
+# settings. We don't want to overwrite those changes, so if the file exists we
+# only change the values that we are interested in here.
 if [[ -d "${SERVICE_DIR}" ]]; then
+    sed -i -e "s/Modified=.*/Modified=${DATE}/" ${SERVICE_FILE}
     sed -i -e "s/IPv4.local_address=.*/IPv4.local_address=${IP_ADDR}/" ${SERVICE_FILE}
+    sed -i -e "s/IPv4.gateway=.*/IPv4.gateway=${GATEWAY}/" ${SERVICE_FILE}
+    sed -i -e "s/Nameservers=.*/Nameservers=${NAMESERVERS}/" ${SERVICE_FILE}
 else
     mkdir -p ${SERVICE_DIR}
     cat <<EOF > ${SERVICE_FILE}
