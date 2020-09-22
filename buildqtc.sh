@@ -340,6 +340,11 @@ build_unix_qtc() {
 
 	make deployqt
 
+    if [[ $UNAME_SYSTEM == "Darwin" ]]; then
+        install_name_tool -add_rpath @executable_path/../../../../../../../../Frameworks \
+            "bin/Qt Creator.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
+    fi
+
     # Add icu library
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
         cp $OPT_ICU_PATH/lib/lib*.so* $QTC_INSTALL_ROOT/lib/qtcreator
