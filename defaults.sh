@@ -83,7 +83,7 @@ DEF_VARIANT="SailfishSDK"
 # See also DEF_VARIANT
 # Note: This can also be configured dynamically by using the --copy-from-variant
 # option in buildmaster.sh
-DEF_COPY_FROM_VARIANT="SailfishOS-SDK"
+DEF_COPY_FROM_VARIANT=
 
 # SDK pretty variant
 # Sets the default base name for the installers and the SDK release name shown
