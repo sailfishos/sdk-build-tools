@@ -189,12 +189,12 @@ createTar() {
     sudo mount /dev/nbd0p1 mer.d
 
     echo "Disabling unneeded systemd services ..."
-    sudo rm mer.d/lib/systemd/system/sysinit.target.wants/*
-    sudo rm mer.d/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket|network.target)
+    sudo rm mer.d/usr/lib/systemd/system/sysinit.target.wants/*
+    sudo rm mer.d/usr/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket|network.target)
     sudo rm mer.d/etc/systemd/system/basic.target.wants/!(home-mersdk-share-dynexec-docker.service|home-srcN.service)
     sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(sdk-refresh.timer|sdk-webapp.service)
-    sudo rm mer.d/lib/systemd/system/sockets.target.wants/!(dbus.socket)
-    sudo rm mer.d/lib/systemd/system/basic.target.wants/!(dbus.service)
+    sudo rm mer.d/usr/lib/systemd/system/sockets.target.wants/!(dbus.socket)
+    sudo rm mer.d/usr/lib/systemd/system/basic.target.wants/!(dbus.service)
 
     echo "Setting up DNAT to enable access to emulators ..."
     sudo mkdir -p mer.d/usr/libexec/sdk-setup
