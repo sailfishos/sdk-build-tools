@@ -2,6 +2,8 @@
 
 [Unit]
 Description=Set up DNAT to enable access to Sailfish OS Emulators
+# connman would overwrite our configuration
+After=connman.service
 
 [Service]
 Type=oneshot
