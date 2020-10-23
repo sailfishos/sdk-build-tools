@@ -485,7 +485,7 @@ copy "%VCToolsInstallDir%\bin\Hostx86\x86\d3dcompiler_*.dll" %INSTALL_ROOT%\bin 
 pushd "%VCToolsRedistDir%\x86\Microsoft.VC*.CRT" ^
     && copy "*.dll" %INSTALL_ROOT%\bin ^
     && popd || exit 1
-copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
+copy "%windir%\system32\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
 copy $(win_path $OPT_ICU_PATH)\bin\*.dll %INSTALL_ROOT%\bin || exit 1
 
 call nmake bindist_installer || exit 1
