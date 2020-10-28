@@ -128,8 +128,7 @@ else
     # DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build-msvc$DEF_MSVC_VER
     DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build-msvc2015
     # Static Qt build directory on Windows
-    # DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build-msvc$DEF_MSVC_VER
-    DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build-msvc2015
+    DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build-msvc$DEF_MSVC_VER
 fi
 
 # ---------------------------------------------------------------------
