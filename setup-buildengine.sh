@@ -192,7 +192,7 @@ createTar() {
     sudo rm mer.d/usr/lib/systemd/system/sysinit.target.wants/*
     sudo rm mer.d/usr/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket|network.target)
     sudo rm mer.d/etc/systemd/system/basic.target.wants/!(sdk-setup-env.service|workspace.service)
-    sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(sdk-refresh.timer|sdk-webapp.service)
+    sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(sdk-refresh.timer|sdk-webappstub.service)
     sudo rm mer.d/usr/lib/systemd/system/sockets.target.wants/!(dbus.socket)
     sudo rm mer.d/usr/lib/systemd/system/basic.target.wants/!(dbus.service)
 
