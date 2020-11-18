@@ -150,7 +150,7 @@ installTooling() {
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sdk-manage --mode installer --tooling --install $tooling file:///home/mersdk/share/$OPT_TOOLING"
+        mersdk@localhost "sdk-manage --mode installer --tooling --install $tooling file:///host_home/$OPT_TOOLING"
 }
 
 installTarget() {
@@ -174,7 +174,7 @@ installTarget() {
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sdk-manage --mode installer --target --install --jfdi $tgt file:///home/mersdk/share/$TARGET_FILENAME"
+        mersdk@localhost "sdk-manage --mode installer --target --install --jfdi $tgt file:///host_home/$TARGET_FILENAME"
 }
 
 createTar() {
@@ -189,11 +189,11 @@ createTar() {
     sudo mount /dev/nbd0p1 mer.d
 
     echo "Disabling unneeded systemd services ..."
-    sudo rm mer.d/usr/lib/systemd/system/sysinit.target.wants/*
+    sudo rm mer.d/usr/lib/systemd/system/sysinit.target.wants/!(systemd-journal*.service)
     sudo rm mer.d/usr/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket|network.target)
-    sudo rm mer.d/etc/systemd/system/basic.target.wants/!(home-mersdk-share-dynexec-docker.service|home-srcN.service)
-    sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(sdk-refresh.timer|sdk-webapp.service)
-    sudo rm mer.d/usr/lib/systemd/system/sockets.target.wants/!(dbus.socket)
+    sudo rm mer.d/etc/systemd/system/basic.target.wants/!(sdk-setup-env.service|workspace.service)
+    sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(sdk-refresh.timer|sdk-webappstub.service)
+    sudo rm mer.d/usr/lib/systemd/system/sockets.target.wants/!(dbus.socket|systemd-journal*.socket)
     sudo rm mer.d/usr/lib/systemd/system/basic.target.wants/!(dbus.service)
 
     echo "Setting up DNAT to enable access to emulators ..."
@@ -602,7 +602,7 @@ if [[ -n $OPT_REFRESH ]]; then
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sudo bash share/refresh-sdk-repos.sh -y ${OPT_PRIVATE_REPO:-} ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
+        mersdk@localhost "sudo bash /host_home/refresh-sdk-repos.sh -y ${OPT_PRIVATE_REPO:-} ${OPT_KEEP_TEST_DOMAIN:-} --release ${OPT_ORIGINAL_RELEASE:-latest}"
 fi
 
 # shut the VM down cleanly so that it has time to flush its disk
