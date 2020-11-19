@@ -56,7 +56,7 @@ DEF_WIN_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/llvm/libclang-
 DEF_MAC_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/mac-binary-artifacts/llvm/libclang-release_80-based-mac.7z"
 
 # The Qt version to use
-DEF_QT_VER=5.12.5
+DEF_QT_VER=5.12.10
 
 # The Microsoft Visual C++ version to use
 DEF_MSVC_VER=2019
