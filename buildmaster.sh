@@ -179,7 +179,7 @@ while [[ ${1:-} ]]; do
             ;;
         --qmllive ) shift
             OPT_BUILD_QMLLIVE=1
-            let numtask++
+            let numtasks++
             ;;
         -p | --git-pull ) shift
             OPT_GIT_PULL=1
