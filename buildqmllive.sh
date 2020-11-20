@@ -316,7 +316,7 @@ set INSTALLER_ARCHIVE=$SAILFISH_QMLLIVE_BASENAME$(build_arch).7z
 
 call rmdir /s /q $(win_path $QMLLIVE_INSTALL_ROOT)
 
-call "%_programs%\microsoft visual studio $DEF_MSVC_VER_ALT\vc\vcvarsall.bat"
+call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86
 
 call %QTDIR%\bin\qmake $(win_path $OPT_QMLLIVE_SRC_DIR)\qmllive.pro -r CONFIG+=release ^
                        QMLLIVE_SETTINGS_VARIANT="$OPT_VARIANT" QMLLIVE_REVISION="$OPT_REVISION" ^
