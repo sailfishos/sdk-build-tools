@@ -397,7 +397,8 @@ main()
             _ "$BUILD_TOOLS_SRC/prune-shared.sh" --uhost "$OPT_UPLOAD_HOST" \
                 --uuser "$OPT_UPLOAD_USER" --upath "$OPT_UPLOAD_PATH" "$OPT_SHARED_PATH"
         fi
-        _ scp "${results[@]}" "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_TARGETS_UPLOAD_PATH/" || return
+        _ rsync --ignore-existing --verbose --info=skip "${results[@]}" \
+            "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_TARGETS_UPLOAD_PATH/" || return
         if [[ ! $OPT_DRY_RUN ]]; then
             echo "Updating targets.json..." >&2
             update_remote_targets_json "$OPT_TARGETS_UPLOAD_PATH" || return

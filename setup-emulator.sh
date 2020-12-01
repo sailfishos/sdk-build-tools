@@ -249,5 +249,6 @@ if [[ -n "$OPT_UPLOAD" ]]; then
         $BUILD_TOOLS_SRC/prune-shared.sh --uhost "$OPT_UPLOAD_HOST" \
             --uuser "$OPT_UPLOAD_USER" --upath "$OPT_UPLOAD_PATH" "$OPT_SHARED_PATH"
     fi
-    scp ${results[*]} $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators/
+    rsync --ignore-existing --verbose --info=skip ${results[*]} \
+        $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators/
 fi
