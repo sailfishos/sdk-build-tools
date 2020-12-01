@@ -67,7 +67,7 @@ set PATH=c:\windows;c:\windows\system32;%_programs\windows kits\8.0\windows perf
 call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86 || exit 1
 
 set MAKE=jom
-call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -no-dbus -skip qtwebengine -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -opengl dynamic -platform $DEF_MSVC_SPEC -prefix "%CD%/qtbase" || exit 1
+call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS -skip qtwebengine -icu -I $(win_path $DEF_ICU_INSTALL_DIR)\include -L $(win_path $DEF_ICU_INSTALL_DIR)\lib -opengl dynamic -platform $DEF_MSVC_SPEC -prefix "%CD%/qtbase" || exit 1
 
 call jom /j 1 || exit 1
 EOF
