@@ -343,6 +343,11 @@ build_unix_qtc() {
     if [[ $UNAME_SYSTEM == "Darwin" ]]; then
         install_name_tool -add_rpath @executable_path/../../../../../../../../Frameworks \
             "bin/Qt Creator.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
+
+        local dbus_libs=
+        dbus_libs=$(brew list dbus |grep 'libdbus-1.*\.dylib')
+        mkdir -p "$QTC_INSTALL_ROOT/bin/Qt Creator.app/Contents/Frameworks/"
+        cp $dbus_libs "$QTC_INSTALL_ROOT/bin/Qt Creator.app/Contents/Frameworks/"
     fi
 
     # Add icu library
