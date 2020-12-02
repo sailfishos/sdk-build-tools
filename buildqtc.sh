@@ -433,6 +433,11 @@ build_windows_qtc() {
         curl -s -f -O http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/pkg-config/$lib
     done
 
+    local mingw_dbus="mingw-w64-i686-dbus-1.12.20-1-any.pkg.tar"
+    local mingw_dbus_lib="libdbus-1-3.dll"
+    curl -s -f -o $mingw_dbus http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/dbus/$mingw_dbus
+    tar -xf $mingw_dbus --strip-components=2 mingw32/bin/$mingw_dbus_lib
+
         # create the build script for windows
 	cat <<EOF > build-windows.bat
 @echo off
@@ -482,6 +487,7 @@ call 7z x -o%INSTALL_ROOT%\bin $opengl32sw_lib
 for %%i in ($pkg_config_libs) do (
     call 7z x -o%INSTALL_ROOT% %%i < NUL || exit 1
 )
+copy $mingw_dbus_lib %INSTALL_ROOT%\bin || exit 1
 copy "%VCToolsInstallDir%\bin\Hostx86\x86\d3dcompiler_*.dll" %INSTALL_ROOT%\bin || exit 1
 pushd "%VCToolsRedistDir%\x86\Microsoft.VC*.CRT" ^
     && copy "*.dll" %INSTALL_ROOT%\bin ^
