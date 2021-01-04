@@ -74,5 +74,35 @@ pipeline {
                 }
             }
         }
+        stage('Deploy installer to sdkautotest') {
+            when { environment name: 'JOPT_RUN_AUTOTEST', value: 'true' }
+            steps {
+                script {
+                    def allParams = params.collect{
+                        if (it.value instanceof java.lang.Boolean) {
+                            return booleanParam(name: it.key, value: Boolean.valueOf(it.value))
+                        } else {
+                            return string(name: it.key, value: it.value)
+                        }
+                    }
+                    build job: 'Deploy installer to sdkautotest', parameters: allParams
+                }
+            }
+        }
+        stage('Run automated tests') {
+            when { environment name: 'JOPT_RUN_AUTOTEST', value: 'true' }
+            steps {
+                script {
+                    def allParams = params.collect{
+                        if (it.value instanceof java.lang.Boolean) {
+                            return booleanParam(name: it.key, value: Boolean.valueOf(it.value))
+                        } else {
+                            return string(name: it.key, value: it.value)
+                        }
+                    }
+                    build job: 'sdk-test-suite', parameters: allParams
+                }
+            }
+        }
     }
 }
