@@ -437,13 +437,14 @@ build_windows_qtc() {
 	cat <<EOF > build-windows.bat
 @echo off
 
-set _systemdir=%windir%\system32
-
 if DEFINED ProgramFiles(x86) (
     set "_programs=%ProgramFiles(x86)%"
+    set _systemdir=%windir%\syswow64
 )
+
 if Not DEFINED ProgramFiles(x86) (
     set _programs=%ProgramFiles%
+    set _systemdir=%windir%\system32
 )
 
 
