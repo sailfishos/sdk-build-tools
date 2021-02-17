@@ -186,7 +186,8 @@ parse_opts()
     if [[ $OPT_SHARED_PATH && $OPT_SHARED_PATH != /* ]]; then
         OPT_SHARED_PATH=$OPT_UPLOAD_PATH/$OPT_SHARED_PATH
     fi
-    OPT_SHARED_PATH=$(realpath --canonicalize-missing "$OPT_SHARED_PATH") || return
+    OPT_SHARED_PATH=$(ssh "$OPT_UPLOAD_USER@$OPT_UPLOAD_HOST" \
+        "realpath --canonicalize-missing $OPT_SHARED_PATH") || return
 }
 
 main()
