@@ -78,17 +78,17 @@ EOF
 
 configure_static_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -xcb -xkbcommon -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -xcb -xkbcommon -no-gstreamer -no-icu -skip qtsvg -no-warnings-are-errors -no-compile-examples
     else
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -optimized-qmake -no-gstreamer -no-warnings-are-errors
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -no-gstreamer -no-warnings-are-errors
     fi
 }
 
 configure_dynamic_qt5() {
     if [[ $UNAME_SYSTEM == "Linux" ]]; then
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -optimized-qmake -xcb -xkbcommon -no-gstreamer -I $DEF_ICU_INSTALL_DIR/include -L $DEF_ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS $LINUX_CONFIG_OPTIONS -xcb -xkbcommon -no-gstreamer -I $DEF_ICU_INSTALL_DIR/include -L $DEF_ICU_INSTALL_DIR/lib -icu -no-warnings-are-errors -no-compile-examples
     else
-        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS -optimized-qmake -no-gstreamer
+        $DEF_QT_SRC_DIR/configure $COMMON_CONFIG_OPTIONS -no-gstreamer
     fi
 }
 
