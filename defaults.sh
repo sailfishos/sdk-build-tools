@@ -55,6 +55,9 @@ DEF_WIN_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/llvm/libclang-
 # The download URL for the macOS LLVM/Clang binaries
 DEF_MAC_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/mac-binary-artifacts/llvm/libclang-release_80-based-mac.7z"
 
+# The download URL for the Windows OpenSSL binaries (static build)
+DEF_WIN_OPENSSL_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/openssl/openssl.7z"
+
 # The Qt version to use
 DEF_QT_VER=5.12.10
 
@@ -142,6 +145,17 @@ else
     # On Windows upstream ICU binaries are downloaded
     DEF_ICU_DOWNLOAD_DIR=$DEF_PREFIX/invariant
     DEF_ICU_INSTALL_DIR=$DEF_PREFIX/invariant/icu
+fi
+
+# ---------------------------------------------------------------------
+# OPENSSL
+if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
+    DEF_OPENSSL_SRC_DIR=$DEF_PREFIX/invariant/openssl
+    DEF_OPENSSL_BUILD_DIR=$DEF_PREFIX/invariant/openssl-build
+    DEF_OPENSSL_INSTALL_DIR=$DEF_PREFIX/invariant/openssl-install
+else
+    DEF_OPENSSL_DOWNLOAD_DIR=$DEF_PREFIX/invariant
+    DEF_OPENSSL_INSTALL_DIR=$DEF_PREFIX/invariant/openssl-install
 fi
 
 # ---------------------------------------------------------------------

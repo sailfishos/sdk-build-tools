@@ -156,6 +156,7 @@ fi
 build_unix() {
     export QTDIR=$OPT_QTDIR
     export PATH=$QTDIR/qtbase/bin:$PATH
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEF_OPENSSL_INSTALL_DIR/lib
 
     rm -rf   $IFW_BUILD_DIR
     mkdir -p $IFW_BUILD_DIR
@@ -164,6 +165,11 @@ build_unix() {
     $QTDIR/qtbase/bin/qmake -r $OPT_IFW_SRC_DIR/installerfw.pro
 
     make -j$(getconf _NPROCESSORS_ONLN)
+
+    # Add openssl
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        cp $DEF_OPENSSL_INSTALL_DIR/lib/lib* $IFW_BUILD_DIR/lib/
+    fi
     popd
 }
 
