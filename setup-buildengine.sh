@@ -1,4 +1,5 @@
 #!/bin/bash
+# -*- mode: sh;flycheck-sh-bash-args: ("-O" "extglob"); -*-
 #
 # SDK build engine creation script
 #
