@@ -340,6 +340,24 @@ build_unix_qtc() {
 
 	make deployqt
 
+    # Deploy QtWebEngine
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        mkdir -p "$QTC_INSTALL_ROOT/lib/Qt/libexec"
+        cp "$OPT_QTDIR/qtbase/libexec/QtWebEngineProcess" "$QTC_INSTALL_ROOT/lib/Qt/libexec/"
+
+        patchelf --remove-rpath "$QTC_INSTALL_ROOT/lib/Qt/libexec/QtWebEngineProcess"
+        patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../../qtcreator' --force-rpath \
+            "$QTC_INSTALL_ROOT/lib/Qt/libexec/QtWebEngineProcess"
+
+        mkdir -p "$QTC_INSTALL_ROOT/lib/Qt/resources"
+        cp "$OPT_QTDIR/qtbase/resources"/*.pak "$QTC_INSTALL_ROOT/lib/Qt/resources/"
+        # TODO The docs say this shouldn't be needed when custom ICU is used
+        cp "$OPT_QTDIR/qtbase/resources"/icudtl.dat "$QTC_INSTALL_ROOT/lib/Qt/resources/"
+
+        mkdir -p "$QTC_INSTALL_ROOT/lib/Qt/translations"
+        cp -r "$OPT_QTDIR/qtbase/translations/qtwebengine_locales" "$QTC_INSTALL_ROOT/lib/Qt/translations/"
+    fi
+
     if [[ $UNAME_SYSTEM == "Darwin" ]]; then
         install_name_tool -add_rpath @executable_path/../../../../../../../../Frameworks \
             "bin/Qt Creator.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
