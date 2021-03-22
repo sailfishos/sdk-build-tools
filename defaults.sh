@@ -47,7 +47,7 @@
 : ${DEF_URL_PREFIX:=http://$DEF_UPLOAD_HOST/sailfishos}
 
 # The download URL for the Windows ICU binaries
-DEF_WIN_ICU_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/icu/icu4c-4_8_1_1-Win32-msvc10.zip"
+DEF_WIN_ICU_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/icu/icu4c-68_2-Win64-MSVC2019.zip"
 
 # The download URL for the Windows LLVM/Clang binaries
 DEF_WIN_LLVM_DOWNLOAD_URL="$DEF_URL_PREFIX/win32-binary-artifacts/llvm/libclang-release_80-based-windows-vs2017_32.7z"

@@ -479,7 +479,7 @@ if Not DEFINED ProgramFiles(x86) (
 set INSTALL_ROOT=$(win_path $QTC_INSTALL_ROOT)
 set QTDIR=$(win_path $OPT_QTDIR)\qtbase
 set QMAKESPEC=$DEF_MSVC_SPEC
-set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;$(win_path $DEF_PREFIX)\invariant\bin;$(win_path $OPT_ICU_PATH)\bin
+set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;$(win_path $DEF_PREFIX)\invariant\bin;$(win_path $OPT_ICU_PATH)\bin64
 set LLVM_INSTALL_DIR=$(win_path $OPT_LLVM_INSTALL_DIR)
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
@@ -516,7 +516,7 @@ pushd "%VCToolsRedistDir%\x64\Microsoft.VC*.CRT" ^
     && copy "*.dll" %INSTALL_ROOT%\bin ^
     && popd || exit 1
 copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
-copy $(win_path $OPT_ICU_PATH)\bin\*.dll %INSTALL_ROOT%\bin || exit 1
+copy $(win_path $OPT_ICU_PATH)\bin64\*.dll %INSTALL_ROOT%\bin || exit 1
 
 call nmake bindist_installer || exit 1
 EOF
