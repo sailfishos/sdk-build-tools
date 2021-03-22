@@ -489,7 +489,7 @@ if exist $binary_artifacts (
   call 7z x -o$(win_path $QTC_INSTALL_ROOT) $binary_artifacts
 )
 
-call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86
+call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
 
 call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro CONFIG+=release -r ^
     QTC_SHOW_BUILD_DATE=1 ^
@@ -511,8 +511,8 @@ for %%i in ($pkg_config_libs) do (
     call 7z x -o%INSTALL_ROOT% %%i < NUL || exit 1
 )
 copy $mingw_dbus_lib %INSTALL_ROOT%\bin || exit 1
-copy "%VCToolsInstallDir%\bin\Hostx86\x86\d3dcompiler_*.dll" %INSTALL_ROOT%\bin || exit 1
-pushd "%VCToolsRedistDir%\x86\Microsoft.VC*.CRT" ^
+copy "%VCToolsInstallDir%\bin\Hostx64\x64\d3dcompiler_*.dll" %INSTALL_ROOT%\bin || exit 1
+pushd "%VCToolsRedistDir%\x64\Microsoft.VC*.CRT" ^
     && copy "*.dll" %INSTALL_ROOT%\bin ^
     && popd || exit 1
 copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1

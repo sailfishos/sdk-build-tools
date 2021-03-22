@@ -184,7 +184,7 @@ set QTDIR=$(win_path $OPT_QTDIR)
 set QMAKESPEC=$DEF_MSVC_SPEC
 set PATH=%PATH%;$(win_path $DEF_PREFIX)\invariant\bin
 
-call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86
+call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
 
 call %QTDIR%\qtbase\bin\qmake -r $(win_path $OPT_IFW_SRC_DIR)\installerfw.pro || exit 1
 call jom || exit 1

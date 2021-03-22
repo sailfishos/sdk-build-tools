@@ -82,7 +82,7 @@ if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set PATH=c:\windows;c:\windows\system32;$(win_path $DEF_PREFIX)\invariant\bin;%ProgramFiles%\Python38;$(win_path $DEF_ICU_INSTALL_DIR)\bin;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;$(win_path $DEF_PREFIX)\invariant\bin
-call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86 || exit 1
+call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64 || exit 1
 
 set MAKE=jom
 REM NINJAFLAGS is handled by qtwebengine/src/core/gn_run.pro (at least)
@@ -140,7 +140,7 @@ if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
 set PATH=c:\windows;c:\windows\system32;$(win_path $DEF_PREFIX)\invariant\bin;%ProgramFiles%\Python38;$(win_path $DEF_ICU_INSTALL_DIR)\bin;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;$(win_path $DEF_PREFIX)\invariant\bin
-call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86 || exit 1
+call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64 || exit 1
 
 set MAKE=jom
 call $(win_path $DEF_QT_SRC_DIR)\configure.bat -make-tool jom $COMMON_CONFIG_OPTIONS $COMMON_STATIC_OPTIONS -angle -platform $DEF_MSVC_SPEC -static-runtime -prefix "%CD%/qtbase" || exit 1
