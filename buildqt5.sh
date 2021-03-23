@@ -81,7 +81,7 @@ build_dynamic_qt_windows() {
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-set PATH=c:\windows;c:\windows\system32;$(win_path $DEF_PREFIX)\invariant\bin;%ProgramFiles%\Python38;$(win_path $DEF_ICU_INSTALL_DIR)\bin64;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;$(win_path $DEF_PREFIX)\invariant\bin
+set PATH=$(win_path $DEF_PREFIX)\invariant\bin;$(win_path $DEF_ICU_INSTALL_DIR)\bin64;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;$(win_path $DEF_PREFIX)\invariant\bin;%PATH%
 call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64 || exit 1
 
 set MAKE=jom
@@ -139,7 +139,7 @@ build_static_qt_windows() {
 if DEFINED ProgramFiles(x86) set _programs=%ProgramFiles(x86)%
 if Not DEFINED ProgramFiles(x86) set _programs=%ProgramFiles%
 
-set PATH=c:\windows;c:\windows\system32;$(win_path $DEF_PREFIX)\invariant\bin;%ProgramFiles%\Python38;$(win_path $DEF_ICU_INSTALL_DIR)\bin64;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;c:\windows\system32\wbem;c:\windows\system32\windowspowershell\v1.0;$(win_path $DEF_PREFIX)\invariant\bin
+set PATH=$(win_path $DEF_PREFIX)\invariant\bin;$(win_path $DEF_ICU_INSTALL_DIR)\bin64;$(win_path $DEF_QT_SRC_DIR)\gnuwin32\bin;$(win_path $DEF_PREFIX)\invariant\bin;%PATH%
 call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64 || exit 1
 
 set MAKE=jom
