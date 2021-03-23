@@ -446,7 +446,7 @@ build_windows_qtc() {
 	# no more errors allowed
 	set -e
 
-	local opengl32sw_lib="opengl32sw-32.7z"
+	local opengl32sw_lib="opengl32sw-64-mesa_11_2_2-signed.7z"
 	curl -s -f -o $opengl32sw_lib http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/opengl/$opengl32sw_lib
 
     local pkg_config_libs="pkg-config_0.26-1_win32.zip \
