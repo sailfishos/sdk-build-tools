@@ -125,9 +125,9 @@ if [[ $UNAME_SYSTEM == "Linux" ]] || [[ $UNAME_SYSTEM == "Darwin" ]]; then
     DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build
 else
     # Dynamic Qt build directory on Windows
-    DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build-msvc$DEF_MSVC_VER
+    DEF_QT_DYN_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-build
     # Static Qt build directory on Windows
-    DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build-msvc$DEF_MSVC_VER
+    DEF_QT_STATIC_BUILD_DIR=$DEF_PREFIX/invariant/$DEF_QT_SOURCE_PACKAGE-static-build
 fi
 
 # ---------------------------------------------------------------------
