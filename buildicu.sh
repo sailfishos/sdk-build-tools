@@ -60,7 +60,7 @@ download_icu_win() {
     local download_dest=$DEF_ICU_DOWNLOAD_DIR/${DEF_WIN_ICU_DOWNLOAD_URL##*/}
     curl -o $download_dest $DEF_WIN_ICU_DOWNLOAD_URL
     rm -rf $DEF_ICU_INSTALL_DIR
-    7z -y -o$(dirname $DEF_ICU_INSTALL_DIR) x $download_dest
+    7z -y -o$DEF_ICU_INSTALL_DIR x $download_dest
     [[ -d $DEF_ICU_INSTALL_DIR ]] || fail "Fixme: Name of the ICU archive root directory has changed"
 }
 

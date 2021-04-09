@@ -399,6 +399,8 @@ do_git_pull() {
             _ git checkout --detach $DEFAULT_REMOTE/master --
         fi
 
+        _ git submodule update --init --recursive --force
+
         _ popd
     done
 }

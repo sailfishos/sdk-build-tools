@@ -340,6 +340,24 @@ build_unix_qtc() {
 
 	make deployqt
 
+    # Deploy QtWebEngine
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        mkdir -p "$QTC_INSTALL_ROOT/lib/Qt/libexec"
+        cp "$OPT_QTDIR/qtbase/libexec/QtWebEngineProcess" "$QTC_INSTALL_ROOT/lib/Qt/libexec/"
+
+        patchelf --remove-rpath "$QTC_INSTALL_ROOT/lib/Qt/libexec/QtWebEngineProcess"
+        patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../../qtcreator' --force-rpath \
+            "$QTC_INSTALL_ROOT/lib/Qt/libexec/QtWebEngineProcess"
+
+        mkdir -p "$QTC_INSTALL_ROOT/lib/Qt/resources"
+        cp "$OPT_QTDIR/qtbase/resources"/*.pak "$QTC_INSTALL_ROOT/lib/Qt/resources/"
+        # TODO The docs say this shouldn't be needed when custom ICU is used
+        cp "$OPT_QTDIR/qtbase/resources"/icudtl.dat "$QTC_INSTALL_ROOT/lib/Qt/resources/"
+
+        mkdir -p "$QTC_INSTALL_ROOT/lib/Qt/translations"
+        cp -r "$OPT_QTDIR/qtbase/translations/qtwebengine_locales" "$QTC_INSTALL_ROOT/lib/Qt/translations/"
+    fi
+
     if [[ $UNAME_SYSTEM == "Darwin" ]]; then
         install_name_tool -add_rpath @executable_path/../../../../../../../../Frameworks \
             "bin/Qt Creator.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
@@ -428,7 +446,7 @@ build_windows_qtc() {
 	# no more errors allowed
 	set -e
 
-	local opengl32sw_lib="opengl32sw-32.7z"
+	local opengl32sw_lib="opengl32sw-64-mesa_11_2_2-signed.7z"
 	curl -s -f -o $opengl32sw_lib http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/opengl/$opengl32sw_lib
 
     local pkg_config_libs="pkg-config_0.26-1_win32.zip \
@@ -438,10 +456,10 @@ build_windows_qtc() {
         curl -s -f -O http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/pkg-config/$lib
     done
 
-    local mingw_dbus="mingw-w64-i686-dbus-1.12.20-1-any.pkg.tar"
+    local mingw_dbus="mingw-w64-x86_64-dbus-1.12.20-1-any.pkg.tar"
     local mingw_dbus_lib="libdbus-1-3.dll"
     curl -s -f -o $mingw_dbus http://$OPT_UPLOAD_HOST/sailfishos/win32-binary-artifacts/dbus/$mingw_dbus
-    tar -xf $mingw_dbus --strip-components=2 mingw32/bin/$mingw_dbus_lib
+    tar -xf $mingw_dbus --strip-components=2 mingw64/bin/$mingw_dbus_lib
 
         # create the build script for windows
 	cat <<EOF > build-windows.bat
@@ -461,7 +479,7 @@ if Not DEFINED ProgramFiles(x86) (
 set INSTALL_ROOT=$(win_path $QTC_INSTALL_ROOT)
 set QTDIR=$(win_path $OPT_QTDIR)\qtbase
 set QMAKESPEC=$DEF_MSVC_SPEC
-set PATH=%PATH%;%_programs%\7-zip;%QTDIR%\bin;$(win_path $DEF_PREFIX)\invariant\bin;c:\python27;$(win_path $OPT_ICU_PATH)\bin
+set PATH=%QTDIR%\bin;$(win_path $DEF_PREFIX)\invariant\bin;$(win_path $OPT_ICU_PATH)\bin64;%PATH%
 set LLVM_INSTALL_DIR=$(win_path $OPT_LLVM_INSTALL_DIR)
 set INSTALLER_ARCHIVE=$SAILFISH_QTC_BASENAME$(build_arch).7z
 
@@ -471,7 +489,7 @@ if exist $binary_artifacts (
   call 7z x -o$(win_path $QTC_INSTALL_ROOT) $binary_artifacts
 )
 
-call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86
+call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
 
 call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro CONFIG+=release -r ^
     QTC_SHOW_BUILD_DATE=1 ^
@@ -493,12 +511,12 @@ for %%i in ($pkg_config_libs) do (
     call 7z x -o%INSTALL_ROOT% %%i < NUL || exit 1
 )
 copy $mingw_dbus_lib %INSTALL_ROOT%\bin || exit 1
-copy "%VCToolsInstallDir%\bin\Hostx86\x86\d3dcompiler_*.dll" %INSTALL_ROOT%\bin || exit 1
-pushd "%VCToolsRedistDir%\x86\Microsoft.VC*.CRT" ^
+copy "%VCToolsInstallDir%\bin\Hostx64\x64\d3dcompiler_*.dll" %INSTALL_ROOT%\bin || exit 1
+pushd "%VCToolsRedistDir%\x64\Microsoft.VC*.CRT" ^
     && copy "*.dll" %INSTALL_ROOT%\bin ^
     && popd || exit 1
 copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
-copy $(win_path $OPT_ICU_PATH)\bin\*.dll %INSTALL_ROOT%\bin || exit 1
+copy $(win_path $OPT_ICU_PATH)\bin64\*.dll %INSTALL_ROOT%\bin || exit 1
 
 call nmake bindist_installer || exit 1
 EOF
