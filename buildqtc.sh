@@ -278,6 +278,15 @@ build_unix_gdb() {
             SHELL=/bin/bash \
 	    PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads
 
+        if [[ $UNAME_SYSTEM == "Linux" ]]; then
+            pushd qtcreator-gdb-*
+            ls bin/gdb-* |xargs -n1 patchelf --set-rpath '$ORIGIN/../lib' --force-rpath
+            mkdir -p lib
+            cp --dereference /lib/x86_64-linux-gnu/lib{tinfo,ncurses}.so.5 lib/
+            7z a ../$SAILFISH_GDB_BASENAME*.7z bin/gdb-* lib/lib{tinfo,ncurses}.so.5
+            popd
+        fi
+
         # move the completed package to the parent dir
 	mv $SAILFISH_GDB_BASENAME*.7z ..
 	popd
