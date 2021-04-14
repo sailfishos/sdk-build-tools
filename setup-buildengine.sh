@@ -3,7 +3,7 @@
 #
 # SDK build engine creation script
 #
-# Copyright (C) 2014-2019 Jolla Oy
+# Copyright (C) 2014-2019,2021 Jolla Oy
 # Copyright (C) 2019-2020 Open Mobile Platform LLC.
 # Contact: Ville Nummela <ville.nummela@jolla.com>
 # All rights reserved.
@@ -45,9 +45,8 @@ OPT_UPLOAD_PATH=$DEF_UPLOAD_PATH
 # ultra compression by default
 OPT_COMPRESSION=9
 OPT_RELEASE="latest"
-OPT_TOOLING="Jolla-latest-Sailfish_SDK_Tooling-i486.tar.bz2"
-OPT_TARGET_ARM="Jolla-latest-Sailfish_SDK_Target-armv7hl.tar.bz2"
-OPT_TARGET_I486="Jolla-latest-Sailfish_SDK_Target-i486.tar.bz2"
+OPT_TOOLING=
+declare -A OPT_TARGETS=()
 OPT_VM="MerSDK.build"
 OPT_VDI=
 OPT_TARGET_BASENAME=${DEF_TARGET_BASENAME}
@@ -55,9 +54,6 @@ OPT_TARGET_BASENAME=${DEF_TARGET_BASENAME}
 # some static settings for the VM
 SSH_PORT=2222
 HTTP_PORT=8080
-SAILFISH_DEFAULT_TOOLING="BASENAME-RELEASE"
-SAILFISH_DEFAULT_TARGETS="BASENAME-RELEASE-i486
-                          BASENAME-RELEASE-armv7hl"
 
 # wrap it all up into these files
 PACKAGE_NAME=buildengine-vbox.7z
@@ -137,6 +133,7 @@ startVM() {
 
 installTooling() {
     local tooling=$1
+    local file=$2
 
     echo "Installing tooling $tooling to $OPT_VM"
 
@@ -151,31 +148,27 @@ installTooling() {
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sdk-manage --mode installer --tooling --install $tooling file:///host_home/$OPT_TOOLING"
+        mersdk@localhost "sdk-manage --mode installer --tooling --install $tooling file:///host_home/$file"
 }
 
 installTarget() {
     local tgt=$1
+    local file=$2
 
     echo "Installing target $tgt to $OPT_VM"
-    if [[ -n $(grep i486 <<< $tgt) ]]; then
-        TARGET_FILENAME=$OPT_TARGET_I486
-    else
-        TARGET_FILENAME=$OPT_TARGET_ARM
+
+    if [[ ! -f $file ]]; then
+        fatal "$file does not exist!"
     fi
 
-    if [[ ! -f $TARGET_FILENAME ]]; then
-        fatal "$TARGET_FILENAME does not exist!"
-    fi
-
-    ln $TARGET_FILENAME $INSTALL_PATH/
+    ln $file $INSTALL_PATH/
 
     echo "Creating target ..."
     ssh -o UserKnownHostsFile=/dev/null \
         -o StrictHostKeyChecking=no \
         -p $SSH_PORT \
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
-        mersdk@localhost "sdk-manage --mode installer --target --install --jfdi $tgt file:///host_home/$TARGET_FILENAME"
+        mersdk@localhost "sdk-manage --mode installer --target --install --jfdi $tgt file:///host_home/$file"
 }
 
 createTar() {
@@ -271,13 +264,11 @@ checkForRequiredFiles() {
         fatal "Tooling file [$OPT_TOOLING] not found in the current directory."
     fi
 
-    if [[ ! -f $OPT_TARGET_ARM ]]; then
-        fatal "Target file [$OPT_TARGET_ARM] not found in the current directory."
-    fi
-
-    if [[ ! -f $OPT_TARGET_I486 ]]; then
-        fatal "Target file [$OPT_TARGET_I486] not found in the current directory."
-    fi
+    for target_filename in "${OPT_TARGETS[@]}"; do
+        if [ ! -e "$target_filename" ] ; then
+            fatal "Target file [$target_filename] not found in the current directory."
+        fi
+    done
 }
 
 packVM() {
@@ -289,8 +280,9 @@ packVM() {
 
     # remove target archive files
     rm -f $INSTALL_PATH/$OPT_TOOLING
-    rm -f $INSTALL_PATH/$OPT_TARGET_ARM
-    rm -f $INSTALL_PATH/$OPT_TARGET_I486
+    for target_filename in "${OPT_TARGETS[@]}"; do
+        rm -f "$INSTALL_PATH/$target_filename"
+    done
 
     # remove stuff that is not meant to end up in the package
     rm -f $INSTALL_PATH/.bash_history $INSTALL_PATH/refresh-sdk-repos.sh
@@ -401,13 +393,13 @@ while [[ ${1:-} ]]; do
             OPT_VDI=$1; shift
             ;;
         -t | --tooling ) shift
+            # Enforce that the file resides under CWD for sharing with build engine
             OPT_TOOLING=$(basename $1); shift
             ;;
-        -ta | --target-arm ) shift
-            OPT_TARGET_ARM=$(basename $1); shift
-            ;;
-        -ti | --target-i486 ) shift
-            OPT_TARGET_I486=$(basename $1); shift
+        --target-* )
+            # Enforce that the file resides under CWD for sharing with build engine
+            OPT_TARGETS[${1#--target-}]=$(basename $2)
+            shift 2
             ;;
         -td | --test-domain ) shift
             OPT_KEEP_TEST_DOMAIN="--test-domain"
@@ -476,9 +468,6 @@ while [[ ${1:-} ]]; do
     esac
 done
 
-SAILFISH_DEFAULT_TOOLING=${SAILFISH_DEFAULT_TOOLING/BASENAME-RELEASE/$OPT_TARGET_BASENAME-$OPT_RELEASE}
-SAILFISH_DEFAULT_TARGETS=${SAILFISH_DEFAULT_TARGETS//BASENAME-RELEASE/$OPT_TARGET_BASENAME-$OPT_RELEASE}
-
 # check if we have VBoxManage
 VBOX_VERSION=$(VBoxManage --version 2>/dev/null | cut -f -2 -d '.')
 if [[ -z $VBOX_VERSION ]]; then
@@ -524,9 +513,11 @@ Creating $OPT_VM, compression=$OPT_COMPRESSION
  Release:     $OPT_RELEASE
  MerSDK VDI:  $OPT_VDI
  Tooling:     $OPT_TOOLING
- ARM target:  $OPT_TARGET_ARM
- i486 target: $OPT_TARGET_I486
 EOF
+for targetarch in ${!OPT_TARGETS[*]} ; do
+    echo "${targetarch^} target: ${OPT_TARGETS[$targetarch]}"
+done
+
 if [[ -n $OPT_REFRESH ]]; then
     echo " Force zypper refresh for repos"
     if [[ -n $OPT_PRIVATE_REPO ]]; then
@@ -581,11 +572,13 @@ createShares
 startVM
 
 # install tooling to the VM
-installTooling "$SAILFISH_DEFAULT_TOOLING"
+installTooling "$OPT_TARGET_BASENAME-$OPT_RELEASE" "$OPT_TOOLING"
 
 # install targets to the VM
-for targetname in $SAILFISH_DEFAULT_TARGETS; do
-    installTarget $targetname
+TARGET_NAMES=()
+for targetarch in ${!OPT_TARGETS[*]}; do
+    installTarget "$OPT_TARGET_BASENAME-$OPT_RELEASE-$targetarch" "${OPT_TARGETS[$targetarch]}"
+    TARGET_NAMES+=("$OPT_TARGET_BASENAME-$OPT_RELEASE-$targetarch")
 done
 
 if [[ -n $OPT_HACKIT ]]; then
@@ -638,10 +631,10 @@ results+=($DOCKER_PACKAGE_NAME)
 if [[ -z $OPT_NO_META ]]; then
     vdi_capacity=$(vdi_capacity <$INSTALL_PATH/mer.vdi)
     $BUILD_TOOLS_SRC/make-archive-meta.sh $PACKAGE_NAME "vdi_capacity=$vdi_capacity" \
-        "targets=$(echo -n $SAILFISH_DEFAULT_TARGETS)"
+        "targets=$(echo -n ${TARGET_NAMES[*]})"
     results+=($PACKAGE_NAME.meta)
     $BUILD_TOOLS_SRC/make-archive-meta.sh $DOCKER_PACKAGE_NAME \
-        "targets=$(echo -n $SAILFISH_DEFAULT_TARGETS)"
+        "targets=$(echo -n ${TARGET_NAMES[*]})"
     results+=($DOCKER_PACKAGE_NAME.meta)
 fi
 
