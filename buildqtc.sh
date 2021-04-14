@@ -501,7 +501,8 @@ if exist $binary_artifacts (
 
 call "%_programs%\Microsoft Visual Studio\\$DEF_MSVC_VER\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
 
-call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro CONFIG+=release -r ^
+call %QTDIR%\bin\qmake $(win_path $OPT_QTC_SRC_DIR)\qtcreator.pro ^
+    CONFIG+=release CONFIG-=debug_and_release -r ^
     QTC_SHOW_BUILD_DATE=1 ^
     -after "DEFINES+=IDE_REVISION=$OPT_REVISION" ^
     ${OPT_COPY_FROM_VARIANT:+"'DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=$OPT_COPY_FROM_VARIANT'"} ^
