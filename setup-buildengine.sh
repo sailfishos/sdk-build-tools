@@ -508,15 +508,16 @@ checkVBox
 checkIfVMexists
 
 # all go, let's do it:
-cat <<EOF
-Creating $OPT_VM, compression=$OPT_COMPRESSION
- Release:     $OPT_RELEASE
- MerSDK VDI:  $OPT_VDI
- Tooling:     $OPT_TOOLING
-EOF
-for targetarch in ${!OPT_TARGETS[*]} ; do
-    echo "${targetarch^} target: ${OPT_TARGETS[$targetarch]}"
-done
+echo "Creating $OPT_VM, compression=$OPT_COMPRESSION"
+
+{
+    echo "Release:;$OPT_RELEASE"
+    echo "MerSDK VDI:;$OPT_VDI"
+    echo "Tooling:;$OPT_TOOLING"
+    for targetarch in ${!OPT_TARGETS[*]} ; do
+        echo "${targetarch^^} target:;${OPT_TARGETS[$targetarch]}"
+    done
+} |column -t -s ';' |sed 's/^/ /'
 
 if [[ -n $OPT_REFRESH ]]; then
     echo " Force zypper refresh for repos"
