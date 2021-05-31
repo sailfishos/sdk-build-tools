@@ -180,7 +180,8 @@ check_target_visible() {
 }
 
 get_targets() {
-    local tgts=$(sudo -i -u $sdk_user sb2-config -l 2>&1)
+    local tgts=$(sudo -i -u $sdk_user sdk-manage target list --long \
+        |awk '$4 == "-" { print $1 }') # skip snapshots
     [[ $? -ne 0 ]] && return
 
     for t in $tgts; do
