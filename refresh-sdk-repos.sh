@@ -2,8 +2,8 @@
 #
 # Refresh MerSDK zypper repositories for SDK release
 #
-# Copyright (C) 2014 Jolla Oy
-# Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
+# Copyright (C) 2014,2017,2021 Jolla Oy
+# Contact: http://jolla.com/
 # All rights reserved.
 #
 # You may use this file under the terms of BSD license as follows:

@@ -237,6 +237,7 @@ initPaths() {
     # copy refresh script to an accessible path, this needs to be
     # removed later
     cp -a $BUILD_TOOLS_SRC/refresh-sdk-repos.sh $INSTALL_PATH
+    cp -a $BUILD_TOOLS_SRC/hack-snapshots-cow.sh $INSTALL_PATH
 
     # this is not going to end up inside the package
     SSHCONFIG_PATH=$PWD/sshconfig
@@ -286,6 +287,7 @@ packVM() {
 
     # remove stuff that is not meant to end up in the package
     rm -f $INSTALL_PATH/.bash_history $INSTALL_PATH/refresh-sdk-repos.sh
+    rm -f $INSTALL_PATH/hack-snapshots-cow.sh
 
     # copy the used VDI file:
     echo "Hard linking $PWD/$OPT_VDI => $INSTALL_PATH/mer.vdi"
@@ -590,6 +592,13 @@ if [[ -n $OPT_HACKIT ]]; then
         -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
         mersdk@localhost "cat /dev/null | sudo tee /etc/zypp/systemCheck.d/jolla-core.check"
 fi
+
+# Hack: ensure snapshots are CoW copies also with Docker
+ssh -o UserKnownHostsFile=/dev/null \
+    -o StrictHostKeyChecking=no \
+    -p $SSH_PORT \
+    -i $SSHCONFIG_PATH/vmshare/ssh/private_keys/engine/mersdk \
+    mersdk@localhost "sudo bash /host_home/hack-snapshots-cow.sh"
 
 # refresh the zypper repositories
 if [[ -n $OPT_REFRESH ]]; then
