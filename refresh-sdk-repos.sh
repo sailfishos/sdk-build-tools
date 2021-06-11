@@ -2,8 +2,8 @@
 #
 # Refresh MerSDK zypper repositories for SDK release
 #
-# Copyright (C) 2014 Jolla Oy
-# Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
+# Copyright (C) 2014,2017,2021 Jolla Oy
+# Contact: http://jolla.com/
 # All rights reserved.
 #
 # You may use this file under the terms of BSD license as follows:
@@ -180,7 +180,8 @@ check_target_visible() {
 }
 
 get_targets() {
-    local tgts=$(sudo -i -u $sdk_user sb2-config -l 2>&1)
+    local tgts=$(sudo -i -u $sdk_user sdk-manage target list --long \
+        |awk '$4 == "-" { print $1 }') # skip snapshots
     [[ $? -ne 0 ]] && return
 
     for t in $tgts; do
