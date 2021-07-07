@@ -52,4 +52,4 @@ done
 EOF
 
 chmod +x /usr/lib/oneshot.d/500-sdk-reset-snapshots.sh
-add-oneshot 500-sdk-reset-snapshots.sh
+add-oneshot --late 500-sdk-reset-snapshots.sh
