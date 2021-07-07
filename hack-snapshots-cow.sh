@@ -53,3 +53,4 @@ EOF
 
 chmod +x /usr/lib/oneshot.d/500-sdk-reset-snapshots.sh
 add-oneshot --late 500-sdk-reset-snapshots.sh
+ln -sf /usr/lib/systemd/system/oneshot-root-late.service /etc/systemd/system/multi-user.target.wants/
