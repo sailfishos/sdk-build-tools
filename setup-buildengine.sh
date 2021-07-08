@@ -360,8 +360,7 @@ Options:
    -c   | --compression <0-9>  compression level of 7z [$OPT_COMPRESSION]
    -nc  | --no-compression     do not create the 7z
    -t   | --tooling <FILE>     tooling tarball <FILE>, must be in current directory
-   -ta  | --target-arm <FILE>  arm target rootstrap <FILE>, must be in current directory
-   -ti  | --target-i486 <FILE> i486 target rootstrap <FILE>, must be in current directory
+   --target-<ARCH> <FILE>      <ARCH> target rootstrap <FILE>, must be in current directory
    -un  | --unregister         unregister the created VM at the end of script run
    -hax | --horrible-hack      disable jolla-core.check systemCheck file
    -vm  | --vm-name <NAME>     create VM with <NAME> [$OPT_VM]
