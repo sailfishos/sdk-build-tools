@@ -293,9 +293,11 @@ packVM() {
     echo "Hard linking $PWD/$OPT_VDI => $INSTALL_PATH/mer.vdi"
     ln $PWD/$OPT_VDI $INSTALL_PATH/mer.vdi
 
+    cp $SSHCONFIG_PATH/vmshare/df.cache vmshare/
+
     if [[ ! $OPT_NO_COMPRESSION ]]; then
         # and 7z the mersdk with chosen compression
-        7z a -mx=$OPT_COMPRESSION $PACKAGE_NAME $INSTALL_PATH/
+        7z a -mx=$OPT_COMPRESSION $PACKAGE_NAME $INSTALL_PATH/ vmshare/
     fi
 }
 
