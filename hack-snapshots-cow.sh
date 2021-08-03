@@ -37,6 +37,8 @@
 
 set -e
 
+systemctl stop sdk-freespace
+
 rm -rf /srv/mer/targets/*.default/*
 
 cat > /usr/lib/oneshot.d/500-sdk-reset-snapshots.sh <<'EOF'
