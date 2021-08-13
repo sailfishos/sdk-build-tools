@@ -49,7 +49,7 @@ sdk-manage() { sudo -u mersdk sdk-manage "$@"; }
 
 targets=$(sdk-manage target list --long |awk '($4 == "-") { print $1 }')
 for target in $targets; do
-    sdk-manage target snapshot --reset=force $target{,.default}
+    sdk-manage target snapshot --reset=force --no-sync $target{,.default}
 done
 EOF
 
