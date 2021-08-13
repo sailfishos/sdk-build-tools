@@ -293,6 +293,7 @@ packVM() {
     echo "Hard linking $PWD/$OPT_VDI => $INSTALL_PATH/mer.vdi"
     ln $PWD/$OPT_VDI $INSTALL_PATH/mer.vdi
 
+    mkdir -p vmshare
     cp $SSHCONFIG_PATH/vmshare/df.cache vmshare/
 
     if [[ ! $OPT_NO_COMPRESSION ]]; then
