@@ -43,7 +43,7 @@ CHAIN=dnat-emulators
 iptables -t nat --new-chain "$CHAIN"
 
 # FIXME breaks when the port is later changed by user
-for ((i=0; i<10; i++)); do
+for ((i=0; i<20; i++)); do
     iptables -t nat -A "$CHAIN" -p tcp -d 10.220.220.$((1+i)) --dport 22 -j DNAT \
         --to-destination $EMULATOR_IP:$((2223+i))
 done
