@@ -1,0 +1,23 @@
+{
+	"defaultAction": "SCMP_ACT_ALLOW",
+	"archMap": [
+		{
+			"architecture": "SCMP_ARCH_X86_64",
+			"subArchitectures": [
+				"SCMP_ARCH_X86",
+				"SCMP_ARCH_X32"
+			]
+		}
+	],
+	"syscalls": [
+		{
+			"names": [
+				"keyctl",
+				"keyctl_chown"
+			],
+			"action": "SCMP_ACT_ERRNO",
+            "errnoRet": 38,
+            "comment": "Workaround for https://github.com/systemd/systemd/issues/6281"
+        }
+	]
+}
