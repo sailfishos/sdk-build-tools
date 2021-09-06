@@ -310,6 +310,8 @@ packDocker() {
     echo "copying $INSTALL_PATH/targets => $DOCKER_INSTALL_PATH/targets"
     cp -R $INSTALL_PATH/targets $DOCKER_INSTALL_PATH/targets
 
+    cp $(dirname $0)/seccomp.json $DOCKER_INSTALL_PATH/
+
     if [[ ! $OPT_NO_COMPRESSION ]]; then
         # and 7z the mersdk with chosen compression
         pushd $DOCKER_PREFIX
