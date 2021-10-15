@@ -46,6 +46,10 @@ OPT_ICU_PATH=$DEF_ICU_INSTALL_DIR
 OPT_VARIANT=$DEF_VARIANT
 OPT_COPY_FROM_VARIANT=$DEF_COPY_FROM_VARIANT
 
+OPT_SFDK_DOCUMENTATION=$([[ $UNAME_SYSTEM == Linux ]] && echo 1)
+SFDK_DOC_DIR=share/doc/qtcreator/man
+SFDK_DOC_NAME=sfdkdocumentation.7z
+
 fail() {
     echo "FAIL: $@"
     exit 1
@@ -71,6 +75,7 @@ Options:
                                 if found [$OPT_COPY_FROM_VARIANT]
    -r   | --revision <STRING>  Use <STRING> as the build revision [git sha]
    -d   | --docs               Build Qt Creator documentation
+        | --sfdk-docs          Build sfdk documentation (implied on Linux)
    -g   | --gdb                Build also gdb
    -go  | --gdb-only           Build only gdb
    -gd  | --gdb-download <URL> Use <URL> to download gdb build deps
@@ -116,6 +121,9 @@ while [[ ${1:-} ]]; do
 	    ;;
 	-d | --docs ) shift
 	    OPT_DOCUMENTATION=1
+	    ;;
+	--sfdk-docs ) shift
+	    OPT_SFDK_DOCUMENTATION=1
 	    ;;
 	-g | --gdb ) shift
 	    OPT_GDB=1
@@ -563,6 +571,13 @@ else
     build_unix_gdb
 fi
 
+if [[ $OPT_SFDK_DOCUMENTATION ]]; then
+    rm -f $SFDK_DOC_NAME
+    mkdir -p $QTC_INSTALL_ROOT/$SFDK_DOC_DIR
+    $QTC_INSTALL_ROOT/share/qtcreator/sfdk/gendoc.sh $QTC_INSTALL_ROOT/$SFDK_DOC_DIR
+    (cd $QTC_INSTALL_ROOT && 7z a $OLDPWD/$SFDK_DOC_NAME $SFDK_DOC_DIR)
+fi
+
 # record end time
 BUILD_END=$(date +%s)
 
@@ -580,6 +595,11 @@ if  [[ -n "$OPT_UPLOAD" ]]; then
     if [[ -z $OPT_GDB_ONLY ]]; then
 	echo "Uploading $SAILFISH_QTC_BASENAME$(build_arch).7z ..."
 	scp $QTC_BUILD_DIR/$SAILFISH_QTC_BASENAME$(build_arch).7z $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/$(build_arch)/
+
+        if [[ $OPT_SFDK_DOCUMENTATION ]]; then
+            echo "Uploading $SFDK_DOC_NAME ..."
+            scp $SFDK_DOC_NAME $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/
+        fi
     fi
 
     if [[ -n $OPT_GDB ]]; then
