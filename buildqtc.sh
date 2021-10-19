@@ -47,7 +47,8 @@ OPT_VARIANT=$DEF_VARIANT
 OPT_COPY_FROM_VARIANT=$DEF_COPY_FROM_VARIANT
 
 OPT_SFDK_DOCUMENTATION=$([[ $UNAME_SYSTEM == Linux ]] && echo 1)
-SFDK_DOC_DIR=share/doc/qtcreator/man
+# TODO Fix gendoc.sh so that it adds the manN subdirectories themsenves
+SFDK_DOC_DIR=share/doc/qtcreator/man/man1
 SFDK_DOC_NAME=sfdkdocumentation.7z
 
 fail() {
