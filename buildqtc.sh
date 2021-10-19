@@ -574,7 +574,8 @@ fi
 if [[ $OPT_SFDK_DOCUMENTATION ]]; then
     rm -f $SFDK_DOC_NAME
     mkdir -p $QTC_INSTALL_ROOT/$SFDK_DOC_DIR
-    $QTC_INSTALL_ROOT/share/qtcreator/sfdk/gendoc.sh $QTC_INSTALL_ROOT/$SFDK_DOC_DIR
+    PATH=$QTC_INSTALL_ROOT/bin:$PATH \
+        $QTC_INSTALL_ROOT/share/qtcreator/sfdk/gendoc.sh $QTC_INSTALL_ROOT/$SFDK_DOC_DIR
     (cd $QTC_INSTALL_ROOT && 7z a $OLDPWD/$SFDK_DOC_NAME $SFDK_DOC_DIR)
 fi
 
