@@ -34,6 +34,8 @@
 RELEASE="2.0"
 CHECK="md5"
 PLATFORMS="linux-64 mac windows"
+URL_BASE="https://releases.sailfishos.org/sdk/installers"
+NBSP=$'\xC2\xA0'
 
 fatal() {
     echo "FAIL: $@"
@@ -48,6 +50,13 @@ rename_installers() {
                 -e "s/linux-/linux/" <<< $installer)
         mv "$installer" "$new_name" || fatal "error renaming $installer"
     done
+}
+
+# Some obscure handling is needed to support the old 'column' on builder
+format_table() {
+    column -t -n \
+        |sed "2 { s/[ $NBSP]/-/g; s/|--/|  /g; s/--|/  |/g }" \
+        |sed 's/ \?| \?/|/g'
 }
 
 usage() {
@@ -100,10 +109,14 @@ fi
 cat <<EOF
 ###### CUT HERE ######
 
-=== File information ===
-{| class="wikitable"
-|-
-! Filename !! Size !! MD5 Hash
+EOF
+
+{
+
+cat <<EOF
+| Filename | Size | MD5${NBSP}Hash |
+| $NBSP | $NBSP | $NBSP |
+
 EOF
 
 for ARCH in $PLATFORMS; do
@@ -124,17 +137,15 @@ for ARCH in $PLATFORMS; do
         MD5=$(cut -f 1 -d ' ' $FNAME.$CHECK)
 
         cat <<EOF
-|-
-| [https://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME '''$FNAME''']
-|| $FSIZE_MIB ($FSIZE bytes)
-|| [https://releases.sailfishos.org/sdk/installers/$RELEASE/$FNAME.$CHECK '''$MD5''']
+| [**$FNAME**]($URL_BASE/$RELEASE/$FNAME) | $FSIZE_MIB$NBSP($FSIZE${NBSP}bytes) | [**$MD5**]($URL_BASE/$RELEASE/$FNAME.$CHECK) |
 EOF
     done
 
 done
 
+} |format_table
+
 cat <<EOF
-|}
 
 ##### CUT HERE #####
 
