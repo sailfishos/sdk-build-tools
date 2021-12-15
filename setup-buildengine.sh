@@ -190,12 +190,6 @@ createTar() {
     sudo rm mer.d/usr/lib/systemd/system/sockets.target.wants/!(dbus.socket|systemd-journal*.socket)
     sudo rm mer.d/usr/lib/systemd/system/basic.target.wants/!(dbus.service)
 
-    echo "Setting up connman configuration ..."
-    sudo cp $(dirname $0)/connman-config mer.d/usr/libexec/sdk-setup/connman-config
-    sudo chmod a+x mer.d/usr/libexec/sdk-setup/connman-config
-    sudo cp $(dirname $0)/connman-config.service mer.d/etc/systemd/system/
-    sudo ln -s /etc/systemd/system/connman-config.service mer.d/etc/systemd/system/multi-user.target.wants/
-
     echo "Changing permissions of /srv/mer ..."
     sudo chmod -R a+rwX mer.d/srv/mer
 
