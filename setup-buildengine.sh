@@ -182,14 +182,6 @@ createTar() {
     mkdir -p mer.d
     sudo mount /dev/nbd0p1 mer.d
 
-    echo "Disabling unneeded systemd services ..."
-    sudo rm mer.d/usr/lib/systemd/system/sysinit.target.wants/!(systemd-journal*.service)
-    sudo rm mer.d/usr/lib/systemd/system/multi-user.target.wants/!(sshd-keys.service|sshd.socket|network.target)
-    sudo rm mer.d/etc/systemd/system/basic.target.wants/!(sdk-setup-env.service|workspace.service)
-    sudo rm mer.d/etc/systemd/system/multi-user.target.wants/!(oneshot-root-late-sdk.service|sdk-refresh.timer|sdk-webappstub.service)
-    sudo rm mer.d/usr/lib/systemd/system/sockets.target.wants/!(dbus.socket|systemd-journal*.socket)
-    sudo rm mer.d/usr/lib/systemd/system/basic.target.wants/!(dbus.service)
-
     echo "Changing permissions of /srv/mer ..."
     sudo chmod -R a+rwX mer.d/srv/mer
 
