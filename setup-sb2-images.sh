@@ -157,6 +157,7 @@ recompress()
             trap 'echo cleaning up...' INT TERM HUP
             if [[ ! $dry_run ]]; then
                 rm -f "$dirname/$decompressed_basename"
+                rm -f "$dirname/$decompressed_basename.meta"
                 if [[ ! $ok ]]; then
                     rm -f "$dirname/$decompressed_basename.7z"
                     rm -f "$dirname/$decompressed_basename.7z.meta"
@@ -175,9 +176,13 @@ recompress()
 
         basename=$decompressed_basename
 
+        echo "Creating meta data file for '$dirname/$basename'" >&2
+        _ $build_tools_src/make-sb2-image-meta.sh "$basename" || return
+
         echo "Creating archive '$dirname/$basename.7z'..." >&2
         _ rm -f -- "$basename.7z" || return
         _ 7z a ${level:+-mx="$level"} -- "$basename.7z" "$basename" >/dev/null || return
+        _ 7z a ${level:+-mx="$level"} -- "$basename.7z" "$basename.meta" >/dev/null || return
         _ rm -f -- "$basename" || :
         echo "Finished creating archive '$dirname/$basename.7z'" >&2
 
