@@ -40,6 +40,7 @@
 export LC_ALL=C
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 configure_icu() {
     $DEF_ICU_SRC_DIR/source/runConfigureICU Linux --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$DEF_ICU_INSTALL_DIR
@@ -50,7 +51,7 @@ build_icu() {
     mkdir -p $DEF_ICU_BUILD_DIR
     pushd    $DEF_ICU_BUILD_DIR
     configure_icu
-    make -j$(getconf _NPROCESSORS_ONLN)
+    make -j$(nproc)
     rm -rf $DEF_ICU_INSTALL_DIR
     make install
     popd
