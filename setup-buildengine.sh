@@ -286,6 +286,12 @@ packDocker() {
      # move the docker tarball to docker directory
     mv $INSTALL_PATH/sailfish.tar $DOCKER_INSTALL_PATH/
 
+    if [[ ! $OPT_NO_COMPRESSION ]]; then
+        local threads=$(nproc)
+        (( threads > 1 )) && let threads-- # be nice
+        xz -$OPT_COMPRESSION -T $threads $DOCKER_INSTALL_PATH/sailfish.tar
+    fi
+
     echo "copying $INSTALL_PATH/targets => $DOCKER_INSTALL_PATH/targets"
     cp -R $INSTALL_PATH/targets $DOCKER_INSTALL_PATH/targets
 
@@ -294,7 +300,8 @@ packDocker() {
     if [[ ! $OPT_NO_COMPRESSION ]]; then
         # and 7z the mersdk with chosen compression
         pushd $DOCKER_PREFIX
-        7z a -mx=$OPT_COMPRESSION $DOCKER_PACKAGE_NAME $RELATIVE_INSTALL_PATH
+        7z a -mx=$OPT_COMPRESSION $DOCKER_PACKAGE_NAME $RELATIVE_INSTALL_PATH/!(sailfish.tar.xz)
+        7z a -mx=0 $DOCKER_PACKAGE_NAME $RELATIVE_INSTALL_PATH/sailfish.tar.xz
         popd
         mv $DOCKER_PREFIX/$DOCKER_PACKAGE_NAME .
     fi
