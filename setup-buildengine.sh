@@ -190,6 +190,8 @@ createTar() {
     sudo tar -C mer.d/srv/mer -cf mersdk/sailfish-tools.tar --numeric-owner .
     sudo umount mer.d
     sudo qemu-nbd -d /dev/nbd0
+
+    sudo chown "$USER:$USER" -- mersdk/sailfish*.tar
 }
 
 checkVBox() {
