@@ -29,6 +29,16 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+nproc()
+{
+    if [[ $# -gt 0 ]]; then
+        echo "nproc: This is not a real 'nproc'!" >&2
+        return 1
+    fi
+
+    command nproc 2>/dev/null || getconf _NPROCESSORS_ONLN
+}
+
 # Read VDI header on stdin and output its capacity in megabytes
 #
 # See https://forums.virtualbox.org/viewtopic.php?p=29267#p29267 for the

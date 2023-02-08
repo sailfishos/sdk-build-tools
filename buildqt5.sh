@@ -40,6 +40,7 @@
 export LC_ALL=C
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 # common options for unix/windows dynamic build
 # the dynamic build is used when building Qt Creator
@@ -119,9 +120,9 @@ build_dynamic_qt() {
     mkdir -p $DEF_QT_DYN_BUILD_DIR
     pushd    $DEF_QT_DYN_BUILD_DIR
     # NINJAFLAGS is handled by qtwebengine/src/core/gn_run.pro (at least)
-    export NINJAFLAGS=-j$(getconf _NPROCESSORS_ONLN)
+    export NINJAFLAGS=-j$(nproc)
     configure_dynamic_qt5
-    make -j$(getconf _NPROCESSORS_ONLN)
+    make -j$(nproc)
     # no need to make install with -developer-build option
     # make install
     popd
@@ -159,7 +160,7 @@ build_static_qt() {
     mkdir -p $DEF_QT_STATIC_BUILD_DIR
     pushd    $DEF_QT_STATIC_BUILD_DIR
     configure_static_qt5
-    make -j$(getconf _NPROCESSORS_ONLN)
+    make -j$(nproc)
     # no need to make install with -developer-build option
     # make install
     popd

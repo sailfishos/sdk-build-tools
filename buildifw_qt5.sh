@@ -32,6 +32,7 @@
 #
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
@@ -163,7 +164,7 @@ build_unix() {
 
     $QTDIR/qtbase/bin/qmake -r $OPT_IFW_SRC_DIR/installerfw.pro
 
-    make -j$(getconf _NPROCESSORS_ONLN)
+    make -j$(nproc)
     popd
 }
 

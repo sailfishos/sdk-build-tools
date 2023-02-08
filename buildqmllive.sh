@@ -32,6 +32,7 @@
 #
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
@@ -238,7 +239,7 @@ build_unix_qmllive() {
 
     setup_unix_qmllive_ccache
 
-    make -j$(getconf _NPROCESSORS_ONLN)
+    make -j$(nproc)
 
     rm -rf $QMLLIVE_INSTALL_ROOT/*
     make install

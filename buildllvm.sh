@@ -41,6 +41,7 @@
 export LC_ALL=C
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 configure_llvm() {
     # See Qt Creator's README
@@ -57,7 +58,7 @@ build_llvm() {
     mkdir -p $DEF_LLVM_BUILD_DIR
     pushd    $DEF_LLVM_BUILD_DIR
     configure_llvm
-    make -j$(getconf _NPROCESSORS_ONLN)
+    make -j$(nproc)
     rm -rf $DEF_LLVM_INSTALL_DIR
     make install
     popd

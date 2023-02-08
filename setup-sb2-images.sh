@@ -208,7 +208,7 @@ set_defaults()
 {
     # Use up to N-1 available processors by default
     DEF_MAX_PROCS=
-    DEF_MAX_PROCS=$(getconf _NPROCESSORS_ONLN)
+    DEF_MAX_PROCS=$(nproc)
     let DEF_MAX_PROCS--
     if (( DEF_MAX_PROCS <= 0 )); then
         DEF_MAX_PROCS=1

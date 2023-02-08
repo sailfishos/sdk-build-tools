@@ -32,6 +32,7 @@
 #
 
 . $(dirname $0)/defaults.sh
+. $(dirname $0)/utils.sh
 
 OPT_UPLOAD_HOST=$DEF_UPLOAD_HOST
 OPT_UPLOAD_USER=$DEF_UPLOAD_USER
@@ -343,7 +344,7 @@ build_unix_qtc() {
 
 	setup_unix_qtc_ccache
 
-	make -j$(getconf _NPROCESSORS_ONLN)
+	make -j$(nproc)
 
 	rm -rf $QTC_INSTALL_ROOT/*
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
