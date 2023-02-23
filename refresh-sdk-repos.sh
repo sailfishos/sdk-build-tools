@@ -2,7 +2,7 @@
 #
 # Refresh MerSDK zypper repositories for SDK release
 #
-# Copyright (C) 2014,2017,2021 Jolla Oy
+# Copyright (C) 2014-2023 Jolla Oy
 # Contact: http://jolla.com/
 # All rights reserved.
 #
@@ -44,7 +44,7 @@ SSU_DOMAIN_ORIG=sailfish
 # targets are on sales domain
 SSU_DOMAIN_ORIG_TARGET=sales
 
-SSU_REFRESH_DOMAIN=10.0.0.20
+SSU_REFRESH_DOMAIN=10.21.0.20
 
 SSU_INIFILE=/usr/share/ssu/repos.ini
 

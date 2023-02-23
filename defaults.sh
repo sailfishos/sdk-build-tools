@@ -2,7 +2,7 @@
 #
 # Default configuration shared between SDK build tools
 #
-# Copyright (C) 2015-2017 Jolla Ltd.
+# Copyright (C) 2015-2023 Jolla Ltd.
 # Contact: Martin Kampas <martin.kampas@jolla.com>
 # All rights reserved.
 #
@@ -34,7 +34,7 @@
 # The address of the build host
 # Note: This can also be configured dynamically by using the -uh/--uhost
 # option in buildmaster.sh
-: ${DEF_UPLOAD_HOST:=10.0.0.20}
+: ${DEF_UPLOAD_HOST:=10.21.0.20}
 # The username on the build host
 # Note: This can also be configured dynamically by using the -uu/--uuser
 # option in buildmaster.sh

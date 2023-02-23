@@ -3,9 +3,8 @@
 #
 # SDK build engine creation script
 #
-# Copyright (C) 2014-2019,2021 Jolla Oy
+# Copyright (C) 2014-2023 Jolla Oy
 # Copyright (C) 2019-2020 Open Mobile Platform LLC.
-# Contact: Ville Nummela <ville.nummela@jolla.com>
 # All rights reserved.
 #
 # You may use this file under the terms of BSD license as follows:
@@ -347,7 +346,7 @@ Options:
    -f   | --vdi-file <VDI>     use <VDI> file as the virtual disk image [required]
    -i   | --ignore-running     ignore running VMs
    -r   | --refresh            force a zypper refresh for MerSDK and sb2 targets
-   -p   | --private            use private rpm repository in 10.0.0.20
+   -p   | --private            use private rpm repository in 10.21.0.20
    -td  | --test-domain        keep test domain after refreshing the repos
    -o   | --orig-release <REL> turn ssu release to this instead of latest after refreshing repos
    -rel | --release <REL>      release number to mention in tooling/target names
