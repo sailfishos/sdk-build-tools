@@ -2,7 +2,7 @@
 #
 # Master script to build parts of or all of the SDK installer
 #
-# Copyright (C) 2014-2019 Jolla Ltd.
+# Copyright (C) 2014-2023 Jolla Ltd.
 # Contact: Martin Kampas <martin.kampas@jolla.com>
 # All rights reserved.
 #
@@ -570,7 +570,7 @@ do_override_repo_url() {
             -i~ $BASE_SRC_DIR/$INSTALLER_SRC/config/config-*.xml
 
        # Daily builds need custom packages.conf strings.
-       if [[ $OPT_REPO_URL =~ ^"http://10.0.0.20/sailfishos/daily" ]]; then
+       if [[ $OPT_REPO_URL =~ ^"http://10.21.0.20/sailfishos/daily" ]]; then
            INSTALLER_BUILD_OPTIONS="$INSTALLER_BUILD_OPTIONS --packages-conf packages-daily.conf"
            _ $BASE_SRC_DIR/$INSTALLER_SRC/create-daily-packages-conf.py
        fi

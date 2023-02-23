@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2013-2014 Jolla Ltd.
+# Copyright 2013-2023 Jolla Ltd.
 # Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
 #
 # Change the ssu domain and release for SDK QA purposes
@@ -14,7 +14,7 @@
 
 SSU_RELEASE=latest
 SSU_DOMAIN=sailfishqa
-SSU_REGDOMAIN=10.0.0.20
+SSU_REGDOMAIN=10.21.0.20
 
 ################################################################
 #
