@@ -337,6 +337,7 @@ build_unix_qtc() {
             ${OPT_VARIANT_PRETTY:+"QTCREATOR_DISPLAY_VERSION='$OPT_VARIANT_PRETTY'"} \
             ${OPT_COPY_FROM_VARIANT:+"DEFINES+=IDE_COPY_SETTINGS_FROM_VARIANT=$OPT_COPY_FROM_VARIANT"} \
             "DEFINES+=IDE_SETTINGSVARIANT=$OPT_VARIANT" \
+            'DEFINES+=QTC_DEFAULT_HELPVIEWER_BACKEND=\\\"litehtml\\\"' \
             $EXTRA_QMAKE_LFLAGS \
             QTC_PREFIX=
     fi
@@ -377,9 +378,6 @@ build_unix_qtc() {
     fi
 
     if [[ $UNAME_SYSTEM == "Darwin" ]]; then
-        install_name_tool -add_rpath @executable_path/../../../../../../../../Frameworks \
-            "bin/Qt Creator.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
-
         local dbus_libs=
         dbus_libs=$(brew list dbus |grep 'libdbus-1.*\.dylib')
         mkdir -p "$QTC_INSTALL_ROOT/bin/Qt Creator.app/Contents/Frameworks/"
