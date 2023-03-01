@@ -2,8 +2,7 @@
 #
 # Builds Qt Creator and optionally uploads it to a server
 #
-# Copyright (C) 2014 Jolla Oy
-# Contact: Juha Kallioinen <juha.kallioinen@jolla.com>
+# Copyright (C) 2014-2023 Jolla Oy
 # All rights reserved.
 #
 # You may use this file under the terms of BSD license as follows:
