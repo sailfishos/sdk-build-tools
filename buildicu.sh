@@ -43,7 +43,11 @@ export LC_ALL=C
 . $(dirname $0)/utils.sh
 
 configure_icu() {
-    $DEF_ICU_SRC_DIR/source/runConfigureICU Linux --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$DEF_ICU_INSTALL_DIR
+    export CC=gcc-9 CXX=g++-9
+    # According to $DEF_ICU_SRC_DIR/source/runConfigureICU
+    export CFLAGS=-O3 CXXFLAGS=-O
+
+    $DEF_ICU_SRC_DIR/source/configure --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$DEF_ICU_INSTALL_DIR
 }
 
 build_icu() {
