@@ -44,6 +44,7 @@ export LC_ALL=C
 . $(dirname $0)/utils.sh
 
 configure_llvm() {
+    export CC=gcc-9 CXX=g++-9
     # See Qt Creator's README
     cmake \
         -D CMAKE_BUILD_TYPE=Release \
