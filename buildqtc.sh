@@ -560,7 +560,7 @@ else
     build_unix_gdb
 fi
 
-if [[ $OPT_SFDK_DOCUMENTATION ]]; then
+if [[ $OPT_SFDK_DOCUMENTATION && ! $OPT_GDB_ONLY ]]; then
     rm -f $SFDK_DOC_NAME
     mkdir -p $QTC_INSTALL_ROOT/$SFDK_DOC_DIR
     PATH=$QTC_INSTALL_ROOT/bin:$PATH \
