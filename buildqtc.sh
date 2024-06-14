@@ -267,6 +267,7 @@ build_arch() {
 
 build_unix_gdb() {
     if [[ -n $OPT_GDB ]]; then
+        rm -f $SAILFISH_GDB_BASENAME*.7z
 	rm -rf   gdb-build
 	mkdir -p gdb-build
 	pushd    gdb-build
@@ -403,6 +404,7 @@ build_unix_qtc() {
 
 build_windows_gdb() {
     if [[ -n $OPT_GDB ]]; then
+        rm -f $SAILFISH_GDB_BASENAME*.7z
 	rm -rf   gdb-build
 	mkdir -p gdb-build
 	pushd    gdb-build
