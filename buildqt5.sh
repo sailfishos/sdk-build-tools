@@ -288,7 +288,8 @@ echo Time used for Qt5 build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
 # For Emacs:
 # Local Variables:
 # indent-tabs-mode:nil
-# tab-width:4
+# tab-width:8
+# sh-basic-offset:4
 # End:
 # For VIM:
-# vim:set softtabstop=4 shiftwidth=4 tabstop=4 expandtab:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=8 expandtab:

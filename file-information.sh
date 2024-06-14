@@ -154,3 +154,12 @@ Cut between the lines and copy paste here:
 https://sailfishos.org/wiki/Application_SDK#File_Information
 
 EOF
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:8
+# sh-basic-offset:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=8 expandtab:

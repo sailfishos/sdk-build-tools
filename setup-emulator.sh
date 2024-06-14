@@ -252,3 +252,12 @@ if [[ -n "$OPT_UPLOAD" ]]; then
     rsync --ignore-existing --verbose --info=skip ${results[*]} \
         $OPT_UPLOAD_USER@$OPT_UPLOAD_HOST:$OPT_UPLOAD_PATH/$OPT_UL_DIR/emulators/
 fi
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:8
+# sh-basic-offset:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=8 expandtab:
