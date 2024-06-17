@@ -50,7 +50,7 @@ LINUX_CONFIG_OPTIONS="-no-eglfs -no-linuxfb -no-kms -bundled-xcb-xinput"
 
 # add these to the COMMON_CONFIG_OPTIONS for static build
 # the static build is required to build Qt Installer Framework
-COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d -skip qtwebengine -skip qtconnectivity"
+COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d -skip qtquick3d -skip qtwebengine -skip qtconnectivity"
 
 WEBENGINE_OPTIONS="\
 -no-feature-webengine-alsa \
