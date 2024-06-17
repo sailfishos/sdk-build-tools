@@ -121,6 +121,13 @@ build_dynamic_qt() {
     pushd    $DEF_QT_DYN_BUILD_DIR
     # NINJAFLAGS is handled by qtwebengine/src/core/gn_run.pro (at least)
     export NINJAFLAGS=-j$(nproc)
+    # qtwebengine assumes python 2 is the default
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        mkdir select-python-2
+        python2=$(which python2)
+        ln -s "$python2" select-python-2/python
+        export PATH=$PWD/select-python-2:$PATH
+    fi
     configure_dynamic_qt5
     make -j$(nproc)
     # no need to make install with -developer-build option
