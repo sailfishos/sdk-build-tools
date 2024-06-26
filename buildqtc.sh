@@ -275,6 +275,7 @@ build_unix_gdb() {
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
 	    GDB_MAKEFILE=Makefile.linux
 	else
+	    export MACOSX_DEPLOYMENT_TARGET=13.0
 	    GDB_MAKEFILE=Makefile.osx
 	fi
 
