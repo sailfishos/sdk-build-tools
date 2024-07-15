@@ -419,13 +419,10 @@ build_windows_gdb() {
 
         # dirty hax to build gdb in another mingw session, which has
         # the compiler available
-        #
-        # NOTE: this also requires that qtc sources are in
-        # /c/src/sailfish-qtcreator
 
 	cat <<EOF > build-gdb.bat
 @echo off
-call C:\mingw\msys\1.0\bin\env -u PATH MSYSTEM=MINGW32 C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads" || exit 1
+call C:\msys64\usr\bin\env -u PATH MSYSTEM=UCRT64 C:\msys64\usr\bin\bash.exe --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads" || exit 1
 EOF
 	cmd //c build-gdb.bat
 
