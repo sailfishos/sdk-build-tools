@@ -525,6 +525,8 @@ pushd "%VCToolsRedistDir%\x64\Microsoft.VC*.CRT" ^
     && popd || exit 1
 copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
 copy $(win_path $OPT_ICU_PATH)\bin64\*.dll %INSTALL_ROOT%\bin || exit 1
+# Required by libpython.dll packaged with gdb
+copy "%UniversalCRTSdkDir%\Redist\ucrt\DLLs\x64\*.dll" %INSTALL_ROOT%\bin || exit 1
 
 call nmake bindist_installer || exit 1
 EOF
