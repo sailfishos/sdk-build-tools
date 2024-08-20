@@ -43,7 +43,11 @@ export LC_ALL=C
 . $(dirname $0)/utils.sh
 
 configure_icu() {
-    $DEF_ICU_SRC_DIR/source/runConfigureICU Linux --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$DEF_ICU_INSTALL_DIR
+    export CC=gcc-9 CXX=g++-9
+    # According to $DEF_ICU_SRC_DIR/source/runConfigureICU
+    export CFLAGS=-O3 CXXFLAGS=-O
+
+    $DEF_ICU_SRC_DIR/source/configure --disable-draft --disable-extras --disable-debug --disable-icuio --disable-layout --disable-tests --disable-samples --enable-release --prefix=$DEF_ICU_INSTALL_DIR
 }
 
 build_icu() {
@@ -192,3 +196,12 @@ mins=$(( $time / 60 - 60*$hour ))
 secs=$(( $time - 3600*$hour - 60*$mins ))
 
 echo Time used for ICU build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:8
+# sh-basic-offset:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=8 expandtab:

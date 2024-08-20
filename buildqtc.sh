@@ -267,6 +267,7 @@ build_arch() {
 
 build_unix_gdb() {
     if [[ -n $OPT_GDB ]]; then
+        rm -f $SAILFISH_GDB_BASENAME*.7z
 	rm -rf   gdb-build
 	mkdir -p gdb-build
 	pushd    gdb-build
@@ -274,6 +275,7 @@ build_unix_gdb() {
 	if [[ $UNAME_SYSTEM == "Linux" ]]; then
 	    GDB_MAKEFILE=Makefile.linux
 	else
+	    export MACOSX_DEPLOYMENT_TARGET=13.0
 	    GDB_MAKEFILE=Makefile.osx
 	fi
 
@@ -286,15 +288,6 @@ build_unix_gdb() {
 	make -f $OPT_QTC_SRC_DIR/dist/gdb/$GDB_MAKEFILE \
             SHELL=/bin/bash \
 	    PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads
-
-        if [[ $UNAME_SYSTEM == "Linux" ]]; then
-            pushd qtcreator-gdb-*
-            ls bin/gdb-* |xargs -n1 patchelf --set-rpath '$ORIGIN/../lib' --force-rpath
-            mkdir -p lib
-            cp --dereference /lib/x86_64-linux-gnu/lib{tinfo,ncurses}.so.5 lib/
-            7z a ../$SAILFISH_GDB_BASENAME*.7z bin/gdb-* lib/lib{tinfo,ncurses}.so.5
-            popd
-        fi
 
         # move the completed package to the parent dir
 	mv $SAILFISH_GDB_BASENAME*.7z ..
@@ -412,6 +405,7 @@ build_unix_qtc() {
 
 build_windows_gdb() {
     if [[ -n $OPT_GDB ]]; then
+        rm -f $SAILFISH_GDB_BASENAME*.7z
 	rm -rf   gdb-build
 	mkdir -p gdb-build
 	pushd    gdb-build
@@ -569,7 +563,7 @@ else
     build_unix_gdb
 fi
 
-if [[ $OPT_SFDK_DOCUMENTATION ]]; then
+if [[ $OPT_SFDK_DOCUMENTATION && ! $OPT_GDB_ONLY ]]; then
     rm -f $SFDK_DOC_NAME
     mkdir -p $QTC_INSTALL_ROOT/$SFDK_DOC_DIR
     PATH=$QTC_INSTALL_ROOT/bin:$PATH \
@@ -610,7 +604,8 @@ fi
 # For Emacs:
 # Local Variables:
 # indent-tabs-mode:nil
-# tab-width:4
+# tab-width:8
+# sh-basic-offset:4
 # End:
 # For VIM:
-# vim:set softtabstop=4 shiftwidth=4 tabstop=4 expandtab:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=8 expandtab:

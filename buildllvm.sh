@@ -44,6 +44,7 @@ export LC_ALL=C
 . $(dirname $0)/utils.sh
 
 configure_llvm() {
+    export CC=gcc-9 CXX=g++-9
     # See Qt Creator's README
     cmake \
         -D CMAKE_BUILD_TYPE=Release \
@@ -207,3 +208,12 @@ mins=$(( $time / 60 - 60*$hour ))
 secs=$(( $time - 3600*$hour - 60*$mins ))
 
 echo Time used for LLVM/Clang build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:8
+# sh-basic-offset:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=8 expandtab:

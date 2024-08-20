@@ -209,3 +209,12 @@ for target in $targets; do
 done
 
 echo "#### Done"
+
+# For Emacs:
+# Local Variables:
+# indent-tabs-mode:nil
+# tab-width:8
+# sh-basic-offset:4
+# End:
+# For VIM:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=8 expandtab:

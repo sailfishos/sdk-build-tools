@@ -50,7 +50,7 @@ LINUX_CONFIG_OPTIONS="-no-eglfs -no-linuxfb -no-kms -bundled-xcb-xinput"
 
 # add these to the COMMON_CONFIG_OPTIONS for static build
 # the static build is required to build Qt Installer Framework
-COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d -skip qtwebengine -skip qtconnectivity"
+COMMON_STATIC_OPTIONS="-static -skip qtxmlpatterns -no-dbus -skip qt3d -skip qtquick3d -skip qtwebengine -skip qtconnectivity"
 
 WEBENGINE_OPTIONS="\
 -no-feature-webengine-alsa \
@@ -121,6 +121,13 @@ build_dynamic_qt() {
     pushd    $DEF_QT_DYN_BUILD_DIR
     # NINJAFLAGS is handled by qtwebengine/src/core/gn_run.pro (at least)
     export NINJAFLAGS=-j$(nproc)
+    # qtwebengine assumes python 2 is the default
+    if [[ $UNAME_SYSTEM == "Linux" ]]; then
+        mkdir select-python-2
+        python2=$(which python2)
+        ln -s "$python2" select-python-2/python
+        export PATH=$PWD/select-python-2:$PATH
+    fi
     configure_dynamic_qt5
     make -j$(nproc)
     # no need to make install with -developer-build option
@@ -281,7 +288,8 @@ echo Time used for Qt5 build: $(printf "%02d:%02d:%02d" $hour $mins $secs)
 # For Emacs:
 # Local Variables:
 # indent-tabs-mode:nil
-# tab-width:4
+# tab-width:8
+# sh-basic-offset:4
 # End:
 # For VIM:
-# vim:set softtabstop=4 shiftwidth=4 tabstop=4 expandtab:
+# vim:set softtabstop=4 shiftwidth=4 tabstop=8 expandtab:
