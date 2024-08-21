@@ -268,7 +268,7 @@ build_arch() {
 build_unix_gdb() {
     if [[ -n $OPT_GDB ]]; then
         rm -f $SAILFISH_GDB_BASENAME*.7z
-	rm -rf   gdb-build
+	[[ $OPT_QUICK ]] || rm -rf gdb-build
 	mkdir -p gdb-build
 	pushd    gdb-build
 
@@ -406,7 +406,7 @@ build_unix_qtc() {
 build_windows_gdb() {
     if [[ -n $OPT_GDB ]]; then
         rm -f $SAILFISH_GDB_BASENAME*.7z
-	rm -rf   gdb-build
+	[[ $OPT_QUICK ]] || rm -rf gdb-build
 	mkdir -p gdb-build
 	pushd    gdb-build
 
@@ -419,13 +419,10 @@ build_windows_gdb() {
 
         # dirty hax to build gdb in another mingw session, which has
         # the compiler available
-        #
-        # NOTE: this also requires that qtc sources are in
-        # /c/src/sailfish-qtcreator
 
 	cat <<EOF > build-gdb.bat
 @echo off
-call C:\mingw\msys\1.0\bin\env -u PATH MSYSTEM=MINGW32 C:\mingw\msys\1.0\bin\bash.exe --rcfile /etc/build_profile --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads" || exit 1
+call C:\msys64\usr\bin\env -u PATH MSYSTEM=UCRT64 C:\msys64\usr\bin\bash.exe --login -c "cd $PWD; make -f $OPT_QTC_SRC_DIR/dist/gdb/Makefile.mingw PATCHDIR=$OPT_QTC_SRC_DIR/dist/gdb/patches $downloads" || exit 1
 EOF
 	cmd //c build-gdb.bat
 
@@ -528,6 +525,8 @@ pushd "%VCToolsRedistDir%\x64\Microsoft.VC*.CRT" ^
     && popd || exit 1
 copy "%_systemdir%\msvc*100.dll" %INSTALL_ROOT%\bin || exit 1
 copy $(win_path $OPT_ICU_PATH)\bin64\*.dll %INSTALL_ROOT%\bin || exit 1
+# Required by libpython.dll packaged with gdb
+copy "%UniversalCRTSdkDir%\Redist\ucrt\DLLs\x64\*.dll" %INSTALL_ROOT%\bin || exit 1
 
 call nmake bindist_installer || exit 1
 EOF
